@@ -1,6 +1,8 @@
 export default {
   Query: {
-    hello() {
+    hello(parent, args, {req,res}) {
+      // console.log(req);
+      console.log('cookie: ' , req.session.id)
       return 'hello world';
     },
   },

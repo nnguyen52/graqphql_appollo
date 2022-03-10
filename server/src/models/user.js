@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: true,
     minlength: 1,
-    maxlength: 30,
+    maxlength: 100,
   },
   email: {
     type: String,
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 1,
-    maxlength: 30,
+    maxlength: 100,
   },
 });
 const User = mongoose.model('User', userSchema);

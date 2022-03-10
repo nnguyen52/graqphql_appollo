@@ -9,7 +9,7 @@ export const ErrorType = gql`
 export const ErrorsType = gql`
   type Errors {
     message: String
-    errors: [Error!]
+    details: [Error!]
   }
 `;
 

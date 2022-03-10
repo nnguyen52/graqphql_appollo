@@ -28,7 +28,7 @@ async function startApolloServer() {
   const httpServer = http.createServer(app);
 
   // mongo
-  const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/testingGrahpQL?retryWrites=true&w=majority`;
+  const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
   const connectMongo = async () => {
     try {
       await mongoose.connect(mongoUrl, {
@@ -41,7 +41,6 @@ async function startApolloServer() {
       process.exit(1);
     }
   };
-
   await connectMongo();
   app.set('trust proxy', 1);
   app.use(
@@ -63,6 +62,7 @@ async function startApolloServer() {
   const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
+    context: ({req,res}) => ({req,res}), 
     plugins: [
       ApolloServerPluginLandingPageGraphQLPlayground(),
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -78,7 +78,12 @@ async function startApolloServer() {
   console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 }
 
+try {
 await startApolloServer();
+
+} catch (e) {
+  console.log('SERVER_ERRORS:' , e)
+}
 // const jerry = new User({ userName: 'Jerry', email: 'jerry@jerry.com', password: 'jerry' });
 // await jerry.save();
 // const tom = new User({ userName: 'Tom', email: 'tom@tom.com', password: 'tom' });
