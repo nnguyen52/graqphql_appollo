@@ -1,14 +1,18 @@
 import helloworldSchema from './hello';
-import userSchema from './user';
 import mutationResponse from './mutationResponse';
+import { ErrorType } from './mutationResponse';
+// user
+import userSchema from './user';
 import userMutationReponse from './userMutationReponse';
-import { ErrorType, ErrorsType } from './mutationResponse';
-
+// post
+import postSchema from './post';
 export default [
   helloworldSchema,
-  userSchema,
   mutationResponse,
-  userMutationReponse,
   ErrorType,
-  ErrorsType,
+  // user
+  userSchema,
+  userMutationReponse,
+  // post
+  postSchema,
 ];

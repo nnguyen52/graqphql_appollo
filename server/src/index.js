@@ -14,8 +14,6 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-co
 import schema from './schema/index';
 import resolvers from './resolvers/index';
 
-import User from './models/user';
-
 async function startApolloServer() {
   const app = express();
   app.use(
@@ -28,7 +26,7 @@ async function startApolloServer() {
   const httpServer = http.createServer(app);
 
   // mongo
-  const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+  const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
   const connectMongo = async () => {
     try {
       await mongoose.connect(mongoUrl, {
@@ -51,7 +49,7 @@ async function startApolloServer() {
         maxAge: 1000 * 60 * 60, // one hour
         httpOnly: true, // JS front end cannot access the cookie
         secure: false, // cookie only works in https
-        sameSite: 'none',
+        sameSite: 'lax',
       },
       secret: process.env.SESSION_SECRET_DEV_PROD,
       saveUninitialized: false, // don't save empty sessions, right from the start
@@ -62,7 +60,7 @@ async function startApolloServer() {
   const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
-    context: ({req,res}) => ({req,res}), 
+    context: ({ req, res }) => ({ req, res }),
     plugins: [
       ApolloServerPluginLandingPageGraphQLPlayground(),
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -79,10 +77,9 @@ async function startApolloServer() {
 }
 
 try {
-await startApolloServer();
-
+  await startApolloServer();
 } catch (e) {
-  console.log('SERVER_ERRORS:' , e)
+  console.log('SERVER_ERRORS:', e);
 }
 // const jerry = new User({ userName: 'Jerry', email: 'jerry@jerry.com', password: 'jerry' });
 // await jerry.save();

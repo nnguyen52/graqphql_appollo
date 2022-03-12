@@ -1,4 +1,4 @@
 import helloworldResolver from './hello';
 import UserResolver from './user';
-
-export default [helloworldResolver, UserResolver];
+import PostResolver from './post';
+export default [helloworldResolver, UserResolver, PostResolver];

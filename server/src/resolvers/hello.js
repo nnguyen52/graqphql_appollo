@@ -1,8 +1,8 @@
+import { sendMail } from '../utils/sendMails';
 export default {
   Query: {
-    hello(parent, args, {req,res}) {
-      // console.log(req);
-      console.log('cookie: ' , req.session.id)
+    hello: async (parent, args, { req, res }) => {
+      await sendMail();
       return 'hello world';
     },
   },
