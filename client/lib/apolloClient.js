@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
-import { concatPagination } from '@apollo/client/utilities';
 import merge from 'deepmerge';
 import isEqual from 'lodash/isEqual';
 
@@ -17,11 +16,25 @@ function createApolloClient() {
     }),
     cache: new InMemoryCache({
       typePolicies: {
-        // Query: {
-        //   fields: {
-        //     allPosts: concatPagination(),
-        //   },
-        // },
+        Query: {
+          fields: {
+            getPosts: {
+              keyArgs: false,
+              merge(existingData = undefined, incomingData) {
+                // if (existingData && !existingData.data.pageInfo.hasNextPage) return;
+                return {
+                  ...incomingData,
+                  data: {
+                    ...incomingData.data,
+                    posts: existingData
+                      ? [...existingData.data.posts, ...incomingData.data.posts]
+                      : [...incomingData.data.posts],
+                  },
+                };
+              },
+            },
+          },
+        },
       },
     }),
   });

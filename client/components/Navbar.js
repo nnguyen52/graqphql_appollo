@@ -16,7 +16,7 @@ const Header = () => {
           }}
         >
           <Typography variant='h3' gutterBottom>
-            GraphQL
+            Apollo_GraphQL
           </Typography>
           <Auth />
         </Box>

@@ -43,7 +43,7 @@ export default {
     },
   },
   Mutation: {
-    register: async (parent, { userName, email, password }, { req }) => {
+    register: async (_, { userName, email, password }, { req }) => {
       try {
         //reject exsiting user
         let existingUserByUsername = await User.findOne({ userName });
@@ -53,7 +53,7 @@ export default {
               code: 400,
               success: false,
               message: 'Invalid registration',
-              errors: [{ field: `Invalid ${userName}`, message: `${userName} is already taken.` }],
+              errors: [{ field: `userName`, message: `${userName} is already taken.` }],
             },
           };
         }
@@ -65,7 +65,7 @@ export default {
               code: 400,
               success: false,
               message: 'Invalid registration',
-              errors: [{ field: `Invalid ${email}`, message: `${email} is already taken.` }],
+              errors: [{ field: `email`, message: `${email} is already taken.` }],
             },
           };
         }

@@ -1,18 +1,25 @@
 import mongoose from 'mongoose';
-import { userSchema } from '../models/user';
-export const postSchema = new mongoose.Schema({
-  userId: mongoose.Types.ObjectId,
-  title: {
-    type: String,
+
+export const postSchema = new mongoose.Schema(
+  {
+    userId: mongoose.Types.ObjectId,
+    title: {
+      type: String,
+    },
+    userId: mongoose.Types.ObjectId,
+    user: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
+    content: {
+      type: String,
+    },
+    points: {
+      type: Number,
+      default: 0,
+    },
   },
-  userId: mongoose.Types.ObjectId,
-  user: {
-    type: mongoose.Types.ObjectId,
-    ref: 'User',
-  },
-  content: {
-    type: String,
-  },
-});
+  { timestamps: true }
+);
 const Post = mongoose.model('Post', postSchema);
 export default Post;

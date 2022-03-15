@@ -1,14 +1,30 @@
 import { gql } from 'apollo-server-express';
 export default gql`
   type Post {
+    _id: String
     userId: String
     user: User
     title: String
     content: String
+    points: Int
   }
+  type PostInfo {
+    hasNextPage: Boolean
+    endCursor: String
+  }
+
+  type getAllPostsPagination {
+    hasNextPage: Boolean
+    endCursor: String
+  }
+  type getAllPostsPaginationResponse {
+    posts: [Post]
+    pageInfo: getAllPostsPagination
+  }
+
   type getAllPostResponse {
     network: MutationResponse
-    data: [Post]
+    data: getAllPostsPaginationResponse
   }
 
   type GetPostByIDResponse {
@@ -27,12 +43,13 @@ export default gql`
     network: MutationResponse
   }
   type Query {
-    getPosts: getAllPostResponse
+    getPosts(cursor: String, limit: Int): getAllPostResponse
     getPostByID(id: String): GetPostByIDResponse
   }
   type Mutation {
     createPost(title: String!, content: String!): CreatePost
     updatePost(id: ID, title: String, content: String): UpdatePost
     deletePost(id: ID): DeletePost
+    vote(postId: String, voteValue: Int): UpdatePost
   }
 `;

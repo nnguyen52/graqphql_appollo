@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { Query_me } from '../graphql-client/queries/user';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { initializeApollo } from '../lib/apolloClient';
+import NextLink from 'next/link';
 const Login = () => {
   const router = useRouter();
   const [formState, setFormState] = useState({
@@ -13,11 +14,9 @@ const Login = () => {
   });
 
   const { userNameOrEmail, password } = formState;
-
   const [login, { data, loading: loginLoading, error }] = useMutation(Mutation_Login);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
-
-  const [loginErrors, setLoginErros] = useState([]);
+  const [loginErrors, setLoginErrors] = useState([]);
 
   if (data?.login?.network?.errors) console.log(data);
   const handleSubmit = async (e) => {
@@ -29,11 +28,12 @@ const Login = () => {
       },
       update(cache, { data }) {
         if (!data.login.network.success) {
-          return setLoginErros(mapFieldErrors(data.login.network.errors));
+          return setLoginErrors(mapFieldErrors(data.login.network.errors));
         } else {
+          // console.log('incoming login_data: ', data);
           cache.writeQuery({
             query: Query_me,
-            data: { me: data.login.data },
+            data: { me: { ...data.login, data: data.login.data } },
           });
           const apolloClient = initializeApollo();
           apolloClient.resetStore();
@@ -44,7 +44,7 @@ const Login = () => {
   };
 
   const handleFormChange = (e) => {
-    setLoginErros([]);
+    setLoginErrors([]);
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
 
@@ -78,8 +78,14 @@ const Login = () => {
         />
         {loginErrors['password'] && <b style={{ color: 'red' }}>{loginErrors['password']} </b>}
         <button type='submit'>Login</button>
+        <NextLink href={`/register`}>
+          <button type='submit'>Register</button>
+        </NextLink>
         <br />
       </form>
+      <NextLink href={'/'}>
+        <button>home</button>
+      </NextLink>
     </div>
   );
 };

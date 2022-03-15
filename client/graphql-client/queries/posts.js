@@ -1,16 +1,28 @@
 import { gql } from '@apollo/client';
 
 export const Query_getPosts = gql`
-  query getPosts {
-    getPosts {
+  query getPosts($cursor: String, $limit: Int) {
+    getPosts(cursor: $cursor, limit: $limit) {
       network {
+        message
+        success
         code
+        errors {
+          field
+          message
+        }
       }
       data {
-        content
-        title
-        user {
-          userName
+        posts {
+          userId
+          title
+          points
+          _id
+          content
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
         }
       }
     }

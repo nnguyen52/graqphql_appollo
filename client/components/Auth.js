@@ -30,7 +30,7 @@ const Auth = () => {
         </span>
       </>
     );
-  return <div onClick={() => router.push('/login')}>Login</div>;
+  return <div onClick={() => router.replace('/login')}>Login</div>;
 };
 
 export default Auth;
