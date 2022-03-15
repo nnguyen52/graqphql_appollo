@@ -105,7 +105,7 @@ export default {
         };
       }
     },
-    login: async (_, { userNameOrEmail, password }, { req }) => {
+    login: async (_, { userNameOrEmail, password  }, { req }) => {
       try {
         const existingUser = await User.findOne(
           userNameOrEmail.includes('@') ? { email: userNameOrEmail } : { userName: userNameOrEmail }
@@ -132,7 +132,8 @@ export default {
             },
           };
         // all good -> add cookie userId
-        req.session.userId = existingUser.id;
+        req.session.userId = existingUser.id; 
+        console.log( existingUser.id)
         return {
           network: {
             code: 200,

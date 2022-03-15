@@ -9,7 +9,7 @@ export const postSchema = new mongoose.Schema(
     userId: mongoose.Types.ObjectId,
     user: {
       type: mongoose.Types.ObjectId,
-      ref: 'User',
+      ref: 'user',
     },
     content: {
       type: String,
@@ -18,6 +18,7 @@ export const postSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    comments: [{ type: mongoose.Types.ObjectId, ref: 'comment' }],
   },
   { timestamps: true }
 );

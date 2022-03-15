@@ -1,4 +1,4 @@
-import User from '../models/user';
+import User from "../models/user";
 export const checkAuth = async (req) => {
   const user = await User.findOne({ _id: req.session.userId });
   if (!user) return false;
