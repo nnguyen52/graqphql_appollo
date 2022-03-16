@@ -13,6 +13,8 @@ import http from 'http';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import schema from './schema/index';
 import resolvers from './resolvers/index';
+import { compileFunction } from 'vm';
+import Comment from './models/comment';
 
 async function startApolloServer() {
   const app = express();
@@ -81,7 +83,11 @@ try {
 } catch (e) {
   console.log('SERVER_ERRORS:', e);
 }
-// const jerry = new User({ userName: 'Jerry', email: 'jerry@jerry.com', password: 'jerry' });
-// await jerry.save();
-// const tom = new User({ userName: 'Tom', email: 'tom@tom.com', password: 'tom' });
-// await tom.save();
+
+// await Comment.deleteMany(); 
+// const comment1  = new Comment({content: "comment root" , tag : "622ba6549ab5b03daea70a83" , user:"622ba6549ab5b03daea70a83" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
+// const commentReply  = new Comment({reply:comment1._id , content: "comment reply" , tag : "622ba6549ab5b03daea70a83" , user:"622bb40db7b211376f997eb3" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
+// const commentNesetedReply  = new Comment({reply : commentReply._id ,  content: "comment nested reply" , tag : "622ba6549ab5b03daea70a83" , user:"622ba6549ab5b03daea70a83" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
+// await comment1.save();
+// await commentReply.save(); 
+// await commentNesetedReply.save()

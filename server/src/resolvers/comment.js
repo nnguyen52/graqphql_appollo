@@ -5,10 +5,41 @@ import User from "../models/user";
 export default {
   Comment: {
     user: async (parent) => {
-      console.log(JSON.stringify(parent, null, 2));
+      // console.log('user: ' , JSON.stringify(parent, null, 2));
       return await User.findById(parent.user);
     },
+    tag : async (parent ) => {
+      return await User.findById(parent.tag);
+    }, 
+    reply : async (parent) => {
+    return await Comment.findById(parent.reply); 
+    }
   },
+  Query: {
+    getComments: async () => {
+      try {
+        const comments = await Comment.find().populate('reply');; 
+        console.log(JSON.stringify(comments , null , 2) );
+        return {
+          network : {
+            code: 200,
+            success: true, 
+          }, 
+          data : comments
+        }
+      } catch (e) {
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error: ${e.message}`,
+          },
+        };
+
+      }
+    }
+   }
+   , 
   Mutation: {
     createComment: async (
       root,
@@ -102,5 +133,120 @@ export default {
         };
       }
     },
+
+    updateComment : async (parent , {commentId, content , user } , {req}) => {
+      try {
+        // const isAllowed = await checkAuth(req);
+        // if (!isAllowed) return {
+        //     network : {
+        //         code: 400,
+        //         success: false,
+        //         message:  "Action denied. Please login"
+        //     } ,data : null
+        // }
+        const response  = await Comment.findOneAndUpdate(
+          { _id: commentId, user },
+          { content }, 
+          {new : true}
+        );
+        if (!response) return {
+          network : {
+            code:400 , 
+            success: false, 
+            message : `Action denied.` , 
+            errors: [{field : 'comment' , message : 'You dont have this permission.'}]
+          }
+        }
+        return {
+          network : {
+            code :200 , 
+            success: true,
+            message : "Comment updated!" , 
+            errors: null 
+          },
+          data : response
+        } 
+      } catch (e) {
+        return {
+          network: {
+            code : 500 ,
+            success : false, 
+            message : `Internal server error: ${e.message}`
+          }
+        }}
+    }, 
+    
+    deleteComment: async (parent , {commentId, user} , {req }) => {
+      try {
+        // const isAllowed = await checkAuth(req);
+        // if (!isAllowed) return {
+        //     network : {
+        //         code: 400,
+        //         success: false,
+        //         message:  "Action denied. Please login"
+        //     } ,data : null
+        // }
+        // const comment = await Comment.findOneAndDelete({
+        //   _id: commentId, 
+        //    $or: [{ user }], 
+        //   // $or: [{ user }, { postUserId: user }], 
+        // });
+        // delete current comment 
+        const comment = await Comment.findOneAndDelete({_id : commentId , user }).populate('reply'); 
+        if (!comment) return {
+          network : {
+            code:400 , 
+            success: false, 
+            message : `Action denied.` , 
+            errors: [{field : 'comment' , message : 'You dont have this permission.'}]
+          }
+        } 
+         
+        const response = await Post.findOneAndUpdate(
+          { _id: comment.postId },
+          {
+            $pull: { comments: commentId },
+          }
+        ); 
+        if (!response) return {
+          network : {
+            code:400 , 
+            success: false, 
+            message : `Action denied.` , 
+            errors: [{field : 'comment' , message : 'You dont have this permission.'}]
+          }
+        } 
+        console.log('comment out' , JSON.stringify(comment , null , 2 ))
+        // then delete all comments that have reply of this comment
+        await deleteCommenReplyBase(comment._id , comment.postId);
+        return {
+          network : {
+            code:200, 
+            success:true, 
+            message: "Comment deleted!"
+          }, 
+          data : null 
+        }
+      } catch (e) {
+        return {
+          network :{
+            code: 500 , 
+            success: false , 
+            message: `Internal server error: ${e.message}`
+          }
+        }
+      }
+    }
   },
 };
+const deleteCommenReplyBase = async (_id , postId ) => {
+  const allComments = await Comment.find().populate('reply');
+  await Post.findOneAndUpdate({ _id: postId} , {comments :allComments });
+     for (let i = 0 ; i < allComments.length ; i++) {
+       if (allComments[i].reply._id == comment.reply._id) {
+          await Comment.findOneAndDelete({_id }).populate('reply');
+          allComments = await Comment.find().populate('reply');
+          return deleteCommenReplyBase(allComments[i].reply._id , postId);
+        }
+       }
+     }

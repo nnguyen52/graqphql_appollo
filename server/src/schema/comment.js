@@ -5,27 +5,38 @@ export default gql`
     user: User
     content: String!
     # tag is the user who commented the original comment
-    tag: String
+    tag: User
     # if reply field exist, this comment will be a reply to that replyId
-    reply: String
+    reply: Comment
     points: Int
     postId: String
     postUserId: String
   }
-  type createCommentResponse {
+  type queryCommentResponse {
+    network: MutationResponse
+    data: [Comment]
+  }
+  type mutationCommentResponse {
     network: MutationResponse
     data: Comment
   }
+  type Query {
+    getComments: queryCommentResponse
+  }
   type Mutation {
-    # postId, content, tag, reply, postUserId
     createComment(
       content: String
+      # //////
+      # MUST DELETE THIS ONE LATER
       user: String
-      #   tag is the user who commented the original comment
+      # //////
       tag: String
       postId: String
       postUserId: String
+      # populate reply gives Comment 
       reply: String
-    ): createCommentResponse
-  }
+    ): mutationCommentResponse
+    updateComment(commentId:String, content:String, user:String): mutationCommentResponse 
+    deleteComment(commentId:String, user:String) : mutationCommentResponse
+    }
 `;
