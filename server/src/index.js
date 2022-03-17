@@ -84,10 +84,30 @@ try {
   console.log('SERVER_ERRORS:', e);
 }
 
-// await Comment.deleteMany(); 
-// const comment1  = new Comment({content: "comment root" , tag : "622ba6549ab5b03daea70a83" , user:"622ba6549ab5b03daea70a83" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
-// const commentReply  = new Comment({reply:comment1._id , content: "comment reply" , tag : "622ba6549ab5b03daea70a83" , user:"622bb40db7b211376f997eb3" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
-// const commentNesetedReply  = new Comment({reply : commentReply._id ,  content: "comment nested reply" , tag : "622ba6549ab5b03daea70a83" , user:"622ba6549ab5b03daea70a83" , postId : "622f74ee2a33d5c46650babf" , postUserId  : "622bb40db7b211376f997eb3"}); 
+// const comment1 = new Comment({
+//   content: 'comment root',
+//   tag: '622ba6549ab5b03daea70a83',
+//   user: '622ba6549ab5b03daea70a83',
+//   postId: '622f74ee2a33d5c46650babf',
+//   postUserId: '622bb40db7b211376f997eb3',
+// });
+// const commentReply = new Comment({
+//   reply: comment1._id,
+//   content: 'comment reply',
+//   tag: '622ba6549ab5b03daea70a83',
+//   user: '622bb40db7b211376f997eb3',
+//   postId: '622f74ee2a33d5c46650babf',
+//   postUserId: '622bb40db7b211376f997eb3',
+// });
+// const commentNesetedReply = new Comment({
+//   reply: commentReply._id,
+//   content: 'comment nested reply',
+//   tag: '622ba6549ab5b03daea70a83',
+//   user: '622ba6549ab5b03daea70a83',
+//   postId: '622f74ee2a33d5c46650babf',
+//   postUserId: '622bb40db7b211376f997eb3',
+// });
 // await comment1.save();
-// await commentReply.save(); 
-// await commentNesetedReply.save()
+// await commentReply.save();
+// await commentNesetedReply.save();
+// await Comment.deleteMany();
