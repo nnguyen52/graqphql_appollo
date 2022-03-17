@@ -33,10 +33,17 @@ export default gql`
       tag: String
       postId: String
       postUserId: String
-      # populate reply gives Comment 
+      # populate reply gives Comment
       reply: String
     ): mutationCommentResponse
-    updateComment(commentId:String, content:String, user:String): mutationCommentResponse 
-    deleteComment(commentId:String, user:String) : mutationCommentResponse
-    }
+    updateComment(
+      commentId: String
+      content: String
+      user: String
+    ): mutationCommentResponse
+    deleteComment(commentId: String, user: String): mutationCommentResponse
+    voteComment(commentId: String, value: Int): mutationCommentResponse
+    testMakeComment: mutationCommentResponse
+    clearAllComment: mutationCommentResponse
+  }
 `;
