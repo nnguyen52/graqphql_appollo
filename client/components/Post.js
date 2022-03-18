@@ -14,7 +14,6 @@ const Post = ({ data }) => {
       if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
         return alert('Please login to vote posts!');
       }
-      console.log('pass');
       await vote({
         variables: { postId: data._id, voteValue: value },
         update(cache, response) {

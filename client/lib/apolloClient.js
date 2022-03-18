@@ -22,6 +22,17 @@ function createApolloClient() {
               keyArgs: false,
               merge(existingData = undefined, incomingData) {
                 // if (existingData && !existingData.data.pageInfo.hasNextPage) return;
+                if (incomingData.data.posts.length == 1) {
+                  return {
+                    ...incomingData,
+                    data: {
+                      ...incomingData.data,
+                      posts: existingData
+                        ? [...incomingData.data.posts, ...existingData.data.posts]
+                        : [...incomingData.data.posts],
+                    },
+                  };
+                }
                 return {
                   ...incomingData,
                   data: {

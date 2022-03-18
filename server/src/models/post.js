@@ -2,11 +2,10 @@ import mongoose from 'mongoose';
 
 export const postSchema = new mongoose.Schema(
   {
-    userId: mongoose.Types.ObjectId,
     title: {
       type: String,
     },
-    userId: mongoose.Types.ObjectId,
+    userId: { type: mongoose.Types.ObjectId, ref: 'user' },
     user: {
       type: mongoose.Types.ObjectId,
       ref: 'user',

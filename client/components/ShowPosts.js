@@ -15,7 +15,6 @@ const ShowPosts = () => {
     },
     notifyOnNetworkStatusChange: true,
   });
-  //   if (!data.getPosts.data.pageInfo.hasNextPage) localStorage.setItem('endPage', 'true');
   if (data) console.log('current data, ', data);
   if (error) return <h3>Server error...</h3>;
   if (loadingPosts) return <h3> Loading... </h3>;
