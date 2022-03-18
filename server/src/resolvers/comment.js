@@ -1,8 +1,8 @@
-import { checkAuth } from "../customMiddleware/checkAuth";
-import Post from "../models/Post";
-import Comment from "../models/comment";
-import User from "../models/user";
-import VoteComment from "../models/voteComment";
+import { checkAuth } from '../customMiddleware/checkAuth';
+import Post from '../models/Post';
+import Comment from '../models/comment';
+import User from '../models/user';
+import VoteComment from '../models/voteComment';
 export default {
   Comment: {
     user: async (parent) => {
@@ -19,7 +19,7 @@ export default {
   Query: {
     getComments: async () => {
       try {
-        const comments = await Comment.find().populate("reply");
+        const comments = await Comment.find().populate('reply');
         // console.log(JSON.stringify(comments, null, 2));
         return {
           network: {
@@ -40,67 +40,31 @@ export default {
     },
   },
   Mutation: {
-    testMakeComment: async () => {
-      const comment1 = new Comment({
-        content: "comment root",
-        tag: "622ba6549ab5b03daea70a83",
-        user: "622ba6549ab5b03daea70a83",
-        postId: "622f74ee2a33d5c46650babf",
-        postUserId: "622bb40db7b211376f997eb3",
-      });
-      const commentReply = new Comment({
-        reply: comment1._id,
-        content: "comment reply",
-        tag: "622ba6549ab5b03daea70a83",
-        user: "622bb40db7b211376f997eb3",
-        postId: "622f74ee2a33d5c46650babf",
-        postUserId: "622bb40db7b211376f997eb3",
-      });
-      const commentNesetedReply = new Comment({
-        reply: commentReply._id,
-        content: "comment nested reply",
-        tag: "622ba6549ab5b03daea70a83",
-        user: "622ba6549ab5b03daea70a83",
-        postId: "622f74ee2a33d5c46650babf",
-        postUserId: "622bb40db7b211376f997eb3",
-      });
-      await comment1.save();
-      await commentReply.save();
-      await commentNesetedReply.save();
-      const post = await Post.findById({ _id: "622f74ee2a33d5c46650babf" });
-      post.comments = [comment1._id, commentReply._id, commentNesetedReply._id];
-      await post.save();
-    },
-    clearAllComment: async () => {
-      await Comment.deleteMany();
-    },
-    createComment: async (
-      root,
-      { postId, content, tag, reply, postUserId, user },
-      { req }
-    ) => {
+    testMakeComment: async () => {},
+    clearAllComment: async () => {},
+    createComment: async (root, { postId, content, tag, reply, postUserId }, { req }) => {
       try {
-        // check auth
-        // const isAllowed = await checkAuth(req);
-        // if (!isAllowed) return {
-        //     network : {
-        //         code: 400,
-        //         success: false,
-        //         message:  "Action denied. Please login"
-        //     } ,data : null
-        // }
-        const post = await Post.findOne({ _id: postId });
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Action denied',
+              errors: [{ field: 'comment', message: 'Please login to comment.' }],
+            },
+          };
+        const post = await Post.findOne({ _id: postId, userId: postUserId });
         if (!post)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "comment",
-                  message:
-                    "Sorry, this post you are commenting is no longer exist.",
+                  field: 'comment',
+                  message: 'Sorry, this post you are commenting is no longer exist.',
                 },
               ],
             },
@@ -114,12 +78,11 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: "Invalid data",
+                message: 'Invalid data',
                 errors: [
                   {
-                    field: "comment",
-                    message:
-                      "Sorry, the comment you are replying to is no longer exist.",
+                    field: 'comment',
+                    message: 'Sorry, the comment you are replying to is no longer exist.',
                   },
                 ],
               },
@@ -129,10 +92,8 @@ export default {
 
         // all good -> craete new comment,
         // add comment to post model
-
         const newComment = new Comment({
-          // user : req.session.userId,
-          user,
+          user: req.session.userId,
           postId,
           content,
           tag,
@@ -151,12 +112,13 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "New comment sent!",
+            message: 'New comment sent!',
             errors: null,
           },
           data: newComment,
         };
       } catch (e) {
+        console.log(e);
         return {
           network: {
             code: 500,
@@ -167,18 +129,21 @@ export default {
       }
     },
 
-    updateComment: async (parent, { commentId, content, user }, { req }) => {
+    updateComment: async (parent, { commentId, content }, { req }) => {
       try {
-        // const isAllowed = await checkAuth(req);
-        // if (!isAllowed) return {
-        //     network : {
-        //         code: 400,
-        //         success: false,
-        //         message:  "Action denied. Please login"
-        //     } ,data : null
-        // }
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Action denied',
+              errors: [{ field: 'comment', message: 'Please login to edit comment.' }],
+            },
+            data: null,
+          };
         const response = await Comment.findOneAndUpdate(
-          { _id: commentId, user },
+          { _id: commentId, user: req.session.userId },
           { content },
           { new: true }
         );
@@ -188,21 +153,20 @@ export default {
               code: 400,
               success: false,
               message: `Action denied.`,
-              errors: [
-                { field: "comment", message: "You dont have this permission." },
-              ],
+              errors: [{ field: 'comment', message: 'You dont have this permission.' }],
             },
           };
         return {
           network: {
             code: 200,
             success: true,
-            message: "Comment updated!",
+            message: 'Comment updated!',
             errors: null,
           },
           data: response,
         };
       } catch (e) {
+        console.log(e);
         return {
           network: {
             code: 500,
@@ -212,18 +176,18 @@ export default {
         };
       }
     },
-
-    deleteComment: async (parent, { commentId, user }, { req }) => {
+    deleteComment: async (parent, { commentId }, { req }) => {
       try {
-        // const isAllowed = await checkAuth(req);
-        // if (!isAllowed) return {
-        //     network : {
-        //         code: 400,
-        //         success: false,
-        //         message:  "Action denied. Please login"
-        //     } ,data : null
-        // }
-
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Action denied.',
+              errors: [{ field: 'comment', message: 'Please login to delete comment.' }],
+            },
+          };
         // then delete all comments that have reply of this comment
         const comment = await Comment.findOne({ _id: commentId });
         if (!comment) {
@@ -231,27 +195,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "comment",
-                  message: "Sorry, this comment is no longer exist",
-                },
-              ],
-            },
-          };
-        }
-        // check if the comment is from user or stranger
-        if (comment.user.toString() != req.session.userId) {
-          return {
-            network: {
-              code: 400,
-              success: false,
-              message: "Action denied.",
-              errors: [
-                {
-                  field: "comment",
-                  message: "You dont have permission to do this.",
+                  field: 'comment',
+                  message: 'Sorry, this comment is no longer exist',
                 },
               ],
             },
@@ -263,11 +211,12 @@ export default {
             network: {
               code: 200,
               success: true,
-              message: "Comment deleted!",
+              message: 'Comment deleted!',
             },
             data: null,
           };
       } catch (e) {
+        console.log(e);
         return {
           network: {
             code: 500,
@@ -279,32 +228,29 @@ export default {
     },
     voteComment: async (parent, { commentId, voteValue }, { req }) => {
       try {
-        // const allowed = await checkAuth(req);
-        // if (!allowed) {
-        //   return {
-        //     network: {
-        //       code: 400,
-        //       success: false,
-        //       message: "Voting action failed",
-        //       errors: [
-        //         { field: "vote", message: "Please login to vote posts!" },
-        //       ],
-        //     },
-        //   };
-        // }
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access denied.',
+              errors: [{ field: 'comment', message: 'Please login to vote comments!' }],
+            },
+          };
+        }
         if (voteValue !== 1 && voteValue !== -1)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
-              errors: [{ field: "comment", message: "Invalid voting value." }],
+              message: 'Invalid data',
+              errors: [{ field: 'comment', message: 'Invalid voting value.' }],
             },
           };
         // find comment to vote
         let comment = await Comment.findOne({
-          _id,
-          commentId,
+          _id: commentId,
           userId: req.session.userId,
         });
         if (!comment)
@@ -315,13 +261,14 @@ export default {
               message: `Invalid data`,
               errors: [
                 {
-                  field: "comment",
-                  message: "Sorry, this comment is no longer exist.",
+                  field: 'comment',
+                  message: 'Sorry, this comment is no longer exist.',
                 },
               ],
             },
           };
         let newVote = null;
+        // find existing vote
         let existingVote = await VoteComment.findOne({
           userId: req.session.userId,
           commentId,
@@ -339,13 +286,11 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: "Voting action failed.",
+                message: 'Voting action failed.',
                 errors: [
                   {
-                    field: "vote",
-                    message: `You already ${
-                      voteValue == 1 ? "upvoted" : "downvoted"
-                    }.`,
+                    field: 'vote',
+                    message: `You already ${voteValue == 1 ? 'upvoted' : 'downvoted'}.`,
                   },
                 ],
               },
@@ -356,11 +301,11 @@ export default {
             { ...existingVote, value: voteValue }
           );
         }
-        // await Vote.findOneAndUpdate(
-        //   { userId: req.session.userId, postId },
-        //   { userId: req.session.userId, postId, value: voteValue }
-        // )
-        comment.points = parseInt(comment.points) + voteValue;
+        await VoteComment.findOneAndUpdate(
+          { userId: req.session.userId, commentId },
+          { userId: req.session.userId, commentId, value: voteValue }
+        );
+        comment.points = parseFloat(comment.points) + parseFloat(voteValue);
         comment.points == 0
           ? voteValue == 1
             ? (comment.points += 1)
@@ -372,7 +317,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Comment updated with new votes!",
+            message: 'Comment updated with new votes!',
           },
           data: freshComment,
         };
@@ -389,17 +334,16 @@ export default {
     },
   },
 };
+
 const deleteCommenReplyBase = async (_id, postId) => {
   let rootCommentId = null;
   let trackCommentToDelete = null;
   let commentsToDelete = [];
-  const commentToDelete = await Comment.findOne({ _id, postId }).populate(
-    "reply"
-  );
+  const commentToDelete = await Comment.findOne({ _id, postId }).populate('reply');
   commentsToDelete.push(commentToDelete._id.toString());
   trackCommentToDelete = commentToDelete;
   rootCommentId = commentToDelete._id;
-  const allComments = await Comment.find().populate("reply");
+  const allComments = await Comment.find().populate('reply');
   for (let i = 0; i < allComments.length; i++) {
     if (
       !allComments[i].reply &&
@@ -411,8 +355,7 @@ const deleteCommenReplyBase = async (_id, postId) => {
     }
     if (
       allComments[i].reply &&
-      (allComments[i].reply._id.toString() ==
-        trackCommentToDelete._id.toString() ||
+      (allComments[i].reply._id.toString() == trackCommentToDelete._id.toString() ||
         allComments[i].reply._id.toString() == rootCommentId.toString()) &&
       allComments[i].postId.toString() == postId.toString()
     ) {
@@ -426,9 +369,16 @@ const deleteCommenReplyBase = async (_id, postId) => {
   const newComments = post.comments.filter(
     (each) => !newCommentsToDelete.includes(each.toString())
   );
+  // delete comment
   for (const each of newCommentsToDelete) {
     await Comment.findOneAndDelete({ _id: each });
   }
+  // delete votes this comment has
+  const votes = await VoteComment.find({ commentId: rootCommentId });
+  for (const each of votes) {
+    await VoteComment.findOneAndDelete({ _id: each });
+  }
+  // update post with new comments
   await Post.findOneAndUpdate({ _id: postId }, { comments: newComments });
   return true;
 };

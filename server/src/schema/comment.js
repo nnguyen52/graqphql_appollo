@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 export default gql`
   type Comment {
     _id: String
@@ -26,23 +26,15 @@ export default gql`
   type Mutation {
     createComment(
       content: String
-      # //////
-      # MUST DELETE THIS ONE LATER
-      user: String
-      # //////
       tag: String
       postId: String
       postUserId: String
       # populate reply gives Comment
       reply: String
     ): mutationCommentResponse
-    updateComment(
-      commentId: String
-      content: String
-      user: String
-    ): mutationCommentResponse
-    deleteComment(commentId: String, user: String): mutationCommentResponse
-    voteComment(commentId: String, value: Int): mutationCommentResponse
+    updateComment(commentId: String, content: String): mutationCommentResponse
+    deleteComment(commentId: String): mutationCommentResponse
+    voteComment(commentId: String, voteValue: Int): mutationCommentResponse
     testMakeComment: mutationCommentResponse
     clearAllComment: mutationCommentResponse
   }
