@@ -6,30 +6,35 @@ import { Query_me } from '../graphql-client/queries/user';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { initializeApollo } from '../lib/apolloClient';
 import NextLink from 'next/link';
+import { Form, Formik } from 'formik';
+import InputField from '../components/InputField';
+import { LoadingButton } from '@mui/lab';
+import { Alert, Button, LinearProgress } from '@mui/material';
+
 const Register = () => {
   const router = useRouter();
-  const [formState, setFormState] = useState({
+  const initialValues = {
     userName: '',
     email: '',
     password: '',
-  });
-
-  const { userName, email, password } = formState;
+  };
   const [register, { data, loading: registerLoading, error }] = useMutation(Mutation_register);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
-  const [registerErrors, setRegisterErrors] = useState([]);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [exceptionErr, setExceptionError] = useState(null);
+
+  const handleSubmit = async (values, { setErrors }) => {
     try {
       await register({
         variables: {
-          userName,
-          email,
-          password,
+          userName: values.userName,
+          email: values.email,
+          password: values.password,
         },
         update(cache, { data }) {
           if (!data.register.network.success) {
-            return setRegisterErrors(mapFieldErrors(data.register.network.errors));
+            if (data.register.network.errors.length == 1)
+              setExceptionError(data.register.network.errors[0].message);
+            return setErrors(mapFieldErrors(data.register.network.errors));
           } else {
             cache.writeQuery({
               query: Query_me,
@@ -45,63 +50,34 @@ const Register = () => {
       console.log('___ERROR: ', e);
     }
   };
-
-  const handleFormChange = (e) => {
-    setRegisterErrors([]);
-    setFormState({ ...formState, [e.target.name]: e.target.value });
-  };
-
-  if (meLoading) return <h1>loading authentication</h1>;
   if (meData?.me?.data) {
     router.push('/');
     return null;
   }
-  if (registerLoading) return <h1>Building new account...</h1>;
-  if (error) return <h3>Server error.... </h3>;
+  if (error) setExceptionError(error);
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type='text'
-          placeholder='Username'
-          name='userName'
-          value={formState.userName}
-          onChange={(e) => handleFormChange(e)}
-        />
-        {registerErrors['userName'] && (
-          <b style={{ color: 'red', border: '1px solid red' }}>{registerErrors.userName} </b>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ isSubmitting }) => (
+          <Form>
+            <InputField name='userName' label='User Name' type='text' />
+            <InputField name='email' label='Email' type='text' />
+            <InputField name='password' label='Password' type='password' />
+            <LoadingButton loading={isSubmitting || registerLoading || meLoading} type='submit'>
+              Register
+            </LoadingButton>
+            <NextLink href='/login'>
+              <Button>Login</Button>
+            </NextLink>
+            {exceptionErr && (
+              <Alert variant='filled' severity='error'>
+                {exceptionErr}
+              </Alert>
+            )}
+            {isSubmitting || registerLoading || (meLoading && <LinearProgress />)}
+          </Form>
         )}
-        <br />
-        <input
-          type='text'
-          placeholder='email'
-          name='email'
-          value={formState.email}
-          onChange={(e) => handleFormChange(e)}
-        />
-        {registerErrors['email'] && (
-          <b style={{ color: 'red', border: '1px solid red' }}>{registerErrors['email']} </b>
-        )}
-        <br />
-        <input
-          type='password'
-          placeholder='Password'
-          name='password'
-          value={formState.password}
-          onChange={(e) => handleFormChange(e)}
-        />
-        {registerErrors['password'] && (
-          <b style={{ color: 'red' }}>{registerErrors['password']} </b>
-        )}
-        <button type='submit'>Register</button>
-        <NextLink href={`/login`}>
-          <button type='submit'>Login</button>
-        </NextLink>
-        <br />
-      </form>
-      <NextLink href={'/'}>
-        <button>home</button>
-      </NextLink>
+      </Formik>
     </div>
   );
 };

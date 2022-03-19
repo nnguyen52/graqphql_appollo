@@ -84,3 +84,4 @@ try {
 } catch (e) {
   console.log('SERVER_ERRORS:', e);
 }
+// await Post.deleteMany();

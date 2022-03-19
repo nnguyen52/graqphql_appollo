@@ -6,29 +6,38 @@ import { Query_me } from '../graphql-client/queries/user';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { initializeApollo } from '../lib/apolloClient';
 import NextLink from 'next/link';
+import { Form, Formik } from 'formik';
+import InputField from '../components/InputField';
+import { LoadingButton } from '@mui/lab';
+import { Alert, Button } from '@mui/material';
+import { LinearProgress } from '@mui/material';
 const Login = () => {
   const router = useRouter();
-  const [formState, setFormState] = useState({
+  const initialValues = {
     userNameOrEmail: '',
     password: '',
-  });
-
-  const { userNameOrEmail, password } = formState;
-  const [login, { data, loading: loginLoading, error }] = useMutation(Mutation_Login);
+  };
+  const [login, { data: dataLogin, loading: loginLoading, error }] = useMutation(Mutation_Login);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
   const [loginErrors, setLoginErrors] = useState([]);
+  const [exceptionErr, setExceptionError] = useState(null);
 
-  if (data?.login?.network?.errors) console.log(data);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // if (dataLogin?.login?.network?.errors) console.log(data);
+  const handleSubmit = async (values, { setErrors }) => {
     await login({
       variables: {
-        userNameOrEmail,
-        password,
+        userNameOrEmail: values.userNameOrEmail,
+        password: values.password,
       },
       update(cache, { data }) {
+        console.log('result: ', data);
         if (!data.login.network.success) {
-          return setLoginErrors(mapFieldErrors(data.login.network.errors));
+          setExceptionError(
+            data.login.network.errors && data.login.network.errors.length == 1
+              ? data.login.network.errors[0].message
+              : data.login.network.message
+          );
+          return setErrors(mapFieldErrors(data.login.network.errors));
         } else {
           // console.log('incoming login_data: ', data);
           cache.writeQuery({
@@ -42,50 +51,33 @@ const Login = () => {
       },
     });
   };
-
-  const handleFormChange = (e) => {
-    setLoginErrors([]);
-    setFormState({ ...formState, [e.target.name]: e.target.value });
-  };
-
-  if (meLoading) return <h1>loading authentication</h1>;
   if (meData?.me?.data) {
     router.push('/');
     return null;
   }
-  if (loginLoading) return <h1>Logging in...</h1>;
-  if (error) return <h3>Server error.... </h3>;
+  if (error) setExceptionError(error);
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type='text'
-          placeholder='Username or email'
-          name='userNameOrEmail'
-          value={formState.userNameOrEmail}
-          onChange={(e) => handleFormChange(e)}
-        />
-        {loginErrors['userNameOrEmail'] && (
-          <b style={{ color: 'red', border: '1px solid red' }}>{loginErrors['userNameOrEmail']} </b>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ isSubmitting }) => (
+          <Form>
+            <InputField name='userNameOrEmail' label='User Name' type='text' />
+            <InputField name='password' label='Password' type='password' />
+            <LoadingButton loading={isSubmitting || meLoading || loginLoading} type='submit'>
+              Login
+            </LoadingButton>
+            <NextLink href='/register'>
+              <Button>Register</Button>
+            </NextLink>
+            {exceptionErr && (
+              <Alert variant='filled' severity='error'>
+                {exceptionErr}
+              </Alert>
+            )}
+            {isSubmitting || meLoading || (loginLoading && <LinearProgress />)}
+          </Form>
         )}
-        <br />
-        <input
-          type='password'
-          placeholder='Password'
-          name='password'
-          value={formState.password}
-          onChange={(e) => handleFormChange(e)}
-        />
-        {loginErrors['password'] && <b style={{ color: 'red' }}>{loginErrors['password']} </b>}
-        <button type='submit'>Login</button>
-        <NextLink href={`/register`}>
-          <button type='submit'>Register</button>
-        </NextLink>
-        <br />
-      </form>
-      <NextLink href={'/'}>
-        <button>home</button>
-      </NextLink>
+      </Formik>
     </div>
   );
 };
