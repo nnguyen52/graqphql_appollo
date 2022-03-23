@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 export default gql`
   type Post {
     _id: String
@@ -7,7 +7,22 @@ export default gql`
     title: String
     content: String
     points: Int
-    comments: Comment
+    comments: [Comment]
+    # in client when query getPosts and getPostByID =>return comments with 3 level
+    #  comments {
+    # _id
+    #       content
+    #       reply {
+    #         _id
+    #         content
+    #         reply {
+    #           content
+    #           reply {
+    #             _id
+    #           }
+    #         }
+    #       }
+    # }
   }
   type PostInfo {
     hasNextPage: Boolean

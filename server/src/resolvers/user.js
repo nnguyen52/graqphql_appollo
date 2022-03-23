@@ -1,9 +1,10 @@
-import { validateRegisterInput } from '../customMiddleware/validateRegisterInputs';
-import User from '../models/user';
-import argon2 from 'argon2';
-import { v4 as uuidv4 } from 'uuid';
-import Token from '../models/token';
-import { sendMail } from '../utils/sendMails';
+import { validateRegisterInput } from "../customMiddleware/validateRegisterInputs";
+import User from "../models/user";
+import argon2 from "argon2";
+import { v4 as uuidv4 } from "uuid";
+import Token from "../models/token";
+import { sendMail } from "../utils/sendMails";
+import { checkAuth } from "../customMiddleware/checkAuth";
 export default {
   Query: {
     me: async (parent, args, { req }) => {
@@ -12,7 +13,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: 'Not logged in',
+            message: "Not logged in",
           },
           data: null,
         };
@@ -22,7 +23,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: 'Not logged in',
+            message: "Not logged in",
           },
           data: null,
         };
@@ -30,7 +31,7 @@ export default {
         network: {
           code: 200,
           success: true,
-          message: 'Logged in',
+          message: "Logged in",
         },
         data: user,
       };
@@ -52,8 +53,10 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid registration',
-              errors: [{ field: `userName`, message: `${userName} is already taken.` }],
+              message: "Invalid registration",
+              errors: [
+                { field: `userName`, message: `${userName} is already taken.` },
+              ],
             },
           };
         }
@@ -64,19 +67,25 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid registration',
-              errors: [{ field: `email`, message: `${email} is already taken.` }],
+              message: "Invalid registration",
+              errors: [
+                { field: `email`, message: `${email} is already taken.` },
+              ],
             },
           };
         }
         // filter register inputs
-        const validateInputResponse = validateRegisterInput({ userName, email, password });
+        const validateInputResponse = validateRegisterInput({
+          userName,
+          email,
+          password,
+        });
         if (validateInputResponse) {
           return {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid registration',
+              message: "Invalid registration",
               errors: validateInputResponse,
             },
           };
@@ -90,7 +99,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: 'register sucessfully',
+            message: "register sucessfully",
           },
           data: newUser,
         };
@@ -108,7 +117,9 @@ export default {
     login: async (_, { userNameOrEmail, password }, { req }) => {
       try {
         const existingUser = await User.findOne(
-          userNameOrEmail.includes('@') ? { email: userNameOrEmail } : { userName: userNameOrEmail }
+          userNameOrEmail.includes("@")
+            ? { email: userNameOrEmail }
+            : { userName: userNameOrEmail }
         );
         // if account not exist
         if (!existingUser)
@@ -116,19 +127,29 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Account not found',
-              errors: [{ field: 'userNameOrEmail', message: 'Username or email incorrect' }],
+              message: "Account not found",
+              errors: [
+                {
+                  field: "userNameOrEmail",
+                  message: "Username or email incorrect",
+                },
+              ],
             },
           };
         // check password hash
-        const checkingPassword = await argon2.verify(existingUser.password, password);
+        const checkingPassword = await argon2.verify(
+          existingUser.password,
+          password
+        );
         if (!checkingPassword)
           return {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid password',
-              errors: [{ field: 'password', message: 'Password is incorrect!' }],
+              message: "Invalid password",
+              errors: [
+                { field: "password", message: "Password is incorrect!" },
+              ],
             },
           };
         // all good -> add cookie userId
@@ -138,7 +159,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: 'Logged in',
+            message: "Logged in",
           },
           data: existingUser,
         };
@@ -158,7 +179,7 @@ export default {
         res.clearCookie(process.env.COOKIE_NAME);
         req.session.destroy((error) => {
           if (error) {
-            console.log('Destroying cookie error: ', error);
+            console.log("Destroying cookie error: ", error);
             resolve(false);
           }
           resolve(true);
@@ -173,7 +194,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Email not found',
+              message: "Email not found",
             },
           };
         // delete previous token if user dont use
@@ -194,7 +215,8 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: 'Please check your e-mailbox! You will find a link to reset password.',
+            message:
+              "Please check your e-mailbox! You will find a link to reset password.",
           },
         };
       } catch (e) {
@@ -215,14 +237,15 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid Reseting password',
+              message: "Invalid Reseting password",
               errors: [
                 {
-                  message: 'Invalid password',
+                  message: "Invalid password",
                   details: [
                     {
-                      field: 'password',
-                      detailedMessage: 'New password length must have at least 3 characters!',
+                      field: "password",
+                      detailedMessage:
+                        "New password length must have at least 3 characters!",
                     },
                   ],
                 },
@@ -235,27 +258,30 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid or expired password reset token',
+              message: "Invalid or expired password reset token",
               errors: [
                 {
-                  field: 'token',
-                  message: 'Invalid or expired password reset token',
+                  field: "token",
+                  message: "Invalid or expired password reset token",
                 },
               ],
             },
           };
         }
-        const resetPasswordTokenValid = argon2.verify(resetPasswordTokenRecord.token, token);
+        const resetPasswordTokenValid = argon2.verify(
+          resetPasswordTokenRecord.token,
+          token
+        );
         if (!resetPasswordTokenValid) {
           return {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid or expired password reset token',
+              message: "Invalid or expired password reset token",
               errors: [
                 {
-                  field: 'token',
-                  message: 'Invalid or expired password reset token',
+                  field: "token",
+                  message: "Invalid or expired password reset token",
                 },
               ],
             },
@@ -267,21 +293,24 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'User no longer exists',
-              errors: [{ field: 'token', message: 'User no longer exists' }],
+              message: "User no longer exists",
+              errors: [{ field: "token", message: "User no longer exists" }],
             },
           };
         }
         // all good
         const updatedPassword = await argon2.hash(newPassword);
-        await User.findOneAndUpdate({ _id: userId }, { password: updatedPassword });
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { password: updatedPassword }
+        );
         await resetPasswordTokenRecord.deleteOne();
         req.session.userId = user.id;
         return {
           network: {
             code: 200,
             success: true,
-            message: 'Password reseted!',
+            message: "Password reseted!",
           },
           data: user,
         };
@@ -291,6 +320,61 @@ export default {
             code: 500,
             success: false,
             message: `Internal server error || Malware acions`,
+          },
+        };
+      }
+    },
+    editMe: async (parent, { id, ...newInfo }, { req }) => {
+      try {
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Action denied.",
+              errors: [
+                {
+                  field: "user",
+                  message: "Please login to edit your profile!",
+                },
+              ],
+            },
+          };
+        const user = await User.findOne({ _id: id.toString() });
+        const { newUserName, newPassword } = newInfo;
+        //change username directly
+        // but changing password must be done by email verification
+        if (!user) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Invalid Data.",
+              errors: [
+                {
+                  field: "user",
+                  message: "This user is no longer exist.",
+                },
+              ],
+            },
+          };
+        }
+
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: user,
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Error: ${e.message}`,
           },
         };
       }
