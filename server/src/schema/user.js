@@ -3,7 +3,7 @@ export default gql`
   type Query {
     me: UserMutationResponse
     users: [User!]
-    user(id: ID!): User 
+    user(id: ID!): User
   }
   type Mutation {
     register(userName: String!, email: String!, password: String!): UserMutationResponse

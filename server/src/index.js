@@ -16,6 +16,8 @@ import resolvers from './resolvers/index';
 import { compileFunction } from 'vm';
 import Comment from './models/comment';
 import Post from './models/Post';
+import VoteComment from './models/voteComment';
+import Vote from './models/votes';
 
 async function startApolloServer() {
   const app = express();
@@ -85,3 +87,6 @@ try {
   console.log('SERVER_ERRORS:', e);
 }
 // await Post.deleteMany();
+// await Comment.deleteMany();
+// await Vote.deleteMany();
+// await VoteComment.deleteMany();

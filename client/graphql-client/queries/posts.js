@@ -19,6 +19,24 @@ export const Query_getPosts = gql`
           points
           _id
           content
+          comments {
+            _id
+            content
+            user {
+              userName
+            }
+            reply {
+              _id
+              content
+              reply {
+                tag {
+                  userName
+                }
+                _id
+                content
+              }
+            }
+          }
         }
         pageInfo {
           hasNextPage

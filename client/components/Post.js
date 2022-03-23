@@ -3,14 +3,14 @@ import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
 import { Query_getPosts } from '../graphql-client/queries/posts';
+import { LoadingButton } from '@mui/lab';
+
 const Post = ({ data }) => {
   const { data: dataGetPosts, loading: loadingDataGetPosts } = useQuery(Query_getPosts);
   const [vote, { loading }] = useMutation(Mutation_vote);
   const { data: dataMe, loading: loadingMe } = useQuery(Query_me);
-
   const handleVote = async (value) => {
     try {
-      console.log('me', dataMe);
       if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
         return alert('Please login to vote posts!');
       }
@@ -41,17 +41,23 @@ const Post = ({ data }) => {
       console.log('out erorr', e);
     }
   };
-
   return (
     <div>
       <h3>{data.title}</h3>
-      <button disabled={loadingMe || loading || loadingDataGetPosts} onClick={() => handleVote(1)}>
+      <LoadingButton
+        loading={loadingMe || loading || loadingDataGetPosts}
+        onClick={() => handleVote(1)}
+      >
         upvote
-      </button>
+      </LoadingButton>
       <b>{data.points}</b>
-      <button disabled={loadingMe || loading || loadingDataGetPosts} onClick={() => handleVote(-1)}>
+      <LoadingButton
+        loading={loadingMe || loading || loadingDataGetPosts}
+        onClick={() => handleVote(-1)}
+      >
         downvote
-      </button>
+      </LoadingButton>
+      {/* <h1>{data.comments.length}</h1> */}
     </div>
   );
 };

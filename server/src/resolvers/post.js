@@ -14,6 +14,12 @@ export default {
     user: async (parent) => {
       return await User.findById(parent.userId);
     },
+    comments: async (parent) => {
+      const comments = await Comment.find({ postId: parent._id.toString() });
+      //  do the infinite populate
+      console.log('after populating: ', comments);
+      return comments;
+    },
   },
   Query: {
     // cursor is objectId of last posts[]
@@ -47,7 +53,6 @@ export default {
         }
         const hasNextPage = posts.length > realLimit;
         const edges = hasNextPage ? posts.slice(0, -1) : posts;
-
         // console.log(JSON.stringify(edges, null, 2));
         return {
           network: {

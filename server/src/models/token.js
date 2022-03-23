@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 export const tokenSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
-    ref: 'user',
+    ref: 'User',
   },
   token: String,
   createdAt: {
@@ -11,5 +11,5 @@ export const tokenSchema = new mongoose.Schema({
     expires: 60 * 5, //5 minutes only
   },
 });
-const Token = mongoose.model('token', tokenSchema);
+const Token = mongoose.model('Token', tokenSchema);
 export default Token;

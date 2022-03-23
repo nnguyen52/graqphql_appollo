@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 const voteSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Types.ObjectId, ref: 'user' },
-    postId: { type: mongoose.Types.ObjectId, ref: 'post' },
+    userId: { type: mongoose.Types.ObjectId, ref: 'User' },
+    postId: { type: mongoose.Types.ObjectId, ref: 'Post' },
     value: { type: Number }, //only 1 or -1
   },
   { timestamps: true }
 );
-const Vote = mongoose.model('vote', voteSchema);
+const Vote = mongoose.model('Vote', voteSchema);
 export default Vote;

@@ -19,7 +19,6 @@ const Login = () => {
   };
   const [login, { data: dataLogin, loading: loginLoading, error }] = useMutation(Mutation_Login);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
-  const [loginErrors, setLoginErrors] = useState([]);
   const [exceptionErr, setExceptionError] = useState(null);
 
   // if (dataLogin?.login?.network?.errors) console.log(data);

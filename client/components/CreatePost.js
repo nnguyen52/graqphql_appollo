@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
 import InputField from './InputField';
 import { Formik, Form } from 'formik';
-import { Alert, LinearProgress } from '@mui/material';
+import { Alert, Button, LinearProgress } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_createPost } from '../graphql-client/mutations/createPost';
 import { Query_getPosts } from '../graphql-client/queries/posts';
-
+import { Query_me } from '../graphql-client/queries/user';
+import NextLink from 'next/link';
 const CreatePost = () => {
+  const client = useApolloClient();
   const initialValues = { title: '', content: '' };
   const [createPost, { loading: loadingCraetePost }] = useMutation(Mutation_createPost);
-  //   const { data: dataGetPosts, loading: loadingDataGetPosts } = useQuery(Query_getPosts, {
-  //     variables: {
-  //       limit: 2,
-  //     },
-  //     notifyOnNetworkStatusChange: true,
-  //   });
-  //   if (dataGetPosts) console.log('ldsadsa', dataGetPosts);
-
+  const { data: meData, loading: meLoading } = useQuery(Query_me);
+  if (meData) console.log('here', meData);
   const [exceptionErr, setExceptionErr] = useState(null);
   const handleSubmit = async (values, { setErrors }) => {
     const { title, content } = values;
@@ -49,23 +45,39 @@ const CreatePost = () => {
     });
   };
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ isSubmitting }) => (
-        <Form>
-          <InputField name='title' label='Title' type='text' />
-          <InputField name='content' label='Content' type='text' />
-          <LoadingButton loading={isSubmitting || loadingCraetePost} type='submit'>
-            Create post
-          </LoadingButton>
-          {isSubmitting && <LinearProgress />}
-          {exceptionErr && (
-            <Alert variant='filled' severity='error'>
-              {exceptionErr}
-            </Alert>
+    <>
+      {!meLoading && meData?.me?.data == null ? (
+        <Alert
+          action={
+            <NextLink href='/login'>
+              <Button style={{ color: 'white', background: 'black' }}>Login</Button>
+            </NextLink>
+          }
+          variant='filled'
+          severity='success'
+        >
+          Please login to create post!
+        </Alert>
+      ) : (
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {({ isSubmitting }) => (
+            <Form>
+              <InputField name='title' label='Title' type='text' />
+              <InputField name='content' label='Content' type='text' />
+              <Button type='submit' loading={isSubmitting || meLoading || loadingCraetePost}>
+                Create post
+              </Button>
+              {(isSubmitting || meLoading || loadingCraetePost) && <LinearProgress />}
+              {exceptionErr && (
+                <Alert variant='filled' severity='error'>
+                  {exceptionErr}
+                </Alert>
+              )}
+            </Form>
           )}
-        </Form>
+        </Formik>
       )}
-    </Formik>
+    </>
   );
 };
 

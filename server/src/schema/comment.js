@@ -3,7 +3,7 @@ export default gql`
   type Comment {
     _id: String
     user: User
-    content: String!
+    content: String
     # tag is the user who commented the original comment
     tag: User
     # if reply field exist, this comment will be a reply to that replyId

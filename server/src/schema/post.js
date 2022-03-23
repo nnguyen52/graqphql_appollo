@@ -7,6 +7,7 @@ export default gql`
     title: String
     content: String
     points: Int
+    comments: Comment
   }
   type PostInfo {
     hasNextPage: Boolean
