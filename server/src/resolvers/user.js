@@ -209,7 +209,8 @@ export default {
         // send reset password link to user via email
         await sendMail(
           email,
-          `<a style="color : white; background: green;"   href="http://localhost:5000/change-password?token=${resetToken}&id=${user._id}">Reset your password</a>`
+          `<a style="color : white; background: green;"   href="http://localhost:5000/change-password?type=reset&token=${resetToken}&id=${user._id}">Reset your password</a>`,
+          "Reset your password"
         );
         return {
           network: {
@@ -230,14 +231,20 @@ export default {
         };
       }
     },
-    changePassword: async (parent, { token, userId, newPassword }, { req }) => {
+    changePassword: async (
+      parent,
+      { token, userId, newPassword, type },
+      { req }
+    ) => {
       try {
         if (newPassword.length < 2)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Reseting password",
+              message: `Invalid ${
+                type == "reset" ? "reseting" : "updating"
+              } password`,
               errors: [
                 {
                   message: "Invalid password",
@@ -258,11 +265,15 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid or expired password reset token",
+              message: `Invalid or expired password ${
+                type == "reset" ? "reseting" : "updating"
+              } token`,
               errors: [
                 {
                   field: "token",
-                  message: "Invalid or expired password reset token",
+                  message: `Invalid or expired password ${
+                    type == "reset" ? "reseting" : "updating"
+                  } token`,
                 },
               ],
             },
@@ -277,11 +288,15 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid or expired password reset token",
+              message: `Invalid or expired password ${
+                type == "reset" ? "reseting" : "updating"
+              } token`,
               errors: [
                 {
                   field: "token",
-                  message: "Invalid or expired password reset token",
+                  message: `Invalid or expired password ${
+                    type == "reset" ? "reseting" : "updating"
+                  } token`,
                 },
               ],
             },
@@ -310,7 +325,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Password reseted!",
+            message: `Password ${type == "reset" ? "reseted" : "updated"}!`,
           },
           data: user,
         };
@@ -324,10 +339,10 @@ export default {
         };
       }
     },
-    editMe: async (parent, { id, ...newInfo }, { req }) => {
+    editMe: async (parent, { newUserInfo }, { req }) => {
       try {
         const isAllowed = await checkAuth(req);
-        if (!isAllowed)
+        if (!isAllowed || !newUserInfo.email)
           return {
             network: {
               code: 400,
@@ -341,9 +356,24 @@ export default {
               ],
             },
           };
-        const user = await User.findOne({ _id: id.toString() });
-        const { newUserName, newPassword } = newInfo;
-        //change username directly
+        const { userName, password, email } = newUserInfo;
+        if (!userName && !password) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Action denied.",
+              errors: [
+                {
+                  field: "user",
+                  message: "Action denied.",
+                },
+              ],
+            },
+          };
+        }
+        const user = await User.findOne({ _id: req.userId, email });
+        // change username directly
         // but changing password must be done by email verification
         if (!user) {
           return {
@@ -354,19 +384,55 @@ export default {
               errors: [
                 {
                   field: "user",
-                  message: "This user is no longer exist.",
+                  message: "Account now found. Please check your info again.",
                 },
               ],
             },
           };
         }
-
+        let updatedUser = user;
+        if (userName)
+          updatedUser = await User.findOneAndUpdate(
+            { _id: req.userId.toString() },
+            {
+              ...userName,
+              userName,
+            }
+          );
+        if (!password)
+          return {
+            network: {
+              success: true,
+              code: 200,
+              message: "Profile updated!",
+            },
+            data: {
+              ...updatedUser._doc,
+              userName,
+              password: null,
+            },
+          };
+        await Token.findOneAndDelete({ userId: req.userId.toString() });
+        const resetToken = uuidv4();
+        const hashedResetToken = await argon2.hash(resetToken);
+        // save token to db
+        await new Token({
+          userId: req.userId.toString(),
+          token: hashedResetToken,
+        }).save();
+        await sendMail(
+          email,
+          `<a style="color : white; background: green;"   href="http://localhost:5000/change-password?type=update&token=${resetToken}&id=${req.userId.toString()}">Update your password</a>`,
+          "Update your password"
+        );
         return {
           network: {
             code: 200,
             success: true,
+            message:
+              "Please check your e-mailbox! You will find a link to update password.",
           },
-          data: user,
+          data: null,
         };
       } catch (e) {
         console.log(e);

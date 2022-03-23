@@ -1,9 +1,15 @@
 import { gql } from "apollo-server-express";
+
 export default gql`
   type Query {
     me: UserMutationResponse
     users: [User!]
     user(id: ID!): User
+  }
+  input newUserInfo {
+    userName: String
+    password: String
+    email: String
   }
   type Mutation {
     register(
@@ -19,7 +25,7 @@ export default gql`
       userId: String!
       newPassword: String!
     ): UserMutationResponse
-    editMe(id: String): UserMutationResponse
+    editMe(newUserInfo: newUserInfo): UserMutationResponse
   }
   type User {
     id: ID
