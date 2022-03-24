@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client';
-
+import { Fragment_commentThreelevels } from '../fragments/comment3level';
 export const Query_getPosts = gql`
+  ${Fragment_commentThreelevels}
   query getPosts($cursor: String, $limit: Int) {
     getPosts(cursor: $cursor, limit: $limit) {
       network {
@@ -20,22 +21,7 @@ export const Query_getPosts = gql`
           _id
           content
           comments {
-            _id
-            content
-            user {
-              userName
-            }
-            reply {
-              _id
-              content
-              reply {
-                tag {
-                  userName
-                }
-                _id
-                content
-              }
-            }
+            ...commentThreelevels
           }
         }
         pageInfo {

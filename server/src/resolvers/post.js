@@ -1,19 +1,18 @@
-import { checkAuth } from "../customMiddleware/checkAuth";
-import Comment from "../models/comment";
-import Post from "../models/Post";
-import User from "../models/user";
-import Vote from "../models/votes";
-import VoteComment from "../models/voteComment";
+import { checkAuth } from '../customMiddleware/checkAuth';
+import Comment from '../models/comment';
+import Post from '../models/Post';
+import User from '../models/user';
+import Vote from '../models/votes';
+import VoteComment from '../models/voteComment';
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
-const toCursorHash = (string) => Buffer.from(string).toString("base64");
-const fromCursorHash = (string) =>
-  Buffer.from(string, "base64").toString("ascii");
+const toCursorHash = (string) => Buffer.from(string).toString('base64');
+const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
 
 export default {
   Comment: {
     reply: async (parent) => {
-      console.log("parent of comment", parent);
+      console.log('parent of comment', parent);
     },
   },
   Post: {
@@ -22,9 +21,6 @@ export default {
     },
     comments: async (parent) => {
       const comments = await Comment.find({ postId: parent._id.toString() });
-      console.log("comments");
-      //  do the infinite populate
-      // console.log('after populating: ', comments);
       return comments;
     },
   },
@@ -96,7 +92,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Post Not Found",
+              message: 'Post Not Found',
             },
           };
         return {
@@ -127,10 +123,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [
-                { field: "post", message: "Please login to create post." },
-              ],
+              message: 'Access Denied',
+              errors: [{ field: 'post', message: 'Please login to create post.' }],
             },
           };
         }
@@ -146,7 +140,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Post created!",
+            message: 'Post created!',
           },
           data: newPost,
         };
@@ -169,23 +163,17 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [
-                { field: "post", message: "Please login to update post." },
-              ],
+              message: 'Access Denied',
+              errors: [{ field: 'post', message: 'Please login to update post.' }],
             },
           };
         }
-        const post = await Post.findByIdAndUpdate(
-          { _id: id },
-          { title, content },
-          { new: true }
-        );
+        const post = await Post.findByIdAndUpdate({ _id: id }, { title, content }, { new: true });
         return {
           network: {
             code: 200,
             success: true,
-            message: "Post updated",
+            message: 'Post updated',
           },
           data: post,
         };
@@ -208,10 +196,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [
-                { field: "post", message: "Please login to delete post." },
-              ],
+              message: 'Access Denied',
+              errors: [{ field: 'post', message: 'Please login to delete post.' }],
             },
           };
         }
@@ -225,11 +211,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "post",
-                  message: "Sorry, this post is no longer exist.",
+                  field: 'post',
+                  message: 'Sorry, this post is no longer exist.',
                 },
               ],
             },
@@ -259,7 +245,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Post deleted!",
+            message: 'Post deleted!',
           },
         };
       } catch (e) {
@@ -281,10 +267,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Access denied.",
-              errors: [
-                { field: "post", message: "Please login to vote posts!" },
-              ],
+              message: 'Access denied.',
+              errors: [{ field: 'post', message: 'Please login to vote posts!' }],
             },
           };
         }
@@ -295,10 +279,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Voting action failed.",
-              errors: [
-                { field: "vote", message: "Sorry, post no longer exist." },
-              ],
+              message: 'Voting action failed.',
+              errors: [{ field: 'vote', message: 'Sorry, post no longer exist.' }],
             },
           };
         if (voteValue !== 1 && voteValue !== -1) {
@@ -306,8 +288,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Voting action failed.",
-              errors: [{ field: "vote", message: "Invalid vote." }],
+              message: 'Voting action failed.',
+              errors: [{ field: 'vote', message: 'Invalid vote.' }],
             },
           };
         }
@@ -329,8 +311,8 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: "Voting action failed.",
-                errors: [{ field: "vote", message: "You already voted." }],
+                message: 'Voting action failed.',
+                errors: [{ field: 'vote', message: 'You already voted.' }],
               },
             };
           }
@@ -344,18 +326,14 @@ export default {
           { userId: req.session.userId, postId, value: voteValue }
         );
         post.points = parseFloat(post.points) + parseFloat(voteValue);
-        post.points == 0
-          ? voteValue == 1
-            ? (post.points += 1)
-            : (post.points -= 1)
-          : null;
+        post.points == 0 ? (voteValue == 1 ? (post.points += 1) : (post.points -= 1)) : null;
         await post.save();
         const freshPost = await Post.findOne({ _id: postId });
         return {
           network: {
             code: 200,
             success: true,
-            message: "Post updated with new votes!",
+            message: 'Post updated with new votes!',
           },
           data: freshPost,
         };

@@ -4,6 +4,7 @@ import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { LoadingButton } from '@mui/lab';
+import Comments from './Comments';
 
 const Post = ({ data }) => {
   const { data: dataGetPosts, loading: loadingDataGetPosts } = useQuery(Query_getPosts);
@@ -42,7 +43,7 @@ const Post = ({ data }) => {
     }
   };
   return (
-    <div>
+    <div style={{ border: '1px solid black' }}>
       <h3>{data.title}</h3>
       <LoadingButton
         loading={loadingMe || loading || loadingDataGetPosts}
@@ -57,7 +58,7 @@ const Post = ({ data }) => {
       >
         downvote
       </LoadingButton>
-      {/* <h1>{data.comments.length}</h1> */}
+      <Comments post={data} />
     </div>
   );
 };
