@@ -21,6 +21,9 @@ export default {
     },
     comments: async (parent) => {
       const comments = await Comment.find({ postId: parent._id.toString() });
+      // .sort({
+      //   createdAt: 1,
+      // });
       return comments;
     },
   },

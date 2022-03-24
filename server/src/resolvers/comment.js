@@ -1,8 +1,8 @@
-import { checkAuth } from "../customMiddleware/checkAuth";
-import Post from "../models/Post";
-import Comment from "../models/comment";
-import User from "../models/user";
-import VoteComment from "../models/voteComment";
+import { checkAuth } from '../customMiddleware/checkAuth';
+import Post from '../models/Post';
+import Comment from '../models/comment';
+import User from '../models/user';
+import VoteComment from '../models/voteComment';
 export default {
   Comment: {
     user: async (parent) => {
@@ -34,17 +34,17 @@ export default {
         //   };
         const comment = await Comment.findOne({
           _id: commentId.toString(),
-        }).populate("reply");
+        }).populate('reply');
         if (!comment)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "comment",
-                  message: "Sorry, this comment no longer exist.",
+                  field: 'comment',
+                  message: 'Sorry, this comment no longer exist.',
                 },
               ],
             },
@@ -70,7 +70,7 @@ export default {
 
     getComments: async () => {
       try {
-        const comments = await Comment.find().populate("reply");
+        const comments = await Comment.find().populate('reply').sort({ createdAt: -1 });
         // console.log(JSON.stringify(comments, null, 2));
         return {
           network: {
@@ -93,11 +93,7 @@ export default {
   Mutation: {
     testMakeComment: async () => {},
     clearAllComment: async () => {},
-    createComment: async (
-      root,
-      { postId, content, tag, reply, postUserId },
-      { req }
-    ) => {
+    createComment: async (root, { postId, content, tag, reply, postUserId }, { req }) => {
       try {
         const isAllowed = await checkAuth(req);
         if (!isAllowed)
@@ -105,10 +101,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied",
-              errors: [
-                { field: "comment", message: "Please login to comment." },
-              ],
+              message: 'Action denied',
+              errors: [{ field: 'comment', message: 'Please login to comment.' }],
             },
           };
         const post = await Post.findOne({ _id: postId, userId: postUserId });
@@ -117,12 +111,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "comment",
-                  message:
-                    "Sorry, this post you are commenting is no longer exist.",
+                  field: 'comment',
+                  message: 'Sorry, this post you are commenting is no longer exist.',
                 },
               ],
             },
@@ -136,12 +129,11 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: "Invalid data",
+                message: 'Invalid data',
                 errors: [
                   {
-                    field: "comment",
-                    message:
-                      "Sorry, the comment you are replying to is no longer exist.",
+                    field: 'comment',
+                    message: 'Sorry, the comment you are replying to is no longer exist.',
                   },
                 ],
               },
@@ -171,7 +163,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "New comment sent!",
+            message: 'New comment sent!',
             errors: null,
           },
           data: newComment,
@@ -196,10 +188,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied",
-              errors: [
-                { field: "comment", message: "Please login to edit comment." },
-              ],
+              message: 'Action denied',
+              errors: [{ field: 'comment', message: 'Please login to edit comment.' }],
             },
             data: null,
           };
@@ -214,16 +204,14 @@ export default {
               code: 400,
               success: false,
               message: `Action denied.`,
-              errors: [
-                { field: "comment", message: "You dont have this permission." },
-              ],
+              errors: [{ field: 'comment', message: 'You dont have this permission.' }],
             },
           };
         return {
           network: {
             code: 200,
             success: true,
-            message: "Comment updated!",
+            message: 'Comment updated!',
             errors: null,
           },
           data: response,
@@ -247,11 +235,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "comment",
-                  message: "Please login to delete comment.",
+                  field: 'comment',
+                  message: 'Please login to delete comment.',
                 },
               ],
             },
@@ -263,11 +251,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
-                  field: "comment",
-                  message: "Sorry, this comment is no longer exist",
+                  field: 'comment',
+                  message: 'Sorry, this comment is no longer exist',
                 },
               ],
             },
@@ -279,7 +267,7 @@ export default {
             network: {
               code: 200,
               success: true,
-              message: "Comment deleted!",
+              message: 'Comment deleted!',
             },
             data: null,
           };
@@ -302,10 +290,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Access denied.",
-              errors: [
-                { field: "comment", message: "Please login to vote comments!" },
-              ],
+              message: 'Access denied.',
+              errors: [{ field: 'comment', message: 'Please login to vote comments!' }],
             },
           };
         }
@@ -314,8 +300,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
-              errors: [{ field: "comment", message: "Invalid voting value." }],
+              message: 'Invalid data',
+              errors: [{ field: 'comment', message: 'Invalid voting value.' }],
             },
           };
         // find comment to vote
@@ -331,8 +317,8 @@ export default {
               message: `Invalid data`,
               errors: [
                 {
-                  field: "comment",
-                  message: "Sorry, this comment is no longer exist.",
+                  field: 'comment',
+                  message: 'Sorry, this comment is no longer exist.',
                 },
               ],
             },
@@ -356,13 +342,11 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: "Voting action failed.",
+                message: 'Voting action failed.',
                 errors: [
                   {
-                    field: "vote",
-                    message: `You already ${
-                      voteValue == 1 ? "upvoted" : "downvoted"
-                    }.`,
+                    field: 'vote',
+                    message: `You already ${voteValue == 1 ? 'upvoted' : 'downvoted'}.`,
                   },
                 ],
               },
@@ -389,7 +373,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Comment updated with new votes!",
+            message: 'Comment updated with new votes!',
           },
           data: freshComment,
         };
@@ -411,13 +395,11 @@ const deleteCommenReplyBase = async (_id, postId) => {
   let rootCommentId = null;
   let trackCommentToDelete = null;
   let commentsToDelete = [];
-  const commentToDelete = await Comment.findOne({ _id, postId }).populate(
-    "reply"
-  );
+  const commentToDelete = await Comment.findOne({ _id, postId }).populate('reply');
   commentsToDelete.push(commentToDelete._id.toString());
   trackCommentToDelete = commentToDelete;
   rootCommentId = commentToDelete._id;
-  const allComments = await Comment.find().populate("reply");
+  const allComments = await Comment.find().populate('reply');
   for (let i = 0; i < allComments.length; i++) {
     if (
       !allComments[i].reply &&
@@ -429,8 +411,7 @@ const deleteCommenReplyBase = async (_id, postId) => {
     }
     if (
       allComments[i].reply &&
-      (allComments[i].reply._id.toString() ==
-        trackCommentToDelete._id.toString() ||
+      (allComments[i].reply._id.toString() == trackCommentToDelete._id.toString() ||
         allComments[i].reply._id.toString() == rootCommentId.toString()) &&
       allComments[i].postId.toString() == postId.toString()
     ) {
