@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Comment from './Comment';
 
-const DisplayComments = ({ comment, post, replies, commentId }) => {
+const DisplayComments = ({ comment, post, replies, comments, commentId }) => {
   let rootPaddingLeft = 10;
   const [repliesForThisComment, setRepliesForThisComment] = useState([]);
-  //   if (repliesForThisComment.length > 0)
-  //     console.log(
-  //       `comment: ${comment.content} |||| replies: ${repliesForThisComment.map(
-  //         (each) => each.content
-  //       )}`
-  //     );
+
   useEffect(() => {
     if (!comment || !post || !replies || commentId) return;
     setRepliesForThisComment(
