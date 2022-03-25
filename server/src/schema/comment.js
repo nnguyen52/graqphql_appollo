@@ -12,7 +12,6 @@ export default gql`
     postId: String
     postUserId: String
   }
-
   type queryCommentResponse {
     network: MutationResponse
     data: [Comment]
@@ -21,23 +20,21 @@ export default gql`
     network: MutationResponse
     data: Comment
   }
-
+  type VoteComment {
+    _id: String
+    userId: String
+    commentId: String
+    value: Int
+  }
+  type mutationGetVoteCommentResponse {
+    network: MutationResponse
+    data: [VoteComment]
+  }
   type Query {
+    getVoteComment: mutationGetVoteCommentResponse
     getComments: queryCommentResponse
     # if there is _id in reply after nested fetch 3 comments
     # => fetch 1 comment => but in Client, write nested query with fragment 3 level
-    # _id
-    #       content
-    #       reply {
-    #         _id
-    #         content
-    #         reply {
-    #           content
-    #           reply {
-    #             _id
-    #           }
-    #         }
-    #       }
     getComment(commentId: String): mutationCommentResponse
   }
   type Mutation {
@@ -48,6 +45,7 @@ export default gql`
       postUserId: String
       # populate reply gives Comment
       reply: String
+      userTesting: String
     ): mutationCommentResponse
     updateComment(commentId: String, content: String): mutationCommentResponse
     deleteComment(commentId: String): mutationCommentResponse
