@@ -1,6 +1,5 @@
 import React from 'react';
-
-const Comment = ({ children, comment, post, commentId }) => {
+const Comment = ({ children, comment }) => {
   return (
     <div>
       {comment.content}

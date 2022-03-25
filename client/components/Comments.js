@@ -3,7 +3,15 @@ import React, { useState, useEffect } from 'react';
 import DisplayComments from './DisplayComments';
 
 // display 2 latest comments
-const Comments = ({ post }) => {
+const Comments = ({
+  post,
+  loadingDataGetPosts,
+  dataGetPosts,
+  loadingMe,
+  dataMe,
+  loadingVoteComment,
+  voteComment,
+}) => {
   // root comments is comments that have no reply (and latest based on createdAt)
   const [comments, setComments] = useState([]);
   const [replies, setReplies] = useState([]);
@@ -43,7 +51,20 @@ const Comments = ({ post }) => {
   return (
     <div>
       {showComments.map((each, index) => {
-        return <DisplayComments comment={each} key={index} post={post} comments={comments} />;
+        return (
+          <DisplayComments
+            comment={each}
+            key={index}
+            post={post}
+            comments={comments}
+            loadingDataGetPosts={loadingDataGetPosts}
+            dataGetPosts={dataGetPosts}
+            loadingMe={loadingMe}
+            dataMe={dataMe}
+            loadingVoteComment={loadingVoteComment}
+            voteComment={voteComment}
+          />
+        );
       })}
       {comments.length - next > 0 ? (
         <Button onClick={() => setNext((prev) => prev + 10)}> See more comments</Button>

@@ -13,7 +13,7 @@ const CreatePost = () => {
   const initialValues = { title: '', content: '' };
   const [createPost, { loading: loadingCraetePost }] = useMutation(Mutation_createPost);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
-  if (meData) console.log('here', meData);
+  // if (meData) console.log('meData: ', meData);
   const [exceptionErr, setExceptionErr] = useState(null);
   const handleSubmit = async (values, { setErrors }) => {
     const { title, content } = values;

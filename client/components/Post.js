@@ -5,10 +5,12 @@ import { Query_me } from '../graphql-client/queries/user';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { LoadingButton } from '@mui/lab';
 import Comments from './Comments';
+import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
 
 const Post = ({ data }) => {
   const { data: dataGetPosts, loading: loadingDataGetPosts } = useQuery(Query_getPosts);
   const [vote, { loading }] = useMutation(Mutation_vote);
+  const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
   const { data: dataMe, loading: loadingMe } = useQuery(Query_me);
   const handleVote = async (value) => {
     try {
@@ -58,7 +60,15 @@ const Post = ({ data }) => {
       >
         downvote
       </LoadingButton>
-      <Comments post={data} />
+      <Comments
+        post={data}
+        loadingDataGetPosts={loadingDataGetPosts}
+        dataGetPosts={dataGetPosts}
+        loadingMe={loadingMe}
+        dataMe={dataMe}
+        loadingVoteComment={loadingVoteComment}
+        voteComment={voteComment}
+      />
     </div>
   );
 };
