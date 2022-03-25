@@ -21,7 +21,16 @@ function createApolloClient() {
             getPosts: {
               keyArgs: false,
               merge(existingData = undefined, incomingData) {
+                // console.log('existingData:', existingData, 'incoming data: ', incomingData);
                 // if (existingData && !existingData.data.pageInfo.hasNextPage) return;
+                for (let i = 0; i < existingData?.data?.posts.length; i++) {
+                  if (
+                    JSON.stringify(existingData?.data?.posts[i]) ===
+                    JSON.stringify(incomingData?.data?.posts[0])
+                  ) {
+                    return { ...incomingData };
+                  }
+                }
                 if (incomingData.data.posts.length == 1) {
                   return {
                     ...incomingData,

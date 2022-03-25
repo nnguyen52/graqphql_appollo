@@ -1,6 +1,9 @@
 import { gql } from '@apollo/client';
+import { Fragment_commentThreelevels } from '../fragments/comment3level';
 
 export const Mutation_createComment = gql`
+  ${Fragment_commentThreelevels}
+
   mutation createComment(
     $content: String
     $tag: String
@@ -21,28 +24,7 @@ export const Mutation_createComment = gql`
         message
       }
       data {
-        userId
-        _id
-        user {
-          id
-          userName
-          email
-        }
-        title
-        content
-        points
-        reply {
-          userId
-          _id
-          user {
-            id
-            userName
-            email
-          }
-          title
-          content
-          points
-        }
+        ...commentThreelevels
       }
     }
   }

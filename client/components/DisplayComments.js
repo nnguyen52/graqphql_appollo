@@ -26,7 +26,6 @@ const DisplayComments = ({
     if (!repliesForThisComment) return;
     setShowReplies(repliesForThisComment.slice(0, next));
   }, [repliesForThisComment, next]);
-
   return (
     <>
       <Comment comment={comment} post={post}>
@@ -52,7 +51,7 @@ const DisplayComments = ({
               );
             })}
           {repliesForThisComment.length - next > 0 ? (
-            <Button onClick={() => setNext(next + 10)}>See more replies...</Button>
+            <Button onClick={() => setNext(next + 100)}>See more replies...</Button>
           ) : (
             repliesForThisComment.length > 1 && (
               <Button onClick={() => setNext(1)}>Hide replies.</Button>
