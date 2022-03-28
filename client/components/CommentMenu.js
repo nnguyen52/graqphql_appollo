@@ -5,6 +5,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import InputComment from './InputComment';
 const CommentMenu = ({
+  post,
   comment,
   loadingDataGetPosts,
   dataGetPosts,
@@ -14,30 +15,27 @@ const CommentMenu = ({
   voteComment,
 }) => {
   const [replyMode, setReplyMode] = useState(false);
-  const [commentTarget, setCommentTarget] = useState(null);
   const handleVote = async (comment, value) => {
     try {
-      if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
+      if (!loadingMe && !dataMe?.me?.data) {
         return alert('Please login to vote comment!');
       }
       await voteComment({
         variables: {
+          postId: post._id.toString(),
           commentId: comment._id.toString(),
           voteValue: value,
         },
-        // update(cache, response) {
-        // },
       });
     } catch (e) {
       console.log('vote error:', e);
     }
   };
-  const handleReply = (comment) => {
+  const handleReply = () => {
     if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
       return alert('Please login to vote comment!');
     }
-    setReplyMode(true);
-    setCommentTarget(comment);
+    setReplyMode(!replyMode);
   };
   return (
     <>
@@ -66,11 +64,12 @@ const CommentMenu = ({
           }}
           onClick={() => handleReply(comment)}
         >
-          Reply
+          {replyMode ? 'Cancel' : 'Reply'}
         </LoadingButton>
       </Box>
       {replyMode && (
         <InputComment
+          mode='reply'
           comment={comment}
           loadingMe={loadingMe}
           dataMe={dataMe}

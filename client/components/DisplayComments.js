@@ -31,6 +31,7 @@ const DisplayComments = ({
       <Comment comment={comment} post={post}>
         {/* children is its reply */}
         <CommentMenu
+          post={post}
           comment={comment}
           loadingDataGetPosts={loadingDataGetPosts}
           dataGetPosts={dataGetPosts}
@@ -39,14 +40,22 @@ const DisplayComments = ({
           loadingVoteComment={loadingVoteComment}
           voteComment={voteComment}
         />
-
         <div>
           {showReplies.length > 0 &&
             showReplies.map((each, index) => {
               return (
                 <div style={{ paddingLeft: `${rootPaddingLeft}px` }}>
-                  {' '}
-                  <DisplayComments key={index} comment={each} post={post} />{' '}
+                  <DisplayComments
+                    loadingDataGetPosts={loadingDataGetPosts}
+                    dataGetPosts={dataGetPosts}
+                    loadingMe={loadingMe}
+                    dataMe={dataMe}
+                    loadingVoteComment={loadingVoteComment}
+                    voteComment={voteComment}
+                    key={index}
+                    comment={each}
+                    post={post}
+                  />
                 </div>
               );
             })}

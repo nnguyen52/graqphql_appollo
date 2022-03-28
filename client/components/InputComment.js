@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import InputField from './InputField';
 import { Form, Formik } from 'formik';
 import { Alert } from '@mui/material';
@@ -7,10 +7,12 @@ import { Mutation_createComment } from '../graphql-client/mutations/createCommen
 import { Query_getPosts } from '../graphql-client/queries/posts';
 
 const InputComment = ({
+  post,
   comment,
   loadingMe,
   dataMe,
   setReplyMode,
+  setCommentMode,
   loadingDataGetPosts,
   dataGetPosts,
 }) => {
@@ -19,25 +21,32 @@ const InputComment = ({
   const initialValues = {
     commentContent: '',
   };
-  console.log('here', dataGetPosts);
+
   const handleSubmit = async (values, { setErrors }) => {
     if (loadingCreateComment || values.commentContent == '' || loadingDataGetPosts) return;
-
     await createComment({
-      variables: {
-        content: values.commentContent.toString(),
-        tag: comment.tag.id.toString(),
-        postId: comment.postId.toString(),
-        postUserId: comment.tag.id.toString(),
-        reply: comment._id.toString(),
-      },
+      variables: setReplyMode
+        ? {
+            content: values.commentContent.toString(),
+            tag: comment.tag.id.toString(),
+            postId: comment.postId.toString(),
+            postUserId: comment.tag.id.toString(),
+            reply: comment._id.toString(),
+          }
+        : {
+            content: values.commentContent.toString(),
+            tag: dataMe.me.data.id.toString(),
+            postId: post._id.toString(),
+            postUserId: post.userId.toString(),
+          },
       update(cache, { data }) {
-        console.log('after createcomment: ', data);
+        // console.log('after createComment: ', data);
         if (!data.createComment.network.success) {
           // handle errors
           setexceptionErr(data.createComment.network.message);
         } else {
-          setReplyMode((prev) => false);
+          if (setReplyMode) setReplyMode(false);
+          if (setCommentMode) setCommentMode(false);
           const newComment = data.createComment.data;
           let updatedPosts = dataGetPosts.getPosts.data.posts.map((post) => {
             if (post._id.toString() == newComment.postId.toString()) {
@@ -63,17 +72,16 @@ const InputComment = ({
       },
     });
   };
-
   return (
     <>
       {!loadingMe && dataMe?.me?.network?.success && (
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ isSumitting }) => (
+          {({ isSubmitting }) => (
             <Form>
               <InputField
                 name='commentContent'
                 type='text'
-                label={`Reply to ${comment.user.userName}`}
+                label={`${setReplyMode ? `Reply to ${comment.user.userName}` : `Add a comment...`}`}
               />
               {exceptionErr && (
                 <Alert variant='filled' severity='error'>

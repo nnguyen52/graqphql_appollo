@@ -64,9 +64,9 @@ const CreatePost = () => {
             <Form>
               <InputField name='title' label='Title' type='text' />
               <InputField name='content' label='Content' type='text' />
-              <Button type='submit' loading={isSubmitting || meLoading || loadingCraetePost}>
+              <LoadingButton type='submit' loading={isSubmitting || meLoading || loadingCraetePost}>
                 Create post
-              </Button>
+              </LoadingButton>
               {(isSubmitting || meLoading || loadingCraetePost) && <LinearProgress />}
               {exceptionErr && (
                 <Alert variant='filled' severity='error'>
