@@ -1,18 +1,20 @@
-import { checkAuth } from '../customMiddleware/checkAuth';
-import Comment from '../models/comment';
-import Post from '../models/Post';
-import User from '../models/user';
-import Vote from '../models/votes';
-import VoteComment from '../models/voteComment';
+import { checkAuth } from "../customMiddleware/checkAuth";
+import Comment from "../models/comment";
+import Post from "../models/Post";
+import User from "../models/user";
+import Vote from "../models/votes";
+import VoteComment from "../models/voteComment";
+import { deletePost } from "../utils/deletePost";
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
-const toCursorHash = (string) => Buffer.from(string).toString('base64');
-const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
+const toCursorHash = (string) => Buffer.from(string).toString("base64");
+const fromCursorHash = (string) =>
+  Buffer.from(string, "base64").toString("ascii");
 
 export default {
   Comment: {
     reply: async (parent) => {
-      console.log('parent of comment', parent);
+      console.log("parent of comment", parent);
     },
   },
   Post: {
@@ -60,7 +62,6 @@ export default {
         }
         const hasNextPage = posts.length > realLimit;
         const edges = hasNextPage ? posts.slice(0, -1) : posts;
-        // console.log(JSON.stringify(edges, null, 2));
         return {
           network: {
             code: 200,
@@ -95,7 +96,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Post Not Found',
+              message: "Post Not Found",
             },
           };
         return {
@@ -126,12 +127,15 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Access Denied',
-              errors: [{ field: 'post', message: 'Please login to create post.' }],
+              message: "Access Denied",
+              errors: [
+                { field: "post", message: "Please login to create post." },
+              ],
             },
           };
         }
         const user = await User.findById(req.session.userId);
+
         const newPost = new Post({
           userId: req.session.userId,
           user,
@@ -143,7 +147,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: 'Post created!',
+            message: "Post created!",
           },
           data: newPost,
         };
@@ -166,17 +170,23 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Access Denied',
-              errors: [{ field: 'post', message: 'Please login to update post.' }],
+              message: "Access Denied",
+              errors: [
+                { field: "post", message: "Please login to update post." },
+              ],
             },
           };
         }
-        const post = await Post.findByIdAndUpdate({ _id: id }, { title, content }, { new: true });
+        const post = await Post.findByIdAndUpdate(
+          { _id: id },
+          { title, content },
+          { new: true }
+        );
         return {
           network: {
             code: 200,
             success: true,
-            message: 'Post updated',
+            message: "Post updated",
           },
           data: post,
         };
@@ -199,12 +209,13 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Access Denied',
-              errors: [{ field: 'post', message: 'Please login to delete post.' }],
+              message: "Access Denied",
+              errors: [
+                { field: "post", message: "Please login to delete post." },
+              ],
             },
           };
         }
-        let tempPostId = null;
         const postToDelete = await Post.findOne({
           _id: id,
           userId: req.session.userId,
@@ -214,41 +225,22 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Invalid data',
+              message: "Invalid data",
               errors: [
                 {
-                  field: 'post',
-                  message: 'Sorry, this post is no longer exist.',
+                  field: "post",
+                  message: "Sorry, this post is no longer exist.",
                 },
               ],
             },
           };
         }
-        tempPostId = postToDelete._id.toString();
-        await Post.findByIdAndDelete({ _id: id, userId: req.session.userId });
-
-        // delete all votes that have this postId
-        const votes = await Vote.find({ postId: tempPostId });
-        for (const each of votes) {
-          await Vote.findOneAndDelete({ _id: each._id.toString() });
-        }
-
-        // delete all comments that have this postId
-        // and delete all vote comments this post have
-        const comments = await Comment.find({ postId: tempPostId });
-        const commentsId = comments.map((each) => each._id.toString());
-        for (const each of commentsId) {
-          await VoteComment.findOneAndDelete({ commentsId: each });
-        }
-        for (const each of comments) {
-          await Comment.findOneAndDelete({ _id: each._id.toString() });
-        }
-
+        await deletePost(postToDelete);
         return {
           network: {
             code: 200,
             success: true,
-            message: 'Post deleted!',
+            message: "Post deleted!",
           },
         };
       } catch (e) {
@@ -262,6 +254,7 @@ export default {
         };
       }
     },
+
     vote: async (parent, { postId, voteValue }, { req }) => {
       try {
         const allowed = await checkAuth(req);
@@ -270,20 +263,23 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Access denied.',
-              errors: [{ field: 'post', message: 'Please login to vote posts!' }],
+              message: "Access denied.",
+              errors: [
+                { field: "post", message: "Please login to vote posts!" },
+              ],
             },
           };
         }
-
         let post = await Post.findOne({ _id: postId });
         if (!post)
           return {
             network: {
               code: 400,
               success: false,
-              message: 'Voting action failed.',
-              errors: [{ field: 'vote', message: 'Sorry, post no longer exist.' }],
+              message: "Voting action failed.",
+              errors: [
+                { field: "vote", message: "Sorry, post no longer exist." },
+              ],
             },
           };
         if (voteValue !== 1 && voteValue !== -1) {
@@ -291,8 +287,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: 'Voting action failed.',
-              errors: [{ field: 'vote', message: 'Invalid vote.' }],
+              message: "Voting action failed.",
+              errors: [{ field: "vote", message: "Invalid vote." }],
             },
           };
         }
@@ -314,8 +310,8 @@ export default {
               network: {
                 code: 400,
                 success: false,
-                message: 'Voting action failed.',
-                errors: [{ field: 'vote', message: 'You already voted.' }],
+                message: "Voting action failed.",
+                errors: [{ field: "vote", message: "You already voted." }],
               },
             };
           }
@@ -329,14 +325,18 @@ export default {
           { userId: req.session.userId, postId, value: voteValue }
         );
         post.points = parseFloat(post.points) + parseFloat(voteValue);
-        post.points == 0 ? (voteValue == 1 ? (post.points += 1) : (post.points -= 1)) : null;
+        post.points == 0
+          ? voteValue == 1
+            ? (post.points += 1)
+            : (post.points -= 1)
+          : null;
         await post.save();
         const freshPost = await Post.findOne({ _id: postId });
         return {
           network: {
             code: 200,
             success: true,
-            message: 'Post updated with new votes!',
+            message: "Post updated with new votes!",
           },
           data: freshPost,
         };

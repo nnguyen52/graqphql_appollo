@@ -3,6 +3,7 @@ import Post from "../models/Post";
 import Comment from "../models/comment";
 import User from "../models/user";
 import VoteComment from "../models/voteComment";
+import { deleteCommenReplyBase } from "../utils/deleteCommentRecursive";
 export default {
   Comment: {
     user: async (parent) => {
@@ -303,7 +304,7 @@ export default {
         };
       }
     },
-    voteComment: async (parent, { commentId, voteValue }, { req }) => {
+    voteComment: async (parent, { postId, commentId, voteValue }, { req }) => {
       try {
         const allowed = await checkAuth(req);
         if (!allowed) {
@@ -314,6 +315,22 @@ export default {
               message: "Access denied.",
               errors: [
                 { field: "comment", message: "Please login to vote comments!" },
+              ],
+            },
+          };
+        }
+        const existingPost = await Post.findOne({ _id: postId.toString() });
+        if (!existingPost) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Invalid data.",
+              errors: [
+                {
+                  field: "comment",
+                  message: "Sorry, this post is no longer exist.",
+                },
               ],
             },
           };
@@ -356,6 +373,7 @@ export default {
           newVote = new VoteComment({
             userId: req.session.userId,
             commentId,
+            postId,
             value: voteValue,
           });
           await newVote.save();
@@ -389,8 +407,8 @@ export default {
           },
           {
             userId: req.session.userId,
-
             commentId,
+            postId,
             value: voteValue,
           }
         );
@@ -422,62 +440,4 @@ export default {
       }
     },
   },
-};
-
-const deleteCommenReplyBase = async (_id, postId) => {
-  let rootCommentId = null;
-  let trackCommentToDelete = null;
-  let commentsToDelete = [];
-  const commentToDelete = await Comment.findOne({ _id, postId }).populate(
-    "reply"
-  );
-  commentsToDelete.push(commentToDelete._id.toString());
-  trackCommentToDelete = commentToDelete;
-  rootCommentId = commentToDelete._id;
-  const allComments = await Comment.find().populate("reply");
-  for (let i = 0; i < allComments.length; i++) {
-    if (
-      !allComments[i].reply &&
-      allComments[i]._id.toString() == rootCommentId.toString() &&
-      allComments[i].postId.toString() == postId.toString()
-    ) {
-      trackCommentToDelete = allComments[i];
-      commentsToDelete.push(allComments[i]._id.toString());
-    }
-    if (
-      allComments[i].reply &&
-      (allComments[i].reply._id.toString() ==
-        trackCommentToDelete._id.toString() ||
-        allComments[i].reply._id.toString() == rootCommentId.toString()) &&
-      allComments[i].postId.toString() == postId.toString()
-    ) {
-      commentsToDelete.push(allComments[i]._id.toString());
-      trackCommentToDelete = allComments[i];
-    }
-  }
-  const post = await Post.findOne({ _id: postId });
-  const newCommentsToDelete = [...new Set(commentsToDelete)];
-
-  const newComments = post.comments.filter(
-    (each) => !newCommentsToDelete.includes(each.toString())
-  );
-
-  // delete votes from this comments' replies
-
-  // delete comment
-  for (const each of newCommentsToDelete) {
-    const repliesForThisComment = await VoteComment.find({ commentId: each });
-    for (const eachRep of repliesForThisComment)
-      await VoteComment.findOneAndDelete({ _id: eachRep });
-    await Comment.findOneAndDelete({ _id: each });
-  }
-  // delete votes this comment has
-  const votes = await VoteComment.find({ commentId: rootCommentId });
-  for (const each of votes) {
-    await VoteComment.findOneAndDelete({ _id: each });
-  }
-
-  // update post with new comments
-  await Post.findOneAndUpdate({ _id: postId }, { comments: newComments });
-  return true;
 };

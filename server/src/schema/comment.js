@@ -24,6 +24,7 @@ export default gql`
     _id: String
     userId: String
     commentId: String
+    postId: String
     value: Int
   }
   type mutationGetVoteCommentResponse {
@@ -48,8 +49,16 @@ export default gql`
       userTesting: String
     ): mutationCommentResponse
     updateComment(commentId: String, content: String): mutationCommentResponse
-    deleteComment(commentId: String): mutationCommentResponse
-    voteComment(commentId: String, voteValue: Int): mutationCommentResponse
+    deleteComment(
+      commentId: String
+      userTesting: String
+    ): mutationCommentResponse
+    voteComment(
+      postId: String
+      commentId: String
+      voteValue: Int
+      userTesting: String
+    ): mutationCommentResponse
     testMakeComment: mutationCommentResponse
     clearAllComment: mutationCommentResponse
   }

@@ -5,6 +5,10 @@ import { v4 as uuidv4 } from "uuid";
 import Token from "../models/token";
 import { sendMail } from "../utils/sendMails";
 import { checkAuth } from "../customMiddleware/checkAuth";
+import Post from "../models/Post";
+import { logout } from "../utils/logout";
+import { deletePost } from "../utils/deletePost";
+
 export default {
   Query: {
     me: async (parent, args, { req }) => {
@@ -154,7 +158,6 @@ export default {
           };
         // all good -> add cookie userId
         req.session.userId = existingUser.id;
-        // console.log( existingUser.id)
         return {
           network: {
             code: 200,
@@ -198,18 +201,25 @@ export default {
             },
           };
         // delete previous token if user dont use
-        await Token.findOneAndDelete({ userId: `${user._id}` });
+        // await Token.findOneAndDelete({ userId: `${user._id}` });
+        const existingTokens = await Token.find({
+          userId: user._id.toString(),
+        });
+        if (existingTokens.length > 0)
+          for (const token of existingTokens)
+            await Token.findOneAndDelete({ _id: token._id.toString() });
         const resetToken = uuidv4();
         const hashedResetToken = await argon2.hash(resetToken);
         // save token to db
         await new Token({
           userId: `${user._id}`,
           token: hashedResetToken,
+          type: "forgotPassword",
         }).save();
         // send reset password link to user via email
         await sendMail(
           email,
-          `<a style="color : white; background: green;"   href="http://localhost:5000/change-password?type=reset&token=${resetToken}&id=${user._id}">Reset your password</a>`,
+          `<a style="color : white; background: green;"   href="http://localhost:5000/account/password?type=forgotPassword&token=${resetToken}&id=${user._id}">Reset your password</a>`,
           "Reset your password"
         );
         return {
@@ -237,43 +247,43 @@ export default {
       { req }
     ) => {
       try {
+        if (!type)
+          return {
+            code: 400,
+            succcess: false,
+            message: `Invalid data`,
+            errors: [{ field: "password", message: "Action denied." }],
+          };
         if (newPassword.length < 2)
           return {
             network: {
               code: 400,
               success: false,
               message: `Invalid ${
-                type == "reset" ? "reseting" : "updating"
+                type == "forgotPassword" ? "reseting" : "updating"
               } password`,
               errors: [
                 {
-                  message: "Invalid password",
-                  details: [
-                    {
-                      field: "password",
-                      detailedMessage:
-                        "New password length must have at least 3 characters!",
-                    },
-                  ],
+                  field: "password",
+                  message:
+                    "New password length must have at least 3 characters!",
                 },
               ],
             },
           };
-        const resetPasswordTokenRecord = await Token.findOne({ userId });
+        const resetPasswordTokenRecord = await Token.findOne({ userId, type });
         if (!resetPasswordTokenRecord) {
           return {
             network: {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "reset" ? "reseting" : "updating"
+                type == "forgotPassword" ? "reseting" : "updating"
               } token`,
               errors: [
                 {
                   field: "token",
-                  message: `Invalid or expired password ${
-                    type == "reset" ? "reseting" : "updating"
-                  } token`,
+                  message: "Your request may be expired. Please try again. ",
                 },
               ],
             },
@@ -289,14 +299,12 @@ export default {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "reset" ? "reseting" : "updating"
+                type == "forgotPassword" ? "reseting" : "updating"
               } token`,
               errors: [
                 {
                   field: "token",
-                  message: `Invalid or expired password ${
-                    type == "reset" ? "reseting" : "updating"
-                  } token`,
+                  message: "Your request may be expired. Please try again. ",
                 },
               ],
             },
@@ -325,7 +333,9 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: `Password ${type == "reset" ? "reseted" : "updated"}!`,
+            message: `Password ${
+              type == "forgotPassword" ? "reseted" : "updated"
+            }!`,
           },
           data: user,
         };
@@ -372,7 +382,7 @@ export default {
             },
           };
         }
-        const user = await User.findOne({ _id: req.userId, email });
+        const user = await User.findOne({ _id: req.session.userId, email });
         // change username directly
         // but changing password must be done by email verification
         if (!user) {
@@ -393,7 +403,7 @@ export default {
         let updatedUser = user;
         if (userName)
           updatedUser = await User.findOneAndUpdate(
-            { _id: req.userId.toString() },
+            { _id: req.session.userId.toString() },
             {
               ...userName,
               userName,
@@ -412,17 +422,20 @@ export default {
               password: null,
             },
           };
-        await Token.findOneAndDelete({ userId: req.userId.toString() });
-        const resetToken = uuidv4();
-        const hashedResetToken = await argon2.hash(resetToken);
+        await Token.findOneAndDelete({ userId: req.session.userId.toString() });
+        const updatePasswordToken = uuidv4();
+        const hashedUpdatePasswordToken = await argon2.hash(
+          updatePasswordToken
+        );
         // save token to db
         await new Token({
-          userId: req.userId.toString(),
-          token: hashedResetToken,
+          userId: req.session.userId.toString(),
+          token: hashedUpdatePasswordToken,
+          type: "updatePassword",
         }).save();
         await sendMail(
           email,
-          `<a style="color : white; background: green;"   href="http://localhost:5000/change-password?type=update&token=${resetToken}&id=${req.userId.toString()}">Update your password</a>`,
+          `<a style="color : white; background: green;"   href="http://localhost:5000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
           "Update your password"
         );
         return {
@@ -441,6 +454,172 @@ export default {
             code: 500,
             success: false,
             message: `Internal Server Error: ${e.message}`,
+          },
+        };
+      }
+    },
+    confirmingDeleteAccount: async (parent, { email }, { req }) => {
+      try {
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Action denied.",
+              errors: [
+                {
+                  field: "user",
+                  message: "Please login to edit your profile!",
+                },
+              ],
+            },
+          };
+
+        const user = await User.findOne({
+          _id: req.session.userId.toString(),
+          email,
+        });
+        if (!user)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Invalid Data",
+              errors: [
+                { field: "user", message: "This account does not exist" },
+              ],
+            },
+          };
+
+        const existingTokens = await Token.find({
+          userId: user._id.toString(),
+        });
+        if (existingTokens.length > 0)
+          for (const token of existingTokens)
+            await Token.findOneAndDelete({ _id: token._id.toString() });
+        const deleteToken = uuidv4();
+        const hashedDeleteToken = await argon2.hash(deleteToken);
+        // save token to db
+        await new Token({
+          userId: req.session.userId.toString(),
+          token: hashedDeleteToken,
+          type: "deleteAccount",
+        }).save();
+        await sendMail(
+          email,
+          `<a style="color:white; background:red;"href="http://localhost:5000/account/delete?token=${deleteToken}&id=${req.session.userId.toString()}">Delete your account.</a>`,
+          "Delete your Account"
+        );
+        return {
+          network: {
+            code: 200,
+            success: true,
+            message:
+              "Please check your e-mailbox! You will find a link/confirmation to delete your account.",
+          },
+          data: null,
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server error ${e.message}`,
+          },
+        };
+      }
+    },
+    deleteAccount: async (parent, { token, type }, { req, res }) => {
+      try {
+        const isAllowed = await checkAuth(req);
+        if (!isAllowed)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Action denied.",
+              errors: [
+                {
+                  field: "user",
+                  message: "Please login to edit your profile!",
+                },
+              ],
+            },
+          };
+        if (!type)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: `Invalid Data`,
+              errors: [{ field: "user", message: "Action denied." }],
+            },
+          };
+        const deleteAccountTokenRecord = await Token.findOne({
+          userId: req.session.userId,
+          type,
+        });
+        if (!deleteAccountTokenRecord)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Invalid Data",
+              errors: [
+                {
+                  field: "token",
+                  message: "Your request may be expired. Please request again.",
+                },
+              ],
+            },
+          };
+        const resetDeleteAccountTokenValid = argon2.verify(
+          deleteAccountTokenRecord.token,
+          token
+        );
+        if (!resetDeleteAccountTokenValid)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Invalid Data",
+              errors: [
+                {
+                  field: "token",
+                  message: "Your request may be expired. Please try again. ",
+                },
+              ],
+            },
+          };
+
+        // all good
+        // delete all post form this user + delete User
+        const posts = await Post.find({
+          userId: req.session.userId.toString(),
+        });
+        for (const post of posts)
+          await deletePost(post, req.session.userId.toString());
+        await deleteAccountTokenRecord.deleteOne();
+        await User.findOneAndDelete({ _id: req.session.userId.toString() });
+        // logout user
+        await logout({ req, res });
+
+        return {
+          network: {
+            code: 200,
+            success: true,
+            message: "We are sad to see you leave. You account is deleted.",
+          },
+          data: null,
+        };
+      } catch (e) {
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server error ${e.message}`,
           },
         };
       }
