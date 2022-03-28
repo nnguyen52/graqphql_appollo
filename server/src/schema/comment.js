@@ -46,18 +46,13 @@ export default gql`
       postUserId: String
       # populate reply gives Comment
       reply: String
-      userTesting: String
     ): mutationCommentResponse
     updateComment(commentId: String, content: String): mutationCommentResponse
-    deleteComment(
-      commentId: String
-      userTesting: String
-    ): mutationCommentResponse
+    deleteComment(commentId: String): mutationCommentResponse
     voteComment(
       postId: String
       commentId: String
       voteValue: Int
-      userTesting: String
     ): mutationCommentResponse
     testMakeComment: mutationCommentResponse
     clearAllComment: mutationCommentResponse

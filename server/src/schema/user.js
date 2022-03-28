@@ -26,17 +26,8 @@ export default gql`
       newPassword: String!
     ): UserMutationResponse
     editMe(newUserInfo: newUserInfo): UserMutationResponse
-    confirmingDeleteAccount(
-      id: String
-      email: String
-      userTesting: String
-    ): UserMutationResponse
-    deleteAccount(
-      userId: String
-      type: String
-      token: String
-      userTesting: String
-    ): UserMutationResponse
+    confirmingDeleteAccount(email: String): UserMutationResponse
+    deleteAccount(type: String, token: String): UserMutationResponse
   }
   type User {
     id: ID

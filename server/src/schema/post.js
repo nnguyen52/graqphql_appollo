@@ -48,9 +48,9 @@ export default gql`
     getPostByID(id: String): GetPostByIDResponse
   }
   type Mutation {
-    createPost(title: String, content: String, userTesting: String): CreatePost
+    createPost(title: String, content: String): CreatePost
     updatePost(id: ID, title: String, content: String): UpdatePost
-    deletePost(id: ID, userTesting: String): DeletePost
+    deletePost(id: ID): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
   }
 `;
