@@ -8,7 +8,11 @@ import { checkAuth } from "../customMiddleware/checkAuth";
 import Post from "../models/Post";
 import { logout } from "../utils/logout";
 import { deletePost } from "../utils/deletePost";
-
+import user from "../schema/user";
+//src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
+const toCursorHash = (string) => Buffer.from(string).toString("base64");
+const fromCursorHash = (string) =>
+  Buffer.from(string, "base64").toString("ascii");
 export default {
   Query: {
     me: async (parent, args, { req }) => {
@@ -45,6 +49,71 @@ export default {
     },
     user: async (parent, { id }, { models }) => {
       return await User.findById(id);
+    },
+    searchUsers: async (_parent, { input, limit = 10, cursor }) => {
+      try {
+        let realLimit = limit > 10 ? 10 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+              $or: [
+                { userName: { $regex: `^${input}*` } },
+                { email: { $regex: `^${input}*` } },
+              ],
+            }
+          : {
+              $or: [
+                { userName: { $regex: `^${input}*` } },
+                { email: { $regex: `^${input}*` } },
+              ],
+            };
+        let users = await User.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        if (users.length == 0)
+          return {
+            network: {
+              code: 200,
+              success: true,
+              mesasge:
+                "Opps, we can not find any users you requested. Please try again.",
+            },
+            data: {
+              users: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        const hasNextPage = users.length > realLimit;
+        const edges = hasNextPage ? users.slice(0, -1) : users;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            users: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error : ${e.message}`,
+          },
+        };
+      }
     },
   },
   Mutation: {

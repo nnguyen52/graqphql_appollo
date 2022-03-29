@@ -191,6 +191,71 @@ export default {
         };
       }
     },
+    searchPosts: async (_, { input, limit = 10, cursor }) => {
+      try {
+        let realLimit = limit > 10 ? 10 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+              $or: [
+                { title: { $regex: `^${input}*` } },
+                { content: { $regex: `^${input}*` } },
+              ],
+            }
+          : {
+              $or: [
+                { title: { $regex: `^${input}*` } },
+                { content: { $regex: `^${input}*` } },
+              ],
+            };
+        let posts = await Post.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        if (posts.length == 0)
+          return {
+            network: {
+              success: true,
+              code: 200,
+              message:
+                "Opps, we can not find any posts you requested. Please try again.",
+            },
+            data: {
+              posts: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        const hasNextPage = posts.length > realLimit;
+        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            posts: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
   },
   Mutation: {
     createPost: async (parent, { title, content }, { req }) => {
