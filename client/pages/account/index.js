@@ -2,6 +2,7 @@ import { useQuery } from '@apollo/client';
 import React from 'react';
 import AuthEdit from '../../components/AuthEdit';
 import { Query_me } from '../../graphql-client/queries/user';
+import { Alert } from '@mui/material';
 
 const Account = () => {
   const hideEmail = (email) => {
@@ -30,9 +31,8 @@ const Account = () => {
         <h2>Authenticating...</h2>
       </>
     );
-  if (!loadingMe && !dataMe?.me?.network.success) {
-    return <h2 style={{ color: 'red' }}>Please login to see these contents</h2>;
-  }
+  if (!loadingMe && !dataMe?.me?.network.success)
+    return <Alert severity='error'>Please login to see this content!</Alert>;
   return (
     <div>
       <h2>Info</h2>

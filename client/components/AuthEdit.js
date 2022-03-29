@@ -7,13 +7,13 @@ import { useMutation } from '@apollo/client';
 import { Mutation_verifyPassword } from '../graphql-client/mutations/verifyPassword';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { Mutation_editMe } from '../graphql-client/mutations/editMe';
+import { Query_me } from '../graphql-client/queries/user';
 
 const AuthEdit = ({ me }) => {
   const initPasswordValue = {
     password: '',
     email: '',
   };
-
   const [verifyPassword, { loading: loadingVerifyPasword }] = useMutation(Mutation_verifyPassword);
   const initialValues = {
     userName: me.data.userName,
@@ -46,6 +46,7 @@ const AuthEdit = ({ me }) => {
     });
   };
   const handleEditMe = async (values, { setErrors }) => {
+    if (messageEditMe) return;
     if (!values.userName && !values.password) return;
     await editMe({
       variables: {
@@ -56,11 +57,20 @@ const AuthEdit = ({ me }) => {
         },
       },
       update(cache, { data }) {
-        console.log('after edit me:', data);
         if (!data.editMe.network.success) {
           messageEditMe(data.editMe.network.errors[0].message);
           return;
         }
+        // update cache Query_me
+        cache.writeQuery({
+          query: Query_me,
+          data: {
+            me: {
+              network: { ...me.network },
+              data: { ...data.editMe.data },
+            },
+          },
+        });
         setMessageEditMe(data.editMe.network.message);
       },
     });
@@ -68,74 +78,88 @@ const AuthEdit = ({ me }) => {
   return (
     <>
       {!checkPassword && (
-        <Box
+        <Alert
           sx={{
-            display: 'flex',
             alignItems: 'center',
             gap: '1em',
           }}
         >
-          <span> Before changing your credentials, please enter your password:</span>
-          <Formik initialValues={initPasswordValue} onSubmit={handleSubmitCheckPass}>
-            {({ isSubmitting: isSubmittingCheckPass }) => (
-              <Form>
-                <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
-                  <InputField
-                    disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
-                    name='email'
-                    type='email'
-                    label='Enter your email...'
-                  />
-                  <InputField
-                    disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
-                    name='password'
-                    type='password'
-                    label='Enter your password...'
-                  />
-                  <Button type='submit'></Button>
-                </Box>
-              </Form>
-            )}
-          </Formik>
-        </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1em',
+            }}
+          >
+            <u> Before changing your credentials, please enter your Email and Password</u>
+            <Formik initialValues={initPasswordValue} onSubmit={handleSubmitCheckPass}>
+              {({ isSubmitting: isSubmittingCheckPass }) => (
+                <Form>
+                  <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
+                    <InputField
+                      disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
+                      name='email'
+                      type='email'
+                      label='Enter your email...'
+                    />
+                    <InputField
+                      disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
+                      name='password'
+                      type='password'
+                      label='Enter your password...'
+                    />
+                    <Button type='submit'>Confirm</Button>
+                  </Box>
+                </Form>
+              )}
+            </Formik>
+          </Box>
+        </Alert>
       )}
       {errorCheckPassword && <Alert severity='error'>{errorCheckPassword}</Alert>}
       {checkPassword && (
         <>
-          <Alert severity='success'>You can now edit your profile!</Alert>
-          <Formik initialValues={initialValues} onSubmit={handleEditMe}>
-            {({ isSubmitting: isSubmittingCheckPass }) => (
-              <Form>
-                <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
-                  <InputField
-                    defaultValue={initialValues.userName}
-                    name='userName'
-                    type='text'
-                    label='User name'
-                    helperText='leave blank you dont want to update user name.'
-                  />
-                  <InputField
-                    disabled
-                    value={initialValues.email}
-                    name='email'
-                    type='email'
-                    label='Email'
-                  />
-                  <InputField
-                    defaultValue={initialValues.password}
-                    name='password'
-                    type='password'
-                    label='New password'
-                    helperText='leave blank you dont want to update password.'
-                  />
-                  <LoadingButton loading={isSubmittingCheckPass || loadingEditMe} type='submit'>
-                    Update Profile
-                  </LoadingButton>
-                </Box>
-                {(isSubmittingCheckPass || loadingEditMe) && <LinearProgress />}
-              </Form>
-            )}
-          </Formik>
+          <Alert severity='success' sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
+            <u> You can now edit your profile!</u>
+            <Formik initialValues={initialValues} onSubmit={handleEditMe}>
+              {({ isSubmitting: isSubmittingCheckPass }) => (
+                <Form>
+                  <Box sx={{ display: 'flex', gap: '1em', marginTop: '1em' }}>
+                    <InputField
+                      defaultValue={initialValues.userName}
+                      name='userName'
+                      type='text'
+                      label='User name'
+                      helperText='leave blank you dont want to update user name.'
+                    />
+                    <InputField
+                      disabled
+                      value={initialValues.email}
+                      name='email'
+                      type='email'
+                      label='Email'
+                    />
+                    <InputField
+                      defaultValue={initialValues.password}
+                      name='password'
+                      type='password'
+                      label='New password'
+                      helperText='leave blank you dont want to update password.'
+                    />
+                    <LoadingButton
+                      disabled={messageEditMe}
+                      style={{ height: 'fit-content' }}
+                      loading={isSubmittingCheckPass && loadingEditMe}
+                      type='submit'
+                    >
+                      Update Profile
+                    </LoadingButton>
+                  </Box>
+                  {isSubmittingCheckPass && loadingEditMe && <LinearProgress />}
+                </Form>
+              )}
+            </Formik>
+          </Alert>
         </>
       )}
       {messageEditMe && <Alert severity='success'>{messageEditMe}</Alert>}

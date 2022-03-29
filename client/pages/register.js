@@ -74,7 +74,7 @@ const Register = () => {
                 {exceptionErr}
               </Alert>
             )}
-            {isSubmitting || registerLoading || (meLoading && <LinearProgress />)}
+            {isSubmitting && registerLoading && meLoading && <LinearProgress />}
           </Form>
         )}
       </Formik>

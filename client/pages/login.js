@@ -73,7 +73,7 @@ const Login = () => {
                 {exceptionErr}
               </Alert>
             )}
-            {isSubmitting || meLoading || (loginLoading && <LinearProgress />)}
+            {isSubmitting && meLoading && loginLoading && <LinearProgress />}
           </Form>
         )}
       </Formik>

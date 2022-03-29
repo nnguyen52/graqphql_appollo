@@ -3,17 +3,15 @@ import InputField from './InputField';
 import { Formik, Form } from 'formik';
 import { Alert, Button, LinearProgress } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_createPost } from '../graphql-client/mutations/createPost';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { Query_me } from '../graphql-client/queries/user';
 import NextLink from 'next/link';
 const CreatePost = () => {
-  const client = useApolloClient();
   const initialValues = { title: '', content: '' };
   const [createPost, { loading: loadingCraetePost }] = useMutation(Mutation_createPost);
   const { data: meData, loading: meLoading } = useQuery(Query_me);
-  // if (meData) console.log('meData: ', meData);
   const [exceptionErr, setExceptionErr] = useState(null);
   const handleSubmit = async (values, { setErrors }) => {
     const { title, content } = values;
@@ -27,7 +25,7 @@ const CreatePost = () => {
         }
         if (data.createPost.network.success) {
           const { getPosts } = cache.readQuery({ query: Query_getPosts });
-          console.log('after createPost: ', data.createPost);
+          // console.log('after createPost: ', data.createPost);
           // incoming data -> will get checked by typePolicies for merging
           const cacheAfterCreatePost = {
             ...getPosts,
@@ -68,7 +66,7 @@ const CreatePost = () => {
               <LoadingButton type='submit' loading={isSubmitting || meLoading || loadingCraetePost}>
                 Create post
               </LoadingButton>
-              {(isSubmitting || meLoading || loadingCraetePost) && <LinearProgress />}
+              {isSubmitting && meLoading && loadingCraetePost && <LinearProgress />}
               {exceptionErr && (
                 <Alert variant='filled' severity='error'>
                   {exceptionErr}

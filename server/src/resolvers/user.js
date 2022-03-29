@@ -433,7 +433,8 @@ export default {
             {
               ...userName,
               userName,
-            }
+            },
+            { new: true }
           );
         if (!password)
           return {
@@ -443,8 +444,9 @@ export default {
               message: 'Profile updated!',
             },
             data: {
-              ...updatedUser._doc,
+              id: updatedUser._id.toString(),
               userName,
+              email,
               password: null,
             },
           };

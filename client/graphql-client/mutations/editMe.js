@@ -13,7 +13,9 @@ export const Mutation_editMe = gql`
         }
       }
       data {
+        id
         userName
+        email
       }
     }
   }
