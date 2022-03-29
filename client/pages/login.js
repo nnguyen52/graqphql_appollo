@@ -77,6 +77,9 @@ const Login = () => {
           </Form>
         )}
       </Formik>
+      <NextLink href='/account/forgotPassword'>
+        <Button>forgot password</Button>
+      </NextLink>
     </div>
   );
 };
