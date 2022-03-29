@@ -32,9 +32,9 @@ export default {
 
   Query: {
     // cursor is objectId of last posts[]
-    getPosts: async (parent, { cursor, limit = 100 }) => {
+    getPosts: async (parent, { cursor, limit = 10 }) => {
       try {
-        let realLimit = limit > 100 ? 100 : limit;
+        let realLimit = limit > 10 ? 10 : limit;
         const cursorOptions = cursor
           ? {
               createdAt: {
@@ -117,28 +117,23 @@ export default {
         };
       }
     },
-    getPostsFromUser: async (
-      _,
-      { cursor, limit = 100, userTesting },
-      { req }
-    ) => {
+    getPostsFromUser: async (_, { cursor, limit = 10 }, { req }) => {
       try {
-        // const allowed = await checkAuth(req);
-        // if (!allowed) {
-        //   return {
-        //     network: {
-        //       code: 400,
-        //       success: false,
-        //       message: "Access Denied",
-        //       errors: [
-        //         { field: "post", message: "Please login to update post." },
-        //       ],
-        //     },
-        //   };
-        // }
-
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Access Denied",
+              errors: [
+                { field: "post", message: "Please login to update post." },
+              ],
+            },
+          };
+        }
         // get posts from me
-        let realLimit = limit > 100 ? 100 : limit;
+        let realLimit = limit > 10 ? 10 : limit;
         const cursorOptions = cursor
           ? {
               createdAt: {
@@ -151,7 +146,8 @@ export default {
           limit: realLimit + 1,
         });
         posts = posts.filter(
-          (eachPost) => eachPost.userId.toString() == userTesting.toString()
+          (eachPost) =>
+            eachPost.userId.toString() == req.session.userId.toString()
         );
         if (posts.length == 0) {
           return {
@@ -197,28 +193,24 @@ export default {
     },
   },
   Mutation: {
-    createPost: async (parent, { title, content, userTesting }, { req }) => {
+    createPost: async (parent, { title, content }, { req }) => {
       try {
-        // const allowed = await checkAuth(req);
-        // if (!allowed) {
-        //   return {
-        //     network: {
-        //       code: 400,
-        //       success: false,
-        //       message: "Access Denied",
-        //       errors: [
-        //         { field: "post", message: "Please login to create post." },
-        //       ],
-        //     },
-        //   };
-        // }
-        const user = await User.findById(
-          // req.session.userId
-          userTesting.toString()
-        );
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: "Access Denied",
+              errors: [
+                { field: "post", message: "Please login to create post." },
+              ],
+            },
+          };
+        }
+        const user = await User.findById(req.session.userId);
         const newPost = new Post({
-          // userId: req.session.userId,
-          userId: userTesting.toString(),
+          userId: req.session.userId,
           user,
           title,
           content,
