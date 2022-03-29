@@ -20,6 +20,7 @@ const AuthEdit = ({ me }) => {
     password: '',
     email: me.data.email,
   };
+
   const [checkPassword, setCheckPassword] = useState(false);
   const [errorCheckPassword, setErrorCheckPassword] = useState(null);
 

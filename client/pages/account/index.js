@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import React from 'react';
-import AuthEdit from '../components/AuthEdit';
-import { Query_me } from '../graphql-client/queries/user';
+import AuthEdit from '../../components/AuthEdit';
+import { Query_me } from '../../graphql-client/queries/user';
 
 const Account = () => {
   const hideEmail = (email) => {

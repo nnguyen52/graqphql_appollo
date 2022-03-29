@@ -16,8 +16,13 @@ export default gql`
     register(userName: String!, email: String!, password: String!): UserMutationResponse
     login(userNameOrEmail: String!, password: String!): UserMutationResponse
     logout: Boolean
-    forgotPassword(email: String!): UserMutationResponse
-    changePassword(token: String!, userId: String!, newPassword: String!): UserMutationResponse
+    forgotPassword(email: String): UserMutationResponse
+    changePassword(
+      token: String
+      userId: String
+      newPassword: String
+      type: String
+    ): UserMutationResponse
     editMe(newUserInfo: newUserInfo): UserMutationResponse
     confirmingDeleteAccount(email: String): UserMutationResponse
     deleteAccount(type: String, token: String): UserMutationResponse

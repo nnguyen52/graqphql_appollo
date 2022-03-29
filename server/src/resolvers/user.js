@@ -276,7 +276,7 @@ export default {
         // send reset password link to user via email
         await sendMail(
           email,
-          `<a style="color : white; background: green;"   href="http://localhost:5000/account/password?type=forgotPassword&token=${resetToken}&id=${user._id}">Reset your password</a>`,
+          `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=forgotPassword&token=${resetToken}&id=${user._id}">Reset your password</a>`,
           'Reset your password'
         );
         return {
@@ -461,7 +461,7 @@ export default {
         }).save();
         await sendMail(
           email,
-          `<a style="color : white; background: green;"   href="http://localhost:5000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
+          `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
           'Update your password'
         );
         return {
@@ -531,7 +531,7 @@ export default {
         }).save();
         await sendMail(
           email,
-          `<a style="color:white; background:red;"href="http://localhost:5000/account/delete?token=${deleteToken}&id=${req.session.userId.toString()}">Delete your account.</a>`,
+          `<a style="color:white; background:red;"href="http://localhost:3000/account/delete?token=${deleteToken}&id=${req.session.userId.toString()}">Delete your account.</a>`,
           'Delete your Account'
         );
         return {
