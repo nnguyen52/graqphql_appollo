@@ -27,6 +27,7 @@ const CreatePost = () => {
         }
         if (data.createPost.network.success) {
           const { getPosts } = cache.readQuery({ query: Query_getPosts });
+          console.log('after createPost: ', data.createPost);
           // incoming data -> will get checked by typePolicies for merging
           const cacheAfterCreatePost = {
             ...getPosts,

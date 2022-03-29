@@ -291,7 +291,6 @@ export default {
       }
     },
     voteComment: async (parent, { postId, commentId, voteValue }, { req }) => {
-      console.log(postId, commentId, voteValue);
       try {
         const allowed = await checkAuth(req);
         if (!allowed) {
