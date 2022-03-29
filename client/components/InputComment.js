@@ -74,6 +74,9 @@ const InputComment = ({
   };
   return (
     <>
+      {!loadingMe && !dataMe?.me.data && (
+        <span style={{ color: 'red' }}>Please login to comment</span>
+      )}
       {!loadingMe && dataMe?.me?.network?.success && (
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
           {({ isSubmitting }) => (

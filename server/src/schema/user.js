@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 
 export default gql`
   type Query {
@@ -12,19 +12,12 @@ export default gql`
     email: String
   }
   type Mutation {
-    register(
-      userName: String!
-      email: String!
-      password: String!
-    ): UserMutationResponse
+    verifyPassword(password: String, email: String): UserMutationResponse
+    register(userName: String!, email: String!, password: String!): UserMutationResponse
     login(userNameOrEmail: String!, password: String!): UserMutationResponse
     logout: Boolean
     forgotPassword(email: String!): UserMutationResponse
-    changePassword(
-      token: String!
-      userId: String!
-      newPassword: String!
-    ): UserMutationResponse
+    changePassword(token: String!, userId: String!, newPassword: String!): UserMutationResponse
     editMe(newUserInfo: newUserInfo): UserMutationResponse
     confirmingDeleteAccount(email: String): UserMutationResponse
     deleteAccount(type: String, token: String): UserMutationResponse

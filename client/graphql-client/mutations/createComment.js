@@ -3,7 +3,6 @@ import { Fragment_commentThreelevels } from '../fragments/comment3level';
 
 export const Mutation_createComment = gql`
   ${Fragment_commentThreelevels}
-
   mutation createComment(
     $content: String
     $tag: String
