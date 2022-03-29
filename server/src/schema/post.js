@@ -46,6 +46,7 @@ export default gql`
   type Query {
     getPosts(cursor: String, limit: Int): getAllPostResponse
     getPostByID(id: String): GetPostByIDResponse
+    getPostsFromUser(cursor: String, limit: Int): getAllPostResponse
   }
   type Mutation {
     createPost(title: String, content: String): CreatePost

@@ -117,27 +117,108 @@ export default {
         };
       }
     },
-  },
-  Mutation: {
-    createPost: async (parent, { title, content }, { req }) => {
+    getPostsFromUser: async (
+      _,
+      { cursor, limit = 100, userTesting },
+      { req }
+    ) => {
       try {
-        const allowed = await checkAuth(req);
-        if (!allowed) {
+        // const allowed = await checkAuth(req);
+        // if (!allowed) {
+        //   return {
+        //     network: {
+        //       code: 400,
+        //       success: false,
+        //       message: "Access Denied",
+        //       errors: [
+        //         { field: "post", message: "Please login to update post." },
+        //       ],
+        //     },
+        //   };
+        // }
+
+        // get posts from me
+        let realLimit = limit > 100 ? 100 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+            }
+          : {};
+        let posts = await Post.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        posts = posts.filter(
+          (eachPost) => eachPost.userId.toString() == userTesting.toString()
+        );
+        if (posts.length == 0) {
           return {
             network: {
-              code: 400,
-              success: false,
-              message: "Access Denied",
-              errors: [
-                { field: "post", message: "Please login to create post." },
-              ],
+              code: 200,
+              success: true,
+            },
+            data: {
+              posts: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
             },
           };
         }
-        const user = await User.findById(req.session.userId);
-
+        const hasNextPage = posts.length > realLimit;
+        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            posts: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
+  },
+  Mutation: {
+    createPost: async (parent, { title, content, userTesting }, { req }) => {
+      try {
+        // const allowed = await checkAuth(req);
+        // if (!allowed) {
+        //   return {
+        //     network: {
+        //       code: 400,
+        //       success: false,
+        //       message: "Access Denied",
+        //       errors: [
+        //         { field: "post", message: "Please login to create post." },
+        //       ],
+        //     },
+        //   };
+        // }
+        const user = await User.findById(
+          // req.session.userId
+          userTesting.toString()
+        );
         const newPost = new Post({
-          userId: req.session.userId,
+          // userId: req.session.userId,
+          userId: userTesting.toString(),
           user,
           title,
           content,
