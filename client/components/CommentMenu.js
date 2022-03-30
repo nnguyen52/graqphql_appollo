@@ -4,6 +4,11 @@ import { LoadingButton } from '@mui/lab';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import InputComment from './InputComment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useMutation } from '@apollo/client';
+import { Mutation_deleteComment } from '../graphql-client/mutations/deleteComment';
+import { Query_getPosts } from '../graphql-client/queries/posts';
+
 const CommentMenu = ({
   post,
   comment,
@@ -15,6 +20,7 @@ const CommentMenu = ({
   voteComment,
 }) => {
   const [replyMode, setReplyMode] = useState(false);
+  const [deleteComment, { loading: loadingDeleteComment }] = useMutation(Mutation_deleteComment);
   const handleVote = async (comment, value) => {
     try {
       if (!loadingMe && !dataMe?.me?.data) {
@@ -36,6 +42,39 @@ const CommentMenu = ({
       return alert('Please login to vote comment!');
     }
     setReplyMode(!replyMode);
+  };
+  const handleDeleteComment = async () => {
+    if (confirm('You are about to delete comment, are you sure?'))
+      await deleteComment({
+        variables: {
+          commentId: comment._id.toString(),
+        },
+        update(cache, { data }) {
+          let modifiedPosts = dataGetPosts.getPosts.data.posts;
+          modifiedPosts = modifiedPosts.map((eachPost) => {
+            if (eachPost._id.toString() == post._id.toString()) {
+              return {
+                ...eachPost,
+                comments: eachPost.comments.filter(
+                  (eachCmt) => eachCmt._id.toString() !== comment._id.toString()
+                ),
+              };
+            } else return eachPost;
+          });
+          cache.writeQuery({
+            query: Query_getPosts,
+            data: {
+              getPosts: {
+                ...dataGetPosts.getPosts,
+                data: {
+                  ...dataGetPosts.getPosts.data,
+                  posts: modifiedPosts,
+                },
+              },
+            },
+          });
+        },
+      });
   };
   return (
     <>
@@ -66,6 +105,12 @@ const CommentMenu = ({
         >
           {replyMode ? 'Cancel' : 'Reply'}
         </LoadingButton>
+        {dataMe?.me?.data && comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+          <DeleteIcon
+            sx={{ color: 'red', cursor: 'pointer' }}
+            onClick={loadingDeleteComment ? null : handleDeleteComment}
+          />
+        )}
       </Box>
       {replyMode && (
         <InputComment
