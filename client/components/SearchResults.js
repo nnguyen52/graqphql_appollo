@@ -1,6 +1,7 @@
 import React from 'react';
-import { Card } from '@mui/material';
+import { Modal, Card } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { LoadingButton } from '@mui/lab';
 
 const SearchResults = ({
   postsResult,
@@ -10,90 +11,163 @@ const SearchResults = ({
   searchUsersPagination,
   setSearchUsersPagination,
   searchPosts,
-  loadingSearchPosts,
   searchUsers,
-  loadingSearchUsers,
   closeSearchResult,
+  openSearchResult,
+  setOpenSearchResult,
+  setUsersResult,
+  setPostsResult,
+  input,
 }) => {
+  const fetchMoreSearchPosts = async () => {
+    await searchPosts({
+      variables: {
+        input,
+        cursor: searchPostsPagination.endCursor.toString(),
+      },
+      update(cache, { data }) {
+        if (data?.searchPosts?.data?.posts.length > 0) {
+          setPostsResult([...postsResult.concat(data?.searchPosts?.data?.posts)]);
+          if (data?.searchPosts?.data?.pageInfo?.hasNextPage)
+            setSearchPostsPagination(data?.searchPosts?.data?.pageInfo);
+          else
+            setSearchPostsPagination({
+              endCuror: null,
+              hasNextPage: false,
+            });
+        }
+      },
+    });
+  };
+  const fetchMoreSearchUsers = async () => {
+    await searchUsers({
+      variables: {
+        input,
+        cursor: searchUsersPagination.endCursor.toString(),
+      },
+      update(cache, { data }) {
+        if (data?.searchUsers?.data?.users.length > 0) {
+          setUsersResult([...usersResult.concat(data?.searchUsers?.data?.users)]);
+          if (data?.searchUsers?.data?.pageInfo?.hasNextPage)
+            setSearchUsersPagination(data?.searchUsers?.data?.pageInfo);
+          else
+            setSearchUsersPagination({
+              endCuror: null,
+              hasNextPage: false,
+            });
+        }
+      },
+    });
+  };
+
   return (
-    <Card
-      className='searchResults'
-      sx={{
-        display: 'flex',
-        flexWrap: 'no-wrap',
-        flexDirection: 'column',
-        transform: 'translate(-20%, 0)',
-        zIndex: 9999,
-        position: 'absolute',
-        left: 0,
-        width: '300px',
-        height: '200px',
-        overflow: 'auto',
+    <Modal
+      open={openSearchResult}
+      onClose={() => {
+        closeSearchResult();
+        setOpenSearchResult(false);
       }}
     >
-      <CloseIcon
+      <Card
+        className='searchResults'
         sx={{
           position: 'absolute',
-          top: 0,
-          right: 0,
-          color: 'red',
-          cursor: 'pointer',
+          left: '50%',
+          top: '50%',
+          display: 'flex',
+          flexWrap: 'no-wrap',
+          flexDirection: 'column',
+          transform: 'translate(-50%, -100%)',
+          zIndex: 9999,
+          width: '60%',
+          height: '200px',
+          overflow: 'auto',
+          background: 'white',
+          borderRadius: '.8em',
         }}
-        onClick={closeSearchResult}
-      />
-      <b style={{ padding: '.5em', width: '100%' }}>
-        <u> Posts </u>
-      </b>
-      {postsResult.length > 0 ? (
-        <>
-          {postsResult.map((each, index) => {
-            return (
+      >
+        <CloseIcon
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            color: 'red',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            closeSearchResult();
+            setOpenSearchResult(false);
+          }}
+        />
+        <b
+          style={{
+            padding: '.5em',
+            width: '100%',
+          }}
+        >
+          <u> Posts </u>
+        </b>
+        {postsResult.length > 0 ? (
+          <>
+            {postsResult.map((each, index) => {
+              return (
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      width: '100%',
+                      padding: '.5em',
+                      borderBottom: '1px solid grey',
+                    }}
+                    key={each._id + index}
+                  >
+                    {each.title}
+                  </div>
+                </>
+              );
+            })}
+            {searchPostsPagination.hasNextPage && (
               <>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                    padding: '.5em',
-                    borderBottom: '1px solid grey',
-                  }}
-                  key={index}
-                >
-                  {each.title}
-                </div>
+                <LoadingButton onClick={fetchMoreSearchPosts}>See more posts...</LoadingButton>
               </>
-            );
-          })}
-        </>
-      ) : (
-        'No posts'
-      )}
-      <b style={{ padding: '.5em', width: '100%' }}>
-        <u> Users</u>
-      </b>
-      {usersResult.length > 0 && (
-        <>
-          {usersResult.map((each, index) => {
-            return (
+            )}
+          </>
+        ) : (
+          'No posts'
+        )}
+        <b style={{ padding: '.5em', width: '100%' }}>
+          <u> Users</u>
+        </b>
+        {usersResult.length > 0 && (
+          <>
+            {usersResult.map((each, index) => {
+              return (
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      width: '100%',
+                      padding: '.5em',
+                      borderBottom: '1px solid grey',
+                    }}
+                    key={each._id - index}
+                  >
+                    {each.userName}
+                  </div>
+                </>
+              );
+            })}
+            {searchUsersPagination.hasNextPage && (
               <>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                    padding: '.5em',
-                    borderBottom: '1px solid grey',
-                  }}
-                  key={index}
-                >
-                  {each.userName}
-                </div>
+                <LoadingButton onClick={fetchMoreSearchUsers}>See more users...</LoadingButton>
               </>
-            );
-          })}
-        </>
-      )}
-    </Card>
+            )}
+          </>
+        )}
+      </Card>
+    </Modal>
   );
 };
 

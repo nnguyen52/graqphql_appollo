@@ -12,9 +12,7 @@ const Header = () => {
   const router = useRouter();
   const client = useApolloClient();
   const dataMe = client.readQuery({ query: Query_me });
-  useEffect(() => {
-    if (!dataMe?.me?.network?.data) return router.push('/');
-  }, []);
+
   return (
     <>
       <ThemeProvider theme={headingFont}>
@@ -29,16 +27,20 @@ const Header = () => {
         >
           {router.pathname == '/' ? (
             <Typography variant='h3' gutterBottom style={{ cursor: 'pointer' }}>
-              Apollo_GraphQL
+              Reddis
             </Typography>
           ) : (
             <NextLink href={'/'}>
               <Typography variant='h3' gutterBottom style={{ cursor: 'pointer' }}>
-                Apollo_GraphQL
+                Reddis
               </Typography>
             </NextLink>
           )}
-          <Search />
+          {router.pathname == '/account/password' ||
+          router.pathname == '/login' ||
+          router.pathname == '/register' ? null : (
+            <Search />
+          )}
           <Auth />
         </Box>
       </ThemeProvider>

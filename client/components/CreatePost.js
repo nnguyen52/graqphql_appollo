@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import InputField from './InputField';
 import { Formik, Form } from 'formik';
-import { Alert, Button, LinearProgress } from '@mui/material';
+import { Alert, Box, Card, LinearProgress } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_createPost } from '../graphql-client/mutations/createPost';
@@ -49,31 +49,50 @@ const CreatePost = () => {
     });
   };
   return (
-    <>
+    <Card>
       {!meLoading && meData?.me?.data == null ? (
         <Alert severity='success'>
           <u> Please login to create post!</u>
         </Alert>
       ) : (
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ isSubmitting }) => (
-            <Form>
-              <InputField name='title' label='Title' type='text' />
-              <InputField name='content' label='Content' type='text' />
-              <LoadingButton type='submit' loading={isSubmitting || meLoading || loadingCraetePost}>
-                Create post
-              </LoadingButton>
-              {isSubmitting && meLoading && loadingCraetePost && <LinearProgress />}
-              {exceptionErr && (
-                <Alert variant='filled' severity='error'>
-                  {exceptionErr}
-                </Alert>
-              )}
-            </Form>
-          )}
-        </Formik>
+        <Alert
+          severity='success'
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+            {({ isSubmitting }) => (
+              <Form>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1em',
+                  }}
+                >
+                  <InputField name='title' label='Title' type='text' />
+                  <InputField name='content' label='Content' type='text' />
+                  <LoadingButton
+                    type='submit'
+                    loading={isSubmitting || meLoading || loadingCraetePost}
+                  >
+                    Create post
+                  </LoadingButton>
+                  {isSubmitting && meLoading && loadingCraetePost && <LinearProgress />}
+                  {exceptionErr && (
+                    <Alert variant='filled' severity='error'>
+                      {exceptionErr}
+                    </Alert>
+                  )}
+                </Box>
+              </Form>
+            )}
+          </Formik>
+        </Alert>
       )}
-    </>
+    </Card>
   );
 };
 

@@ -15,7 +15,7 @@ const InputField = ({ textarea, ...props }) => {
           {...props}
         />
       ) : (
-        <TextField error={error} {...field} id={field.name} {...props} />
+        <TextField variant='standard' error={error} {...field} id={field.name} {...props} />
       )}
       {error && <FormHelperText>{error}</FormHelperText>}
     </FormControl>

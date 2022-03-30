@@ -49,7 +49,7 @@ const DisplayComments = ({
           {showReplies.length > 0 &&
             showReplies.map((each, index) => {
               return (
-                <div style={{ paddingLeft: `${rootPaddingLeft}px` }}>
+                <div key={index} style={{ paddingLeft: `${rootPaddingLeft}px` }}>
                   <DisplayComments
                     loadingDataGetPosts={loadingDataGetPosts}
                     dataGetPosts={dataGetPosts}

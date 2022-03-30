@@ -5,12 +5,13 @@ import { LoadingButton } from '@mui/lab';
 import { useMutation } from '@apollo/client';
 import { Mutation_SearchPosts } from '../graphql-client/mutations/searchPosts';
 import { Mutation_SearchUsers } from '../graphql-client/mutations/searchUsers';
-import { Box } from '@mui/material';
+import { Box, LinearProgress } from '@mui/material';
 import SearchResults from './SearchResults';
+
 const Search = () => {
-  const initialValues = {
+  const [initialValues, setInitialValues] = useState({
     input: '',
-  };
+  });
   const [searchPosts, { loading: loadingSearchPosts }] = useMutation(Mutation_SearchPosts);
   const [searchUsers, { loading: loadingSearchUsers }] = useMutation(Mutation_SearchUsers);
   const [postsResult, setPostsResult] = useState([]);
@@ -23,6 +24,7 @@ const Search = () => {
     endCursor: null,
     hasNextPage: false,
   });
+  const [openSearchResult, setOpenSearchResult] = useState(false);
   const closeSearchResult = () => {
     setPostsResult([]);
     setUsersResult([]);
@@ -34,35 +36,41 @@ const Search = () => {
       endCursor: null,
       hasNextPage: false,
     });
+    setInitialValues({
+      input: '',
+    });
   };
 
   const handleSearch = async (values) => {
+    setInitialValues({ input: values.input });
     await searchPosts({
       variables: {
         input: values.input,
+        limit: 5,
       },
       update(cache, { data }) {
-        console.log(data);
-
         if (data?.searchPosts?.data?.posts) {
-          setPostsResult(data.searchPosts.data.posts);
-          setSearchPostsPagination(data.searchPosts.data.pageInfo);
+          setPostsResult(data?.searchPosts?.data?.posts);
+          setSearchPostsPagination(data?.searchPosts?.data?.pageInfo);
+          if (!openSearchResult) setOpenSearchResult(true);
         }
       },
     });
     await searchUsers({
       variables: {
         input: values.input,
+        limit: 5,
       },
       update(cache, { data }) {
-        console.log(data);
         if (data?.searchUsers?.data?.users) {
-          setUsersResult(data.searchUsers.data.users);
-          setSearchUsersPagination(data.searchUsers.data.pageInfo);
+          setUsersResult(data?.searchUsers?.data?.users);
+          setSearchUsersPagination(data?.searchUsers?.data?.pageInfo);
+          if (!openSearchResult) setOpenSearchResult(true);
         }
       },
     });
   };
+
   return (
     <Box style={{ position: 'relative' }}>
       <Formik initialValues={initialValues} onSubmit={handleSearch}>
@@ -79,21 +87,23 @@ const Search = () => {
           </Form>
         )}
       </Formik>
-      {(postsResult.length > 0 || usersResult.length > 0) && (
-        <SearchResults
-          postsResult={postsResult}
-          usersResult={usersResult}
-          searchPostsPagination={searchPostsPagination}
-          setSearchPostsPagination={setSearchPostsPagination}
-          searchUsersPagination={searchUsersPagination}
-          setSearchUsersPagination={setSearchUsersPagination}
-          searchPosts={searchPosts}
-          loadingSearchPosts={loadingSearchPosts}
-          searchUsers={searchUsers}
-          loadingSearchUsers={loadingSearchUsers}
-          closeSearchResult={closeSearchResult}
-        />
-      )}
+
+      <SearchResults
+        postsResult={postsResult}
+        usersResult={usersResult}
+        searchPostsPagination={searchPostsPagination}
+        setSearchPostsPagination={setSearchPostsPagination}
+        searchUsersPagination={searchUsersPagination}
+        setSearchUsersPagination={setSearchUsersPagination}
+        searchPosts={searchPosts}
+        searchUsers={searchUsers}
+        closeSearchResult={closeSearchResult}
+        openSearchResult={openSearchResult}
+        setOpenSearchResult={setOpenSearchResult}
+        input={initialValues.input}
+        setUsersResult={setUsersResult}
+        setPostsResult={setPostsResult}
+      />
     </Box>
   );
 };
