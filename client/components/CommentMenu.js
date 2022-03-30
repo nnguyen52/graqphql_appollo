@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -21,6 +21,8 @@ const CommentMenu = ({
 }) => {
   const [replyMode, setReplyMode] = useState(false);
   const [deleteComment, { loading: loadingDeleteComment }] = useMutation(Mutation_deleteComment);
+  const [exceptionErr, setExceptionErr] = useState(null);
+
   const handleVote = async (comment, value) => {
     try {
       if (!loadingMe && !dataMe?.me?.data) {
@@ -50,6 +52,8 @@ const CommentMenu = ({
           commentId: comment._id.toString(),
         },
         update(cache, { data }) {
+          if (!data?.deleteComment?.network?.success)
+            return setExceptionErr(data.deleteComment.network.errors[0].message);
           let modifiedPosts = dataGetPosts.getPosts.data.posts;
           modifiedPosts = modifiedPosts.map((eachPost) => {
             if (eachPost._id.toString() == post._id.toString()) {
@@ -105,12 +109,14 @@ const CommentMenu = ({
         >
           {replyMode ? 'Cancel' : 'Reply'}
         </LoadingButton>
-        {dataMe?.me?.data && comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
-          <DeleteIcon
-            sx={{ color: 'red', cursor: 'pointer' }}
-            onClick={loadingDeleteComment ? null : handleDeleteComment}
-          />
-        )}
+        {!exceptionErr &&
+          dataMe?.me?.data &&
+          comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+            <DeleteIcon
+              sx={{ color: 'red', cursor: 'pointer' }}
+              onClick={loadingDeleteComment ? null : handleDeleteComment}
+            />
+          )}
       </Box>
       {replyMode && (
         <InputComment
@@ -123,6 +129,7 @@ const CommentMenu = ({
           dataGetPosts={dataGetPosts}
         />
       )}
+      {exceptionErr && <Alert severity='error'>{exceptionErr}</Alert>}
     </>
   );
 };
