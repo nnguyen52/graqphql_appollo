@@ -28,7 +28,7 @@ const Account = () => {
   if (loadingMe)
     return (
       <>
-        <h2>Authenticating...</h2>
+        <Alert severity='warning'>Authenticating...</Alert>
       </>
     );
   if (!loadingMe && !dataMe?.me?.network.success)

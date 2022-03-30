@@ -1,18 +1,17 @@
-import { validateRegisterInput } from "../customMiddleware/validateRegisterInputs";
-import User from "../models/user";
-import argon2 from "argon2";
-import { v4 as uuidv4 } from "uuid";
-import Token from "../models/token";
-import { sendMail } from "../utils/sendMails";
-import { checkAuth } from "../customMiddleware/checkAuth";
-import Post from "../models/Post";
-import { logout } from "../utils/logout";
-import { deletePost } from "../utils/deletePost";
-import user from "../schema/user";
+import { validateRegisterInput } from '../customMiddleware/validateRegisterInputs';
+import User from '../models/user';
+import argon2 from 'argon2';
+import { v4 as uuidv4 } from 'uuid';
+import Token from '../models/token';
+import { sendMail } from '../utils/sendMails';
+import { checkAuth } from '../customMiddleware/checkAuth';
+import Post from '../models/Post';
+import { logout } from '../utils/logout';
+import { deletePost } from '../utils/deletePost';
+import user from '../schema/user';
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
-const toCursorHash = (string) => Buffer.from(string).toString("base64");
-const fromCursorHash = (string) =>
-  Buffer.from(string, "base64").toString("ascii");
+const toCursorHash = (string) => Buffer.from(string).toString('base64');
+const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
 export default {
   Query: {
     me: async (parent, args, { req }) => {
@@ -21,7 +20,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: "Not logged in",
+            message: 'Not logged in',
           },
           data: null,
         };
@@ -31,7 +30,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: "Not logged in",
+            message: 'Not logged in',
           },
           data: null,
         };
@@ -39,7 +38,7 @@ export default {
         network: {
           code: 200,
           success: true,
-          message: "Logged in",
+          message: 'Logged in',
         },
         data: user,
       };
@@ -49,71 +48,6 @@ export default {
     },
     user: async (parent, { id }, { models }) => {
       return await User.findById(id);
-    },
-    searchUsers: async (_parent, { input, limit = 10, cursor }) => {
-      try {
-        let realLimit = limit > 10 ? 10 : limit;
-        const cursorOptions = cursor
-          ? {
-              createdAt: {
-                $lt: fromCursorHash(cursor),
-              },
-              $or: [
-                { userName: { $regex: `^${input}*` } },
-                { email: { $regex: `^${input}*` } },
-              ],
-            }
-          : {
-              $or: [
-                { userName: { $regex: `^${input}*` } },
-                { email: { $regex: `^${input}*` } },
-              ],
-            };
-        let users = await User.find(cursorOptions, null, {
-          sort: { createdAt: -1 },
-          limit: realLimit + 1,
-        });
-        if (users.length == 0)
-          return {
-            network: {
-              code: 200,
-              success: true,
-              mesasge:
-                "Opps, we can not find any users you requested. Please try again.",
-            },
-            data: {
-              users: [],
-              pageInfo: {
-                hasNextPage: false,
-              },
-            },
-          };
-        const hasNextPage = users.length > realLimit;
-        const edges = hasNextPage ? users.slice(0, -1) : users;
-        return {
-          network: {
-            code: 200,
-            success: true,
-          },
-          data: {
-            users: edges,
-            pageInfo: {
-              hasNextPage,
-              endCursor: hasNextPage
-                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
-                : null,
-            },
-          },
-        };
-      } catch (e) {
-        return {
-          network: {
-            code: 500,
-            success: false,
-            message: `Internal server error : ${e.message}`,
-          },
-        };
-      }
     },
   },
   Mutation: {
@@ -125,11 +59,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -143,7 +77,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
                   field: `user`,
@@ -160,10 +94,10 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid password",
+              message: 'Invalid password',
               errors: [
                 {
-                  field: "user",
+                  field: 'user',
                   message: `Invalid data. Please check your password or email again.`,
                 },
               ],
@@ -197,10 +131,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
-              errors: [
-                { field: `userName`, message: `${userName} is already taken.` },
-              ],
+              message: 'Invalid registration',
+              errors: [{ field: `userName`, message: `${userName} is already taken.` }],
             },
           };
         }
@@ -211,10 +143,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
-              errors: [
-                { field: `email`, message: `${email} is already taken.` },
-              ],
+              message: 'Invalid registration',
+              errors: [{ field: `email`, message: `${email} is already taken.` }],
             },
           };
         }
@@ -229,7 +159,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
+              message: 'Invalid registration',
               errors: validateInputResponse,
             },
           };
@@ -243,7 +173,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "register sucessfully",
+            message: 'register sucessfully',
           },
           data: newUser,
         };
@@ -261,9 +191,7 @@ export default {
     login: async (_, { userNameOrEmail, password }, { req }) => {
       try {
         const existingUser = await User.findOne(
-          userNameOrEmail.includes("@")
-            ? { email: userNameOrEmail }
-            : { userName: userNameOrEmail }
+          userNameOrEmail.includes('@') ? { email: userNameOrEmail } : { userName: userNameOrEmail }
         );
         // if account not exist
         if (!existingUser)
@@ -271,29 +199,24 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Account not found",
+              message: 'Account not found',
               errors: [
                 {
-                  field: "userNameOrEmail",
-                  message: "Username or email incorrect",
+                  field: 'userNameOrEmail',
+                  message: 'Username or email incorrect',
                 },
               ],
             },
           };
         // check password hash
-        const checkingPassword = await argon2.verify(
-          existingUser.password,
-          password
-        );
+        const checkingPassword = await argon2.verify(existingUser.password, password);
         if (!checkingPassword)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid password",
-              errors: [
-                { field: "password", message: "Password is incorrect!" },
-              ],
+              message: 'Invalid password',
+              errors: [{ field: 'password', message: 'Password is incorrect!' }],
             },
           };
         // all good -> add cookie userId
@@ -302,7 +225,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Logged in",
+            message: 'Logged in',
           },
           data: existingUser,
         };
@@ -322,7 +245,7 @@ export default {
         res.clearCookie(process.env.COOKIE_NAME);
         req.session.destroy((error) => {
           if (error) {
-            console.log("Destroying cookie error: ", error);
+            console.log('Destroying cookie error: ', error);
             resolve(false);
           }
           resolve(true);
@@ -337,7 +260,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Email not found",
+              message: 'Email not found',
             },
           };
         // delete previous token if user dont use
@@ -354,20 +277,19 @@ export default {
         await new Token({
           userId: `${user._id}`,
           token: hashedResetToken,
-          type: "forgotPassword",
+          type: 'forgotPassword',
         }).save();
         // send reset password link to user via email
         await sendMail(
           email,
           `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=forgotPassword&token=${resetToken}&id=${user._id}">Reset your password</a>`,
-          "Reset your password"
+          'Reset your password'
         );
         return {
           network: {
             code: 200,
             success: true,
-            message:
-              "Please check your e-mailbox! You will find a link to reset password.",
+            message: 'Please check your e-mailbox! You will find a link to reset password.',
           },
         };
       } catch (e) {
@@ -381,32 +303,25 @@ export default {
         };
       }
     },
-    changePassword: async (
-      parent,
-      { token, userId, newPassword, type },
-      { req }
-    ) => {
+    changePassword: async (parent, { token, userId, newPassword, type }, { req }) => {
       try {
         if (!type)
           return {
             code: 400,
             succcess: false,
             message: `Invalid data`,
-            errors: [{ field: "password", message: "Action denied." }],
+            errors: [{ field: 'password', message: 'Action denied.' }],
           };
         if (newPassword.length < 2)
           return {
             network: {
               code: 400,
               success: false,
-              message: `Invalid ${
-                type == "forgotPassword" ? "reseting" : "updating"
-              } password`,
+              message: `Invalid ${type == 'forgotPassword' ? 'reseting' : 'updating'} password`,
               errors: [
                 {
-                  field: "password",
-                  message:
-                    "New password length must have at least 3 characters!",
+                  field: 'password',
+                  message: 'New password length must have at least 3 characters!',
                 },
               ],
             },
@@ -418,33 +333,30 @@ export default {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "forgotPassword" ? "reseting" : "updating"
+                type == 'forgotPassword' ? 'reseting' : 'updating'
               } token`,
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
           };
         }
-        const resetPasswordTokenValid = argon2.verify(
-          resetPasswordTokenRecord.token,
-          token
-        );
+        const resetPasswordTokenValid = argon2.verify(resetPasswordTokenRecord.token, token);
         if (!resetPasswordTokenValid) {
           return {
             network: {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "forgotPassword" ? "reseting" : "updating"
+                type == 'forgotPassword' ? 'reseting' : 'updating'
               } token`,
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
@@ -456,26 +368,21 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "User no longer exists",
-              errors: [{ field: "token", message: "User no longer exists" }],
+              message: 'User no longer exists',
+              errors: [{ field: 'token', message: 'User no longer exists' }],
             },
           };
         }
         // all good
         const updatedPassword = await argon2.hash(newPassword);
-        await User.findOneAndUpdate(
-          { _id: userId },
-          { password: updatedPassword }
-        );
+        await User.findOneAndUpdate({ _id: userId }, { password: updatedPassword });
         await resetPasswordTokenRecord.deleteOne();
         req.session.userId = user.id;
         return {
           network: {
             code: 200,
             success: true,
-            message: `Password ${
-              type == "forgotPassword" ? "reseted" : "updated"
-            }!`,
+            message: `Password ${type == 'forgotPassword' ? 'reseted' : 'updated'}!`,
           },
           data: user,
         };
@@ -497,11 +404,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -515,11 +422,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data.",
+              message: 'Invalid Data.',
               errors: [
                 {
-                  field: "user",
-                  message: "Your session has expired. Please login again!",
+                  field: 'user',
+                  message: 'Your session has expired. Please login again!',
                 },
               ],
             },
@@ -540,7 +447,7 @@ export default {
             network: {
               success: true,
               code: 200,
-              message: "Profile updated!",
+              message: 'Profile updated!',
             },
             data: {
               id: updatedUser._id.toString(),
@@ -553,26 +460,23 @@ export default {
         // if updating password -> send mail to confirm
         await Token.findOneAndDelete({ userId: req.session.userId.toString() });
         const updatePasswordToken = uuidv4();
-        const hashedUpdatePasswordToken = await argon2.hash(
-          updatePasswordToken
-        );
+        const hashedUpdatePasswordToken = await argon2.hash(updatePasswordToken);
         // save token to db
         await new Token({
           userId: req.session.userId.toString(),
           token: hashedUpdatePasswordToken,
-          type: "updatePassword",
+          type: 'updatePassword',
         }).save();
         await sendMail(
           email,
           `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
-          "Update your password"
+          'Update your password'
         );
         return {
           network: {
             code: 200,
             success: true,
-            message:
-              "Please check your e-mailbox! You will find a link to update password.",
+            message: 'Please check your e-mailbox! You will find a link to update password.',
           },
           data: null,
         };
@@ -595,11 +499,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -614,10 +518,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
-              errors: [
-                { field: "user", message: "This account does not exist" },
-              ],
+              message: 'Invalid Data',
+              errors: [{ field: 'user', message: 'This account does not exist' }],
             },
           };
 
@@ -633,19 +535,19 @@ export default {
         await new Token({
           userId: req.session.userId.toString(),
           token: hashedDeleteToken,
-          type: "deleteAccount",
+          type: 'deleteAccount',
         }).save();
         await sendMail(
           email,
           `<a style="color:white; background:red;"href="http://localhost:3000/account/delete?token=${deleteToken}&id=${req.session.userId.toString()}">Delete your account.</a>`,
-          "Delete your Account"
+          'Delete your Account'
         );
         return {
           network: {
             code: 200,
             success: true,
             message:
-              "Please check your e-mailbox! You will find a link/confirmation to delete your account.",
+              'Please check your e-mailbox! You will find a link/confirmation to delete your account.',
           },
           data: null,
         };
@@ -668,11 +570,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -683,7 +585,7 @@ export default {
               code: 400,
               success: false,
               message: `Invalid Data`,
-              errors: [{ field: "user", message: "Action denied." }],
+              errors: [{ field: 'user', message: 'Action denied.' }],
             },
           };
         const deleteAccountTokenRecord = await Token.findOne({
@@ -695,29 +597,26 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
+              message: 'Invalid Data',
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please request again.",
+                  field: 'token',
+                  message: 'Your request may be expired. Please request again.',
                 },
               ],
             },
           };
-        const resetDeleteAccountTokenValid = argon2.verify(
-          deleteAccountTokenRecord.token,
-          token
-        );
+        const resetDeleteAccountTokenValid = argon2.verify(deleteAccountTokenRecord.token, token);
         if (!resetDeleteAccountTokenValid)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
+              message: 'Invalid Data',
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
@@ -728,8 +627,7 @@ export default {
         const posts = await Post.find({
           userId: req.session.userId.toString(),
         });
-        for (const post of posts)
-          await deletePost(post, req.session.userId.toString());
+        for (const post of posts) await deletePost(post, req.session.userId.toString());
         await deleteAccountTokenRecord.deleteOne();
         await User.findOneAndDelete({ _id: req.session.userId.toString() });
         // logout user
@@ -739,7 +637,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "We are sad to see you leave. You account is deleted.",
+            message: 'We are sad to see you leave. You account is deleted.',
           },
           data: null,
         };
@@ -749,6 +647,64 @@ export default {
             code: 500,
             success: false,
             message: `Internal Server error ${e.message}`,
+          },
+        };
+      }
+    },
+    searchUsers: async (_parent, { input, limit = 10, cursor }) => {
+      try {
+        let realLimit = limit > 10 ? 10 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+              $or: [{ userName: { $regex: `^${input}*` } }, { email: { $regex: `^${input}*` } }],
+            }
+          : {
+              $or: [{ userName: { $regex: `^${input}*` } }, { email: { $regex: `^${input}*` } }],
+            };
+        let users = await User.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        if (users.length == 0)
+          return {
+            network: {
+              code: 200,
+              success: true,
+              mesasge: 'Opps, we can not find any users you requested. Please try again.',
+            },
+            data: {
+              users: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        const hasNextPage = users.length > realLimit;
+        const edges = hasNextPage ? users.slice(0, -1) : users;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            users: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error : ${e.message}`,
           },
         };
       }

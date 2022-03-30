@@ -16,7 +16,7 @@ export async function getStaticProps() {
   try {
     await apolloClient.query({
       query: Query_getPosts,
-      variables: { limit: 2 },
+      variables: { limit: 5 },
     });
   } catch (e) {
     console.log('ERROR_getStaticProps pages/index', e);

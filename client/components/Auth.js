@@ -1,15 +1,16 @@
 import React from 'react';
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation, useApolloClient } from '@apollo/client';
 import { Query_me } from '../graphql-client/queries/user';
 import { Mutation_logout } from '../graphql-client/mutations/logout';
 import { useRouter } from 'next/router';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import NextLink from 'next/link';
+
 const Auth = () => {
   const router = useRouter();
-  const { data } = useQuery(Query_me);
+  const { data, loading } = useQuery(Query_me);
   const [logout] = useMutation(Mutation_logout);
-  if (router.route == '/login') return <div> </div>;
+  if (router.route == '/login' && !loading) return <div> </div>;
   if (data?.me?.data)
     return (
       <Box
@@ -21,8 +22,19 @@ const Auth = () => {
           gap: '1em',
         }}
       >
-        <NextLink href='/account'>Account </NextLink>
-        <span
+        <NextLink href='/account'>
+          <Button
+            sx={{
+              height: 'fit-content',
+            }}
+          >
+            Account
+          </Button>
+        </NextLink>
+        <Button
+          sx={{
+            height: 'fit-content ',
+          }}
           onClick={async () =>
             logout({
               variables: null,
@@ -38,10 +50,12 @@ const Auth = () => {
           }
         >
           Logout
-        </span>
+        </Button>
       </Box>
     );
-  return <div onClick={() => router.replace('/login')}>Login</div>;
+  if (!loading && !data?.me?.data)
+    return <Button onClick={() => router.replace('/login')}>Login</Button>;
+  return <></>;
 };
 
 export default Auth;

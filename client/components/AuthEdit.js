@@ -100,13 +100,13 @@ const AuthEdit = ({ me }) => {
                       disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
                       name='email'
                       type='email'
-                      label='Enter your email...'
+                      label='Email'
                     />
                     <InputField
                       disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
                       name='password'
                       type='password'
-                      label='Enter your password...'
+                      label='Password'
                     />
                     <Button type='submit'>Confirm</Button>
                   </Box>

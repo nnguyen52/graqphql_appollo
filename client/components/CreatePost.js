@@ -8,6 +8,7 @@ import { Mutation_createPost } from '../graphql-client/mutations/createPost';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { Query_me } from '../graphql-client/queries/user';
 import NextLink from 'next/link';
+import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 const CreatePost = () => {
   const initialValues = { title: '', content: '' };
   const [createPost, { loading: loadingCraetePost }] = useMutation(Mutation_createPost);
@@ -15,6 +16,10 @@ const CreatePost = () => {
   const [exceptionErr, setExceptionErr] = useState(null);
   const handleSubmit = async (values, { setErrors }) => {
     const { title, content } = values;
+    if (!title)
+      return setErrors(
+        mapFieldErrors([{ field: 'title', message: 'What is the title of this post?' }])
+      );
     await createPost({
       variables: { title, content },
       update(cache, { data }) {
@@ -46,16 +51,8 @@ const CreatePost = () => {
   return (
     <>
       {!meLoading && meData?.me?.data == null ? (
-        <Alert
-          action={
-            <NextLink href='/login'>
-              <Button style={{ color: 'white', background: 'black' }}>Login</Button>
-            </NextLink>
-          }
-          variant='filled'
-          severity='success'
-        >
-          Please login to create post!
+        <Alert severity='success'>
+          <u> Please login to create post!</u>
         </Alert>
       ) : (
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>

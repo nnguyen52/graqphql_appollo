@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Comment from './Comment';
 import { Button } from '@mui/material';
 import CommentMenu from './CommentMenu';
+import { useApolloClient } from '@apollo/client';
+import { Query_getPosts } from '../graphql-client/queries/posts';
+
 const DisplayComments = ({
   comment,
   post,
@@ -12,6 +15,8 @@ const DisplayComments = ({
   loadingVoteComment,
   voteComment,
 }) => {
+  const client = useApolloClient();
+  const posts = client.readQuery({ query: Query_getPosts });
   let rootPaddingLeft = 10;
   const [repliesForThisComment, setRepliesForThisComment] = useState([]);
   const [showReplies, setShowReplies] = useState([]);
@@ -60,7 +65,7 @@ const DisplayComments = ({
               );
             })}
           {repliesForThisComment.length - next > 0 ? (
-            <Button onClick={() => setNext(next + 100)}>See more replies...</Button>
+            <Button onClick={() => setNext(next + 5)}>See more replies...</Button>
           ) : (
             repliesForThisComment.length > 1 && (
               <Button onClick={() => setNext(1)}>Hide replies.</Button>

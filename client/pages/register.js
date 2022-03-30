@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import React, { useState } from 'react';
 import { Mutation_register } from '../graphql-client/mutations/register';
 import { useRouter } from 'next/router';
@@ -12,14 +12,15 @@ import { LoadingButton } from '@mui/lab';
 import { Alert, Button, LinearProgress } from '@mui/material';
 
 const Register = () => {
+  const client = useApolloClient();
   const router = useRouter();
   const initialValues = {
     userName: '',
     email: '',
     password: '',
   };
-  const [register, { data, loading: registerLoading, error }] = useMutation(Mutation_register);
-  const { data: meData, loading: meLoading } = useQuery(Query_me);
+  const [register, { loading: registerLoading, error }] = useMutation(Mutation_register);
+  const meData = client.readQuery({ query: Query_me });
   const [exceptionErr, setExceptionError] = useState(null);
 
   const handleSubmit = async (values, { setErrors }) => {
@@ -63,7 +64,7 @@ const Register = () => {
             <InputField name='userName' label='User Name' type='text' />
             <InputField name='email' label='Email' type='text' />
             <InputField name='password' label='Password' type='password' />
-            <LoadingButton loading={isSubmitting || registerLoading || meLoading} type='submit'>
+            <LoadingButton loading={isSubmitting && registerLoading} type='submit'>
               Register
             </LoadingButton>
             <NextLink href='/login'>
@@ -74,7 +75,7 @@ const Register = () => {
                 {exceptionErr}
               </Alert>
             )}
-            {isSubmitting && registerLoading && meLoading && <LinearProgress />}
+            {isSubmitting && registerLoading && <LinearProgress />}
           </Form>
         )}
       </Formik>

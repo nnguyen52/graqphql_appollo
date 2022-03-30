@@ -4,7 +4,7 @@ import InputField from '../../components/InputField';
 import { Box, LinearProgress, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useRouter } from 'next/router';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_changePassword } from '../../graphql-client/mutations/changePassword';
 import { Query_me } from '../../graphql-client/queries/user';
 

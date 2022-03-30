@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
 import { Query_getPosts } from '../graphql-client/queries/posts';
@@ -8,17 +8,22 @@ import Comments from './Comments';
 import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
 import InputComment from './InputComment';
 import { Box, Button } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { Mutation_deletePost } from '../graphql-client/mutations/deletePost';
+import NextLink from 'next/link';
 
 const Post = ({ data }) => {
-  const { data: dataGetPosts, loading: loadingDataGetPosts } = useQuery(Query_getPosts);
+  const client = useApolloClient();
+  const dataGetPosts = client.readQuery({ query: Query_getPosts });
+  const dataMe = client.readQuery({ query: Query_me });
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
-  const { data: dataMe, loading: loadingMe } = useQuery(Query_me);
+  const [deletePost, { loading: loadingDeletePost }] = useMutation(Mutation_deletePost);
   const [commentMode, setCommentMode] = useState(false);
-
   const handleVote = async (value) => {
     try {
-      if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
+      if (!dataMe?.me?.data || !dataMe.me) {
         return alert('Please login to vote posts!');
       }
       await vote({
@@ -41,26 +46,75 @@ const Post = ({ data }) => {
             });
           }
         },
-      }).catch((e) => console.log('catch here: ', e));
+      }).catch((e) => console.log(e));
     } catch (e) {
       console.log('out erorr', e);
     }
   };
+  const handleDeletePost = async () => {
+    if (confirm('You are about to delete post. Are you sure?'))
+      await deletePost({
+        variables: {
+          id: data._id.toString(),
+        },
+        update(cache, response) {
+          if (!response.data.deletePost.network.success)
+            return alert(response.data.deletePost.network.errors[0].message);
+          if (response.data.deletePost.network.success) {
+            cache.writeQuery({
+              query: Query_getPosts,
+              data: {
+                getPosts: {
+                  ...dataGetPosts.getPosts,
+                  data: {
+                    ...dataGetPosts.getPosts.data,
+                    posts: dataGetPosts.getPosts.data.posts.filter(
+                      (each) => each._id != data._id.toString()
+                    ),
+                  },
+                },
+              },
+            });
+          }
+        },
+      });
+  };
   return (
-    <div style={{ border: '1px solid black' }}>
-      <h3>{data.title}</h3>
+    <div>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1em',
+        }}
+      >
+        <h3>{data.title}</h3>{' '}
+        {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+          <DeleteIcon
+            sx={{
+              color: 'red',
+              cursor: 'pointer',
+            }}
+            onClick={!loadingDeletePost ? handleDeletePost : null}
+          />
+        )}
+        {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+          <NextLink href={`/account/editPost/${data._id}`}>
+            <EditIcon
+              sx={{
+                color: 'green',
+                cursor: 'pointer',
+              }}
+            />
+          </NextLink>
+        )}
+      </Box>
       <Box>
-        <LoadingButton
-          loading={loadingMe || loading || loadingDataGetPosts}
-          onClick={() => handleVote(1)}
-        >
+        <LoadingButton loading={loading} onClick={() => handleVote(1)}>
           upvote
         </LoadingButton>
         <b>{data.points}</b>
-        <LoadingButton
-          loading={loadingMe || loading || loadingDataGetPosts}
-          onClick={() => handleVote(-1)}
-        >
+        <LoadingButton loading={loading} onClick={() => handleVote(-1)}>
           downvote
         </LoadingButton>
         {commentMode ? (
@@ -101,21 +155,18 @@ const Post = ({ data }) => {
         <InputComment
           setCommentMode={setCommentMode}
           dataGetPosts={dataGetPosts}
-          loadingDataGetPosts={loadingDataGetPosts}
           post={data}
-          loadingMe={loadingMe}
           dataMe={dataMe}
         />
       )}
       <Comments
         post={data}
-        loadingDataGetPosts={loadingDataGetPosts}
         dataGetPosts={dataGetPosts}
-        loadingMe={loadingMe}
         dataMe={dataMe}
         loadingVoteComment={loadingVoteComment}
         voteComment={voteComment}
       />
+      <hr />
     </div>
   );
 };

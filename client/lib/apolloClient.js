@@ -21,19 +21,20 @@ function createApolloClient() {
             getPosts: {
               keyArgs: false,
               merge(existingData = undefined, incomingData) {
+                console.log('typepolicies getPosts triggered');
                 // case1: post is modified
                 for (let i = 0; i < existingData?.data?.posts.length; i++) {
                   if (
                     JSON.stringify(existingData?.data?.posts[i]) ===
                     JSON.stringify(incomingData?.data?.posts[0])
                   ) {
-                    // console.log('case1');
+                    console.log('case1');
                     return { ...incomingData };
                   }
                 }
                 // case2: new post added
                 if (incomingData.data.posts.length == 1) {
-                  // console.log('case2');
+                  console.log('case2');
                   return {
                     ...incomingData,
                     data: {
@@ -45,7 +46,7 @@ function createApolloClient() {
                   };
                 }
                 // case 3: get posts at beginning
-                // console.log('case3');
+                console.log('case3');
                 return {
                   ...incomingData,
                   data: {

@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 export default gql`
   type Post {
     _id: String
@@ -47,12 +47,12 @@ export default gql`
     getPosts(cursor: String, limit: Int): getAllPostResponse
     getPostByID(id: String): GetPostByIDResponse
     getPostsFromUser(cursor: String, limit: Int): getAllPostResponse
-    searchPosts(cursor: String, limit: Int, input: String): getAllPostResponse
   }
   type Mutation {
     createPost(title: String, content: String): CreatePost
-    updatePost(id: ID, title: String, content: String): UpdatePost
-    deletePost(id: ID): DeletePost
+    updatePost(id: String, title: String, content: String): UpdatePost
+    deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
+    searchPosts(cursor: String, limit: Int, input: String): getAllPostResponse
   }
 `;

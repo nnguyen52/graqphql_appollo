@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import React, { useState } from 'react';
 import { Mutation_Login } from '../graphql-client/mutations/login';
 import { useRouter } from 'next/router';
@@ -12,16 +12,15 @@ import { LoadingButton } from '@mui/lab';
 import { Alert, Button } from '@mui/material';
 import { LinearProgress } from '@mui/material';
 const Login = () => {
+  const client = useApolloClient();
   const router = useRouter();
   const initialValues = {
     userNameOrEmail: '',
     password: '',
   };
-  const [login, { data: dataLogin, loading: loginLoading, error }] = useMutation(Mutation_Login);
-  const { data: meData, loading: meLoading } = useQuery(Query_me);
+  const [login, { loading: loginLoading, error }] = useMutation(Mutation_Login);
+  const meData = client.readQuery({ query: Query_me });
   const [exceptionErr, setExceptionError] = useState(null);
-
-  // if (dataLogin?.login?.network?.errors) console.log(data);
   const handleSubmit = async (values, { setErrors }) => {
     await login({
       variables: {
@@ -62,7 +61,7 @@ const Login = () => {
           <Form>
             <InputField name='userNameOrEmail' label='User Name' type='text' />
             <InputField name='password' label='Password' type='password' />
-            <LoadingButton loading={isSubmitting || meLoading || loginLoading} type='submit'>
+            <LoadingButton loading={isSubmitting && loginLoading} type='submit'>
               Login
             </LoadingButton>
             <NextLink href='/register'>
@@ -73,7 +72,7 @@ const Login = () => {
                 {exceptionErr}
               </Alert>
             )}
-            {isSubmitting && meLoading && loginLoading && <LinearProgress />}
+            {isSubmitting && loginLoading && <LinearProgress />}
           </Form>
         )}
       </Formik>

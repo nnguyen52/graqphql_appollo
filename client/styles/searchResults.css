@@ -1,0 +1,3 @@
+.searchResults::-webkit-scrollbar {
+  display: none;
+}
