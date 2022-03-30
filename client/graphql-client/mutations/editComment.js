@@ -1,22 +1,10 @@
 import { gql } from '@apollo/client';
 import { Fragment_commentThreelevels } from '../fragments/comment3level';
 
-export const Mutation_createComment = gql`
+export const Mutation_editComment = gql`
   ${Fragment_commentThreelevels}
-  mutation createComment(
-    $content: String
-    $tag: String
-    $postId: String
-    $postUserId: String
-    $reply: String
-  ) {
-    createComment(
-      content: $content
-      tag: $tag
-      postId: $postId
-      postUserId: $postUserId
-      reply: $reply
-    ) {
+  mutation updateComment($commentId: String, $content: String) {
+    updateComment(commentId: $commentId, content: $content) {
       network {
         code
         success
