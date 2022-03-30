@@ -11,8 +11,6 @@ import Search from './Search';
 const Header = () => {
   const router = useRouter();
   const client = useApolloClient();
-  const dataMe = client.readQuery({ query: Query_me });
-
   return (
     <>
       <ThemeProvider theme={headingFont}>

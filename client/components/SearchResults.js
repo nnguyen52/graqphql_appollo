@@ -32,7 +32,7 @@ const SearchResults = ({
             setSearchPostsPagination(data?.searchPosts?.data?.pageInfo);
           else
             setSearchPostsPagination({
-              endCuror: null,
+              endCursor: null,
               hasNextPage: false,
             });
         }
@@ -52,7 +52,7 @@ const SearchResults = ({
             setSearchUsersPagination(data?.searchUsers?.data?.pageInfo);
           else
             setSearchUsersPagination({
-              endCuror: null,
+              endCursor: null,
               hasNextPage: false,
             });
         }
