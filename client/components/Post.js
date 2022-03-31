@@ -19,7 +19,7 @@ import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPos
 const Post = ({ data, detail }) => {
   const client = useApolloClient();
   const dataGetPosts = client.readQuery({ query: Query_getPosts });
-  const dataMe = client.readQuery({ query: Query_me });
+  const { data: dataMe } = useQuery(Query_me);
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
   const [deletePost, { loading: loadingDeletePost }] = useMutation(Mutation_deletePost);

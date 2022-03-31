@@ -9,7 +9,6 @@ import InputField from '../../../components/InputField';
 import { LoadingButton } from '@mui/lab';
 import { mapFieldErrors } from '../../../../server/src/utils/mapFieldErrors';
 import NextLink from 'next/link';
-import { Button } from '@mui/material';
 
 const EditPost = () => {
   const router = useRouter();

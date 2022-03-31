@@ -1,10 +1,11 @@
 import React from 'react';
-import { useQuery, useMutation, useApolloClient } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { Query_me } from '../graphql-client/queries/user';
 import { Mutation_logout } from '../graphql-client/mutations/logout';
 import { useRouter } from 'next/router';
 import { Box, Button } from '@mui/material';
 import NextLink from 'next/link';
+import { Query_getPosts } from '../graphql-client/queries/posts';
 
 const Auth = () => {
   const router = useRouter();
@@ -35,7 +36,7 @@ const Auth = () => {
           sx={{
             height: 'fit-content ',
           }}
-          onClick={async () =>
+          onClick={async () => {
             logout({
               variables: null,
               update(cache, { data }) {
@@ -46,8 +47,8 @@ const Auth = () => {
                   },
                 });
               },
-            })
-          }
+            });
+          }}
         >
           Logout
         </Button>
