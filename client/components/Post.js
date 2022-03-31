@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
@@ -80,94 +80,104 @@ const Post = ({ data }) => {
       });
   };
   return (
-    <div>
+    <NextLink href={`/post/${data._id}`}>
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1em',
+          margin: '1em',
+          '&:hover': {
+            background: '#f4f4f4',
+            cursor: 'pointer',
+          },
         }}
       >
-        <h3>{data.title}</h3>{' '}
-        {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
-          <DeleteIcon
-            sx={{
-              color: 'red',
-              cursor: 'pointer',
-            }}
-            onClick={!loadingDeletePost ? handleDeletePost : null}
-          />
-        )}
-        {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
-          <NextLink href={`/account/editPost/${data._id}`}>
-            <EditIcon
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1em',
+          }}
+        >
+          <h3>{data.title}</h3>{' '}
+          {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+            <DeleteIcon
               sx={{
-                color: 'green',
+                color: 'red',
                 cursor: 'pointer',
               }}
+              onClick={!loadingDeletePost ? handleDeletePost : null}
             />
-          </NextLink>
+          )}
+          {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+            <NextLink href={`/account/editPost/${data._id}`}>
+              <EditIcon
+                sx={{
+                  color: 'green',
+                  cursor: 'pointer',
+                }}
+              />
+            </NextLink>
+          )}
+        </Box>
+        <Box>
+          <LoadingButton loading={loading} onClick={() => handleVote(1)}>
+            upvote
+          </LoadingButton>
+          <b>{data.points}</b>
+          <LoadingButton loading={loading} onClick={() => handleVote(-1)}>
+            downvote
+          </LoadingButton>
+          {commentMode ? (
+            <Button
+              sx={{
+                color: 'white',
+                background: 'black',
+                maxHeight: '1.5em',
+                fontSize: '.8em',
+                padding: 1,
+                '&.MuiButtonBase-root:hover': {
+                  bgcolor: 'orange',
+                },
+              }}
+              onClick={() => setCommentMode(!commentMode)}
+            >
+              Cancel
+            </Button>
+          ) : (
+            <Button
+              sx={{
+                color: 'white',
+                background: 'black',
+                maxHeight: '1.5em',
+                fontSize: '.8em',
+                padding: 1,
+                '&.MuiButtonBase-root:hover': {
+                  bgcolor: 'orange',
+                },
+              }}
+              onClick={() => setCommentMode(!commentMode)}
+            >
+              Comment
+            </Button>
+          )}
+        </Box>
+        {commentMode && (
+          <InputComment
+            setCommentMode={setCommentMode}
+            dataGetPosts={dataGetPosts}
+            post={data}
+            dataMe={dataMe}
+          />
         )}
-      </Box>
-      <Box>
-        <LoadingButton loading={loading} onClick={() => handleVote(1)}>
-          upvote
-        </LoadingButton>
-        <b>{data.points}</b>
-        <LoadingButton loading={loading} onClick={() => handleVote(-1)}>
-          downvote
-        </LoadingButton>
-        {commentMode ? (
-          <Button
-            sx={{
-              color: 'white',
-              background: 'black',
-              maxHeight: '1.5em',
-              fontSize: '.8em',
-              padding: 1,
-              '&.MuiButtonBase-root:hover': {
-                bgcolor: 'orange',
-              },
-            }}
-            onClick={() => setCommentMode(!commentMode)}
-          >
-            Cancel
-          </Button>
-        ) : (
-          <Button
-            sx={{
-              color: 'white',
-              background: 'black',
-              maxHeight: '1.5em',
-              fontSize: '.8em',
-              padding: 1,
-              '&.MuiButtonBase-root:hover': {
-                bgcolor: 'orange',
-              },
-            }}
-            onClick={() => setCommentMode(!commentMode)}
-          >
-            Comment
-          </Button>
-        )}
-      </Box>
-      {commentMode && (
-        <InputComment
-          setCommentMode={setCommentMode}
-          dataGetPosts={dataGetPosts}
+        <Comments
           post={data}
+          dataGetPosts={dataGetPosts}
           dataMe={dataMe}
+          loadingVoteComment={loadingVoteComment}
+          voteComment={voteComment}
         />
-      )}
-      <Comments
-        post={data}
-        dataGetPosts={dataGetPosts}
-        dataMe={dataMe}
-        loadingVoteComment={loadingVoteComment}
-        voteComment={voteComment}
-      />
-      <hr />
-    </div>
+        <hr />
+      </Box>
+    </NextLink>
   );
 };
 

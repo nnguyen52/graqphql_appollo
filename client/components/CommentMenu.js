@@ -162,12 +162,12 @@ const CommentMenu = ({
           loading={loadingDataGetPosts || loadingMe || loadingVoteComment}
           sx={{
             color: 'white',
-            background: 'black',
+            background: !replyMode ? 'black' : 'crimson',
             maxHeight: '1.5em',
             fontSize: '.8em',
             padding: 0,
             '&.MuiButtonBase-root:hover': {
-              bgcolor: 'orange',
+              bgcolor: !replyMode ? 'orange' : 'crimson',
             },
           }}
           onClick={() => handleReply(comment)}
@@ -218,7 +218,13 @@ const CommentMenu = ({
                     name='content'
                   />
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: '.2em' }}>
-                    <LoadingButton size='small' variant='outlined' color='success' type='submit'>
+                    <LoadingButton
+                      loading={loadingEditComment && isSubmitting}
+                      size='small'
+                      variant='outlined'
+                      color='success'
+                      type='submit'
+                    >
                       Edit comment
                     </LoadingButton>
                     <Button
