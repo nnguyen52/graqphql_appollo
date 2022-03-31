@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@apollo/client';
-import { Query_getPostByID } from '../../graphql-client/queries/getPostByID';
+import { Query_getPostByID } from '../../../graphql-client/queries/getPostByID';
 import { Alert, Button, LinearProgress } from '@mui/material';
-import Post from '../../components/Post';
+import Post from '../../../components/Post';
 import NextLink from 'next/link';
 
 const PostDetail = () => {
@@ -14,15 +14,15 @@ const PostDetail = () => {
   if (loading) return <LinearProgress />;
   if (
     !loading &&
-    data?.getPostByID?.network?.code == 500 &&
-    data?.getPostByID?.network?.code == 400 &&
-    data?.getPostByID?.network?.data == null
+    (data?.getPostByID?.network?.code == 500 ||
+      data?.getPostByID?.network?.code == 400 ||
+      !data?.getPostByID?.data)
   ) {
     return <Alert severity='error'>Post Not Found</Alert>;
   }
   return (
     <>
-      <Post data={data?.getPostByID?.data} />
+      <Post data={data?.getPostByID?.data} detail={true} />
       <NextLink href='/'>
         <Button
           variant='outline'

@@ -15,8 +15,8 @@ import NextLink from 'next/link';
 import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
-
-const Post = ({ data, detail }) => {
+import { useRouter } from 'next/router';
+const Post = ({ data }) => {
   const client = useApolloClient();
   const dataGetPosts = client.readQuery({ query: Query_getPosts });
   const dataMe = client.readQuery({ query: Query_me });
@@ -30,9 +30,11 @@ const Post = ({ data, detail }) => {
     refetch,
   } = useQuery(Query_checkPostVotedFromUser, {
     variables: {
-      postId: data?._id.toString(),
+      postId: data._id.toString(),
     },
   });
+  const router = useRouter();
+  const { query } = router;
   const handleVote = async (value) => {
     try {
       if (!dataMe?.me?.data || !dataMe.me) {
@@ -94,7 +96,7 @@ const Post = ({ data, detail }) => {
   };
   return (
     <Box sx={{ display: 'flex', position: 'relative' }}>
-      {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
+      {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data.userId.toString() ? (
         <Box
           sx={{
             position: 'absolute',
@@ -128,7 +130,7 @@ const Post = ({ data, detail }) => {
             }}
             onClick={() => handleVote(1)}
           />
-          <b>{data?.points}</b>
+          <b>{data.points}</b>
           <ArrowCircleDownRoundedIcon
             sx={{
               cursor: 'pointer',
@@ -155,7 +157,7 @@ const Post = ({ data, detail }) => {
       ) : (
         <Box></Box>
       )}
-      <NextLink href={`/post/${data?._id}/detail`}>
+      <NextLink href={`/post/${data._id}/detail`}>
         <Box
           sx={{
             minWidth: '50%',
@@ -175,8 +177,8 @@ const Post = ({ data, detail }) => {
               gap: '1em',
             }}
           >
-            <h3>{data?.title}</h3>{' '}
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
+            <h3>{data.title}</h3>{' '}
+            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
               <DeleteIcon
                 sx={{
                   color: 'red',
@@ -185,7 +187,7 @@ const Post = ({ data, detail }) => {
                 onClick={!loadingDeletePost ? handleDeletePost : null}
               />
             )}
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
+            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
               <NextLink href={`/account/editPost/${data._id}`}>
                 <EditIcon
                   sx={{
@@ -239,8 +241,8 @@ const Post = ({ data, detail }) => {
               dataMe={dataMe}
             />
           )}
-          {!detail && `${data.comments.length} comments`}
-          {detail ? (
+          {!query.detail && `${data.comments.length} comments`}
+          {query.detail ? (
             <Comments
               post={data}
               dataGetPosts={dataGetPosts}

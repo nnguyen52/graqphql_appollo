@@ -19,6 +19,10 @@ export const userSchema = new mongoose.Schema(
       minlength: 1,
       maxlength: 100,
     },
+    karma: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

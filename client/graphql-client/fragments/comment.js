@@ -9,11 +9,13 @@ export const Fragment_comment = gql`
       id
       userName
       email
+      karma
     }
     tag {
       id
       userName
       email
+      karma
     }
     postId
   }

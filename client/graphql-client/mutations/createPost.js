@@ -20,6 +20,7 @@ export const Mutation_createPost = gql`
           id
           userName
           email
+          karma
         }
         comments {
           ...commentThreelevels

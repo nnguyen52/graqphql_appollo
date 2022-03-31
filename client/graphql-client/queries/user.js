@@ -12,6 +12,7 @@ export const Query_me = gql`
         id
         userName
         email
+        karma
       }
     }
   }

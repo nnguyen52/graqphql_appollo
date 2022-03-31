@@ -21,6 +21,7 @@ export const Mutation_SearchPosts = gql`
             id
             userName
             email
+            karma
           }
           title
           content

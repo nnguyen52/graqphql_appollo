@@ -187,6 +187,48 @@ export default {
         };
       }
     },
+    checkPostVotedFromUser: async (_, { postId }, { req }) => {
+      try {
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+            },
+          };
+        }
+        const voteFromThisUser = await Vote.findOne({
+          userId: req.session.userId.toString(),
+          postId,
+        });
+        if (!voteFromThisUser)
+          return {
+            network: {
+              code: 400,
+              success: false,
+            },
+          };
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            voteValue: parseFloat(voteFromThisUser.value),
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
   },
   Mutation: {
     createPost: async (parent, { title, content }, { req }) => {
@@ -337,6 +379,16 @@ export default {
               errors: [{ field: 'vote', message: 'Sorry, post no longer exist.' }],
             },
           };
+        if (post.userId.toString() == req.session.userId.toString())
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Voting action failed.',
+              errors: [{ field: 'vote', message: 'Malform action.' }],
+            },
+          };
+
         if (voteValue !== 1 && voteValue !== -1) {
           return {
             network: {
@@ -383,6 +435,15 @@ export default {
         post.points == 0 ? (voteValue == 1 ? (post.points += 1) : (post.points -= 1)) : null;
         await post.save();
         const freshPost = await Post.findOne({ _id: postId });
+        // then increase/decrease karma of the post author
+        let postAuthor = await User.findOne({ _id: freshPost.userId.toString() });
+        await User.findOneAndUpdate(
+          { _id: postAuthor._id },
+          {
+            karma: parseFloat(postAuthor.karma) + voteValue,
+          },
+          { new: true }
+        );
         return {
           network: {
             code: 200,

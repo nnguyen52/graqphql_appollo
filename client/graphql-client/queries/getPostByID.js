@@ -21,6 +21,7 @@ export const Query_getPostByID = gql`
           id
           userName
           email
+          karma
         }
         title
         content

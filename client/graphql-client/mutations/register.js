@@ -6,6 +6,7 @@ export const Mutation_register = gql`
         id
         userName
         email
+        karma
       }
       network {
         code

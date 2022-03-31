@@ -16,6 +16,7 @@ export const Mutation_SearchUsers = gql`
           id
           userName
           email
+          karma
         }
         pageInfo {
           hasNextPage

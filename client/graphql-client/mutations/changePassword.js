@@ -16,6 +16,7 @@ export const Mutation_changePassword = gql`
         id
         userName
         email
+        karma
       }
     }
   }

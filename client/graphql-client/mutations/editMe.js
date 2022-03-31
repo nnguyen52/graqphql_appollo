@@ -16,6 +16,7 @@ export const Mutation_editMe = gql`
         id
         userName
         email
+        karma
       }
     }
   }

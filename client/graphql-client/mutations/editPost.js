@@ -20,6 +20,7 @@ export const Mutation_editPost = gql`
           id
           userName
           email
+          karma
         }
         title
         content

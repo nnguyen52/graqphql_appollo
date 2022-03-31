@@ -32,6 +32,13 @@ export default gql`
     network: MutationResponse
     data: Post
   }
+  type voteValue {
+    voteValue: Int
+  }
+  type checkPostVotedFromUserResponse {
+    network: MutationResponse
+    data: voteValue
+  }
   type CreatePost {
     network: MutationResponse
     data: Post
@@ -47,6 +54,7 @@ export default gql`
     getPosts(cursor: String, limit: Int): getAllPostResponse
     getPostByID(id: String): GetPostByIDResponse
     getPostsFromUser(cursor: String, limit: Int): getAllPostResponse
+    checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
   }
   type Mutation {
     createPost(title: String, content: String): CreatePost
