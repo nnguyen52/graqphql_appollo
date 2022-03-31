@@ -5,13 +5,13 @@ import { Mutation_logout } from '../graphql-client/mutations/logout';
 import { useRouter } from 'next/router';
 import { Box, Button } from '@mui/material';
 import NextLink from 'next/link';
-import { Query_getPosts } from '../graphql-client/queries/posts';
+import { LoadingButton } from '@mui/lab';
 
 const Auth = () => {
   const router = useRouter();
-  const { data, loading } = useQuery(Query_me);
+  const { data, loading: loadingMe } = useQuery(Query_me);
   const [logout] = useMutation(Mutation_logout);
-  if (router.route == '/login' && !loading) return <div> </div>;
+  if (router.route == '/login' && !loadingMe) return <div></div>;
   if (data?.me?.data)
     return (
       <Box
@@ -23,14 +23,15 @@ const Auth = () => {
           gap: '1em',
         }}
       >
-        <NextLink href='/account'>
-          <Button
+        <NextLink href={`/account/${data?.me?.data?.id?.toString()}`}>
+          <LoadingButton
             sx={{
               height: 'fit-content',
             }}
+            loading={loadingMe}
           >
             Account
-          </Button>
+          </LoadingButton>
         </NextLink>
         <Button
           sx={{
@@ -54,7 +55,7 @@ const Auth = () => {
         </Button>
       </Box>
     );
-  if (!loading && !data?.me?.data)
+  if (!loadingMe && !data?.me?.data)
     return <Button onClick={() => router.replace('/login')}>Login</Button>;
   return <></>;
 };

@@ -43,11 +43,42 @@ export default {
         data: user,
       };
     },
-    users: async (parent, args, { models }) => {
+    users: async (parent, args, { req }) => {
       return await User.find();
     },
-    user: async (parent, { id }, { models }) => {
+    user: async (parent, { id }, { req }) => {
       return await User.findById(id);
+    },
+    getUserByID: async (parent, { id }) => {
+      try {
+        const user = await User.findOne({ _id: id.toString() });
+        if (!user) {
+          return {
+            network: {
+              code: 200,
+              success: true,
+              message: 'User not found',
+            },
+            data: null,
+          };
+        }
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: user,
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            messsage: `Internal Server Error: ${e.message}`,
+          },
+        };
+      }
     },
   },
   Mutation: {

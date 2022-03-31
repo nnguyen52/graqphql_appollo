@@ -1,22 +1,18 @@
 import { gql } from '@apollo/client';
+import { Fragment_networkResponse } from '../fragments/networkResponse';
+import { Fragment_userInfo } from '../fragments/userInfo';
+
 export const Mutation_SearchUsers = gql`
+  ${Fragment_networkResponse}
+  ${Fragment_userInfo}
   mutation searchUsers($cursor: String, $limit: Int, $input: String) {
     searchUsers(cursor: $cursor, limit: $limit, input: $input) {
       network {
-        code
-        success
-        message
-        errors {
-          field
-          message
-        }
+        ...network
       }
       data {
         users {
-          id
-          userName
-          email
-          karma
+          ...user
         }
         pageInfo {
           hasNextPage

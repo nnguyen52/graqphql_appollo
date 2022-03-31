@@ -19,6 +19,7 @@ export default gql`
     me: UserMutationResponse
     users: [User]
     user(id: ID): User
+    getUserByID(id: String): UserMutationResponse
   }
   type Mutation {
     verifyPassword(password: String, email: String): UserMutationResponse

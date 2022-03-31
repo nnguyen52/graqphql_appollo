@@ -1,7 +1,9 @@
 import React from 'react';
-import { Modal, Card } from '@mui/material';
+import { Modal, Card, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { LoadingButton } from '@mui/lab';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 
 const SearchResults = ({
   postsResult,
@@ -19,6 +21,7 @@ const SearchResults = ({
   setPostsResult,
   input,
 }) => {
+  const router = useRouter();
   const fetchMoreSearchPosts = async () => {
     await searchPosts({
       variables: {
@@ -111,20 +114,27 @@ const SearchResults = ({
           <>
             {postsResult.map((each, index) => {
               return (
-                <>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      width: '100%',
-                      padding: '.5em',
-                      borderBottom: '1px solid grey',
-                    }}
-                    key={each._id + index}
-                  >
-                    {each.title}
-                  </div>
-                </>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                    padding: '.5em',
+                    borderBottom: '1px solid grey',
+                    '&:hover': {
+                      background: '#f4f4f4',
+                      cursor: 'pointer',
+                    },
+                  }}
+                  key={each._id + index}
+                  onClick={() => {
+                    closeSearchResult();
+                    setOpenSearchResult(false);
+                    router.push(`/post/${each._id.toString()}/detail `);
+                  }}
+                >
+                  {each.title}
+                </Box>
               );
             })}
             {searchPostsPagination.hasNextPage && (
@@ -144,18 +154,28 @@ const SearchResults = ({
             {usersResult.map((each, index) => {
               return (
                 <>
-                  <div
-                    style={{
+                  <Box
+                    sx={{
                       display: 'flex',
                       flexDirection: 'column',
                       width: '100%',
                       padding: '.5em',
                       borderBottom: '1px solid grey',
+                      borderBottom: '1px solid grey',
+                      '&:hover': {
+                        background: '#f4f4f4',
+                        cursor: 'pointer',
+                      },
                     }}
                     key={each._id - index}
+                    onClick={() => {
+                      closeSearchResult();
+                      setOpenSearchResult(false);
+                      router.push(`/account/${each.id.toString()}`);
+                    }}
                   >
                     {each.userName}
-                  </div>
+                  </Box>
                 </>
               );
             })}

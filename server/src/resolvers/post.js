@@ -355,7 +355,6 @@ export default {
         };
       }
     },
-
     vote: async (parent, { postId, voteValue }, { req }) => {
       try {
         const allowed = await checkAuth(req);
@@ -437,6 +436,15 @@ export default {
         const freshPost = await Post.findOne({ _id: postId });
         // then increase/decrease karma of the post author
         let postAuthor = await User.findOne({ _id: freshPost.userId.toString() });
+        if (!postAuthor)
+          return {
+            network: {
+              code: 200,
+              success: true,
+              message: 'Post updated with new votes!',
+            },
+            data: freshPost,
+          };
         await User.findOneAndUpdate(
           { _id: postAuthor._id },
           {

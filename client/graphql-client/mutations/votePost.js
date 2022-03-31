@@ -1,15 +1,11 @@
 import { gql } from '@apollo/client';
+import { Fragment_networkResponse } from '../fragments/networkResponse';
 export const Mutation_vote = gql`
+  ${Fragment_networkResponse}
   mutation vote($postId: String, $voteValue: Int) {
     vote(postId: $postId, voteValue: $voteValue) {
       network {
-        success
-        message
-        code
-        errors {
-          field
-          message
-        }
+        ...network
       }
       data {
         _id
