@@ -19,7 +19,8 @@ a {
   margin: 0;
 }
 
-html::-webkit-scrollbar {
+html::-webkit-scrollbar,
+*::-webkit-scrollbar {
   display: none;
 }
 
