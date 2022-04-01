@@ -12,7 +12,6 @@ const InputComment = ({
   loadingMe,
   dataMe,
   setReplyMode,
-  setCommentMode,
   loadingDataGetPosts,
   dataGetPosts,
 }) => {
@@ -40,13 +39,11 @@ const InputComment = ({
             postUserId: post.userId.toString(),
           },
       update(cache, { data }) {
-        // console.log('after createComment: ', data);
         if (!data.createComment.network.success) {
           // handle errors
-          setexceptionErr(data.createComment.network.message);
+          setexceptionErr(data.createComment.network.errors[0].message);
         } else {
           if (setReplyMode) setReplyMode(false);
-          if (setCommentMode) setCommentMode(false);
           const newComment = data.createComment.data;
           let updatedPosts = dataGetPosts.getPosts.data.posts.map((post) => {
             if (post._id.toString() == newComment.postId.toString()) {
@@ -74,8 +71,8 @@ const InputComment = ({
   };
   return (
     <>
-      {!loadingMe && !dataMe?.me.data && (
-        <span style={{ color: 'red' }}>Please login to comment</span>
+      {!loadingMe && !dataMe?.me?.data && (
+        <Alert severity='success'>To comment, please login!</Alert>
       )}
       {!loadingMe && dataMe?.me?.network?.success && (
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>

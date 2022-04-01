@@ -11,19 +11,13 @@ export default function Home() {
     </>
   );
 }
-export async function getStaticProps() {
-  const apolloClient = initializeApollo();
-  try {
-    await apolloClient.query({
-      query: Query_getPosts,
-      variables: { limit: 5 },
-    });
-  } catch (e) {
-    console.log('ERROR_getStaticProps pages/index', e);
-  }
-
+export async function getStaticProps(context) {
+  const apolloClient = initializeApollo({ headers: context?.req?.headers });
+  await apolloClient.query({
+    query: Query_getPosts,
+    variables: { limit: 3 },
+  });
   return addApolloState(apolloClient, {
     props: {},
-    // revalidate: 1,
   });
 }

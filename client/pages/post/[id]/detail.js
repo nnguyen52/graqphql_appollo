@@ -20,29 +20,7 @@ const PostDetail = () => {
   ) {
     return <Alert severity='error'>Post Not Found</Alert>;
   }
-  return (
-    <>
-      <Post data={data?.getPostByID?.data} detail={true} />
-      <NextLink href='/'>
-        <Button
-          variant='outline'
-          sx={{
-            bgcolor: 'black',
-            color: 'white',
-            marginTop: '1em',
-            maxHeight: '2em',
-            fontSize: '.8em',
-            '&.MuiButtonBase-root:hover': {
-              bgcolor: '#2ba069',
-              color: 'white',
-            },
-          }}
-        >
-          Homepage
-        </Button>
-      </NextLink>
-    </>
-  );
+  return <Post data={data?.getPostByID?.data} detail={true} />;
 };
 
 export default PostDetail;

@@ -9,7 +9,7 @@ import NextLink from 'next/link';
 import { Form, Formik } from 'formik';
 import InputField from '../components/InputField';
 import { LoadingButton } from '@mui/lab';
-import { Alert, Button, LinearProgress } from '@mui/material';
+import { Alert, Button, LinearProgress, Box } from '@mui/material';
 
 const Register = () => {
   const client = useApolloClient();
@@ -57,29 +57,32 @@ const Register = () => {
   }
   if (error) setExceptionError(error);
   return (
-    <div>
+    <Box>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form>
-            <InputField name='userName' label='User Name' type='text' />
-            <InputField name='email' label='Email' type='text' />
-            <InputField name='password' label='Password' type='password' />
-            <LoadingButton loading={isSubmitting && registerLoading} type='submit'>
-              Register
-            </LoadingButton>
-            <NextLink href='/login'>
-              <Button>Login</Button>
-            </NextLink>
-            {exceptionErr && (
-              <Alert variant='filled' severity='error'>
-                {exceptionErr}
-              </Alert>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '1em', paddingLeft: '1em' }}>
+              <InputField name='userName' label='User Name' type='text' />
+              <InputField name='email' label='Email' type='text' />
+              <InputField name='password' label='Password' type='password' />
+              <LoadingButton
+                variant='contained'
+                loading={isSubmitting && registerLoading}
+                type='submit'
+              >
+                Register
+              </LoadingButton>
+              or
+              <NextLink href='/login'>
+                <Button variant='outlined'>Login</Button>
+              </NextLink>
+              {exceptionErr && <Alert severity='error'>{exceptionErr}</Alert>}
+            </Box>
             {isSubmitting && registerLoading && <LinearProgress />}
           </Form>
         )}
       </Formik>
-    </div>
+    </Box>
   );
 };
 

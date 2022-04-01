@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
@@ -7,7 +7,7 @@ import { LoadingButton } from '@mui/lab';
 import Comments from './Comments';
 import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
 import InputComment from './InputComment';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Card } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Mutation_deletePost } from '../graphql-client/mutations/deletePost';
@@ -15,6 +15,7 @@ import NextLink from 'next/link';
 import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 
 const Post = ({ data, detail }) => {
   const client = useApolloClient();
@@ -23,7 +24,6 @@ const Post = ({ data, detail }) => {
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
   const [deletePost, { loading: loadingDeletePost }] = useMutation(Mutation_deletePost);
-  const [commentMode, setCommentMode] = useState(false);
   const {
     data: dataUserVoted,
     loading: loadingUserVoted,
@@ -93,165 +93,253 @@ const Post = ({ data, detail }) => {
       });
   };
   return (
-    <Box sx={{ display: 'flex', position: 'relative' }}>
-      {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
+    <>
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'row',
+          width: '65%',
+          margin: '1em',
+        }}
+      >
         <Box
           sx={{
             position: 'absolute',
-            top: '1.5em',
+            top: 0,
             left: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: '15%',
+            height: '100%',
           }}
         >
-          <ArrowCircleUpRoundedIcon
-            sx={{
-              cursor: 'pointer',
-              fontSize: '2.5em',
-              borderRadius: '50%',
-              background:
-                !loadingUserVoted &&
-                dataUserVoted?.checkPostVotedFromUser?.data &&
-                dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                  ? 'orange'
-                  : null,
-              '&:hover': {
-                color:
-                  !loadingUserVoted &&
-                  dataUserVoted?.checkPostVotedFromUser?.data &&
-                  dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                    ? null
-                    : 'orange',
-              },
-            }}
-            onClick={() => handleVote(1)}
-          />
-          <b>{data?.points}</b>
-          <ArrowCircleDownRoundedIcon
-            sx={{
-              cursor: 'pointer',
-              fontSize: '2.5em',
-              borderRadius: '50%',
-              background:
-                !loadingUserVoted &&
-                dataUserVoted?.checkPostVotedFromUser?.data &&
-                dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                  ? 'blue'
-                  : null,
-              '&:hover': {
-                color:
-                  !loadingUserVoted &&
-                  dataUserVoted?.checkPostVotedFromUser?.data &&
-                  dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                    ? null
-                    : 'blue',
-              },
-            }}
-            onClick={() => handleVote(-1)}
-          />
+          {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'end',
+                paddingRight: '1em',
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <ArrowCircleUpRoundedIcon
+                  sx={{
+                    cursor: 'pointer',
+                    fontSize: '2.5em',
+                    borderRadius: '50%',
+                    background:
+                      !loadingUserVoted &&
+                      dataUserVoted?.checkPostVotedFromUser?.data &&
+                      dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                        ? 'orange'
+                        : null,
+                    '&:hover': {
+                      color:
+                        !loadingUserVoted &&
+                        dataUserVoted?.checkPostVotedFromUser?.data &&
+                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                          ? null
+                          : 'orange',
+                    },
+                  }}
+                  onClick={() => handleVote(1)}
+                />
+                <b>{data?.points}</b>
+                <ArrowCircleDownRoundedIcon
+                  sx={{
+                    cursor: 'pointer',
+                    fontSize: '2.5em',
+                    borderRadius: '50%',
+                    background:
+                      !loadingUserVoted &&
+                      dataUserVoted?.checkPostVotedFromUser?.data &&
+                      dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                        ? 'blue'
+                        : null,
+                    '&:hover': {
+                      color:
+                        !loadingUserVoted &&
+                        dataUserVoted?.checkPostVotedFromUser?.data &&
+                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                          ? null
+                          : 'blue',
+                    },
+                  }}
+                  onClick={() => handleVote(-1)}
+                />
+              </Box>
+            </Box>
+          ) : (
+            <Box></Box>
+          )}
         </Box>
-      ) : (
-        <Box></Box>
-      )}
-      <NextLink href={`/post/${data?._id}/detail`}>
+        {/* main - 80% */}
         <Box
           sx={{
-            minWidth: '50%',
-            minHeight: '150px',
-            padding: '1em',
-            margin: '1em 0 1em 3em',
-            '&:hover': {
-              background: '#f4f4f4',
-              cursor: 'pointer',
-            },
+            marginLeft: '15%',
+            width: '85%',
+            display: 'flex',
           }}
         >
+          {/* content - 80% */}
+          <Box
+            component='div'
+            sx={{
+              width: '100%',
+              border: '1px solid black',
+              borderRadius: '5px',
+            }}
+          >
+            <NextLink href={`/post/${data?._id}/detail`}>
+              <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '150px',
+                  '&:hover': !detail
+                    ? {
+                        background: '#f4f4f4',
+                        cursor: 'pointer',
+                      }
+                    : null,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: data.comments.length > 0 ? null : 1,
+                    padding: '1em',
+                  }}
+                >
+                  <h3>{data?.title}</h3>
+                  <p>{data?.content}</p>
+                </Box>
+                {detail && <InputComment dataGetPosts={dataGetPosts} post={data} dataMe={dataMe} />}
+                {detail ? (
+                  <Comments
+                    post={data}
+                    dataGetPosts={dataGetPosts}
+                    dataMe={dataMe}
+                    loadingVoteComment={loadingVoteComment}
+                    voteComment={voteComment}
+                  />
+                ) : null}
+              </Card>
+            </NextLink>
+          </Box>
+          {/* menu - 20% */}
           <Box
             sx={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '1em',
+              flexDirection: 'column',
+              padding: '1em',
+              gap: '.3em',
             }}
           >
-            <h3>{data?.title}</h3>{' '}
             {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
-              <DeleteIcon
+              <Button
+                variant='contained'
                 sx={{
-                  color: 'red',
-                  cursor: 'pointer',
+                  padding: '5px',
+                  minWidth: '4em',
+                  width: 'fit-content',
+                  color: 'white',
+                  background: '#bc074c',
+                  '&:hover': {
+                    color: 'white',
+                    background: 'crimson',
+                  },
                 }}
-                onClick={!loadingDeletePost ? handleDeletePost : null}
-              />
+              >
+                <DeleteIcon
+                  sx={{
+                    color: 'white',
+                    cursor: 'pointer',
+                    margin: 0,
+                  }}
+                  onClick={!loadingDeletePost ? handleDeletePost : null}
+                />
+              </Button>
             )}
             {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
               <NextLink href={`/account/editPost/${data._id}`}>
-                <EditIcon
+                <Button
+                  variant='contained'
                   sx={{
-                    color: 'green',
-                    cursor: 'pointer',
+                    padding: '5px',
+                    minWidth: '4em',
+                    width: 'fit-content',
+                    color: 'white',
+                    background: 'green',
+                    '&:hover': {
+                      color: 'white',
+                      background: '#24d645',
+                    },
                   }}
-                />
+                >
+                  <EditIcon
+                    sx={{
+                      color: 'white',
+                      cursor: 'pointer',
+                    }}
+                  />
+                </Button>
               </NextLink>
             )}
+            <Box sx={{ position: 'relative', display: 'flex' }}>
+              <NextLink href={`/post/${data._id.toString()}/detail`}>
+                <Button
+                  sx={{
+                    minWidth: '4em',
+                    width: 'fit-content',
+                    background: 'black',
+                    color: 'orange',
+                    '&:hover': {
+                      background: '#353535',
+                    },
+                  }}
+                >
+                  <ChatBubbleOutlineIcon />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: 0,
+                      borderRadius: '50%',
+                      height: 'fit-content',
+                      padding: '0 5px 0 5px',
+                      position: 'absolute',
+                      right: '-15%',
+                      bottom: '-30%',
+                      background: 'crimson',
+                      color: 'white',
+                    }}
+                  >
+                    <b
+                      style={{
+                        padding: 0,
+                      }}
+                    >
+                      {data.comments.length}
+                    </b>
+                  </Box>
+                </Button>
+              </NextLink>
+            </Box>
           </Box>
-          <Box>
-            {commentMode ? (
-              <Button
-                sx={{
-                  color: 'white',
-                  background: 'black',
-                  maxHeight: '1.5em',
-                  fontSize: '.8em',
-                  padding: 1,
-                  '&.MuiButtonBase-root:hover': {
-                    bgcolor: 'orange',
-                  },
-                }}
-                onClick={() => setCommentMode(!commentMode)}
-              >
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                sx={{
-                  color: 'white',
-                  background: 'black',
-                  maxHeight: '1.5em',
-                  fontSize: '.8em',
-                  padding: 1,
-                  '&.MuiButtonBase-root:hover': {
-                    bgcolor: 'orange',
-                  },
-                }}
-                onClick={() => setCommentMode(!commentMode)}
-              >
-                Comment
-              </Button>
-            )}
-          </Box>
-          {commentMode && (
-            <InputComment
-              setCommentMode={setCommentMode}
-              dataGetPosts={dataGetPosts}
-              post={data}
-              dataMe={dataMe}
-            />
-          )}
-          {!detail && `${data.comments.length} comments`}
-          {detail ? (
-            <Comments
-              post={data}
-              dataGetPosts={dataGetPosts}
-              dataMe={dataMe}
-              loadingVoteComment={loadingVoteComment}
-              voteComment={voteComment}
-            />
-          ) : null}
         </Box>
-      </NextLink>
-    </Box>
+      </Box>
+    </>
   );
 };
 

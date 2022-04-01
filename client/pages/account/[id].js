@@ -1,10 +1,11 @@
-import { useQuery } from '@apollo/client';
-import React from 'react';
+import React, { useState } from 'react';
 import AuthEdit from '../../components/AuthEdit';
+import { useQuery } from '@apollo/client';
 import { Query_me } from '../../graphql-client/queries/user';
-import { Alert, LinearProgress } from '@mui/material';
+import { Alert, LinearProgress, Button, Box } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Query_getUserByID } from '../../graphql-client/queries/getUserByID';
+import NextLink from 'next/link';
 
 const hideEmail = (email) => {
   let hiddenMail = '';
@@ -33,11 +34,26 @@ const Account = () => {
       id: router?.query?.id ? router?.query?.id.toString() : '',
     },
   });
+  const [isEditing, setIsEditing] = useState(false);
   // if loading
   if (loadingMe || loadingDataUserByID) return <LinearProgress />;
   // if user not login
   if (!loadingMe && !dataMe?.me?.network.success)
-    return <Alert severity='error'>Please login to see these contents!</Alert>;
+    return (
+      <Alert
+        severity='error'
+        action={
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            Don't have an account?
+            <NextLink href='/register'>
+              <Button>Register</Button>
+            </NextLink>
+          </Box>
+        }
+      >
+        Please login to see these contents!
+      </Alert>
+    );
   // if user not found
   if (!dataUserByID?.getUserByID?.data && dataMe?.me?.network.success)
     return <Alert severity='error'>User not found</Alert>;
@@ -53,8 +69,17 @@ const Account = () => {
       <hr />
       {dataMe?.me?.data?.id.toString() == router.query?.id.toString() && (
         <>
-          <h2>Edit</h2>
-          <AuthEdit me={dataMe.me} />
+          <Button
+            variant='contained'
+            sx={{
+              margin: '1em',
+            }}
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            Edit Profile
+          </Button>
+          {isEditing && <AuthEdit me={dataMe.me} />}
+          <hr />
         </>
       )}
     </div>
@@ -62,12 +87,16 @@ const Account = () => {
 };
 const UserInfo = ({ data }) => {
   return (
-    <>
-      <h2>Info</h2>
-      userName: {data.userName} <br />
-      email: {hideEmail(data.email)} <br />
-      <span style={{ color: 'orange' }}>karma</span>: {data.karma}
-    </>
+    <Box
+      sx={{
+        padding: '1em',
+      }}
+    >
+      <h2>Hello, {data.userName}!</h2>
+      <span style={{ color: 'blue' }}> userName</span>: <b> {data.userName}</b> <br />
+      <span style={{ color: 'blue' }}>email</span>: <b>{hideEmail(data.email)}</b> <br />
+      <span style={{ color: 'orange' }}>karma</span>: <b>{data.karma}</b>
+    </Box>
   );
 };
 export default Account;

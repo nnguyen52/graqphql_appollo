@@ -10,19 +10,18 @@ import Search from './Search';
 
 const Header = () => {
   const router = useRouter();
-  const client = useApolloClient();
   return (
     <>
-      <ThemeProvider theme={headingFont}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'warp',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-          }}
-        >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'warp',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+        }}
+      >
+        <ThemeProvider theme={headingFont}>
           {router.pathname == '/' ? (
             <Typography variant='h3' gutterBottom style={{ cursor: 'pointer' }}>
               Reddis
@@ -34,14 +33,17 @@ const Header = () => {
               </Typography>
             </NextLink>
           )}
-          {router.pathname == '/account/password' ||
-          router.pathname == '/login' ||
-          router.pathname == '/register' ? null : (
-            <Search />
-          )}
-          <Auth />
-        </Box>
-      </ThemeProvider>
+        </ThemeProvider>
+
+        {router.pathname == '/account/password' ||
+        router.pathname == '/login' ||
+        router.pathname == '/register' ? (
+          <div></div>
+        ) : (
+          <Search />
+        )}
+        <Auth />
+      </Box>
     </>
   );
 };

@@ -87,7 +87,6 @@ const Search = () => {
           </Form>
         )}
       </Formik>
-
       <SearchResults
         postsResult={postsResult}
         usersResult={usersResult}

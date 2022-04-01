@@ -5,17 +5,22 @@ import { TextareaAutosize, FormHelperText, FormControl, TextField } from '@mui/m
 const InputField = ({ textarea, ...props }) => {
   const [field, { error }] = useField(props);
   return (
-    <FormControl error={!!error}>
+    <FormControl
+      error={!!error}
+      sx={{
+        display: 'flex',
+      }}
+    >
       {textarea ? (
         <TextareaAutosize
           minRows={3}
-          style={{ width: 200 }}
+          style={{ width: '100%' }}
           {...field}
           id={field.name}
           {...props}
         />
       ) : (
-        <TextField variant='standard' error={error} {...field} id={field.name} {...props} />
+        <TextField error={error} {...field} id={field.name} {...props} />
       )}
       {error && <FormHelperText>{error}</FormHelperText>}
     </FormControl>

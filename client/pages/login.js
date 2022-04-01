@@ -9,8 +9,8 @@ import NextLink from 'next/link';
 import { Form, Formik } from 'formik';
 import InputField from '../components/InputField';
 import { LoadingButton } from '@mui/lab';
-import { Alert, Button } from '@mui/material';
-import { LinearProgress } from '@mui/material';
+import { Alert, Button, LinearProgress, Box } from '@mui/material';
+
 const Login = () => {
   const client = useApolloClient();
   const router = useRouter();
@@ -28,7 +28,6 @@ const Login = () => {
         password: values.password,
       },
       update(cache, { data }) {
-        // console.log('result: ', data);
         if (!data.login.network.success) {
           setExceptionError(
             data.login.network.errors && data.login.network.errors.length == 1
@@ -37,7 +36,6 @@ const Login = () => {
           );
           return setErrors(mapFieldErrors(data.login.network.errors));
         } else {
-          // console.log('incoming login_data: ', data);
           cache.writeQuery({
             query: Query_me,
             data: { me: { ...data.login, data: data.login.data } },
@@ -59,14 +57,45 @@ const Login = () => {
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form>
-            <InputField name='userNameOrEmail' label='User Name' type='text' />
-            <InputField name='password' label='Password' type='password' />
-            <LoadingButton loading={isSubmitting && loginLoading} type='submit'>
-              Login
-            </LoadingButton>
-            <NextLink href='/register'>
-              <Button>Register</Button>
-            </NextLink>
+            <Box sx={{ display: 'flex', alignItems: 'center', paddingLeft: '1em', gap: '1em' }}>
+              <InputField name='userNameOrEmail' label='User Name' type='text' />
+              <InputField name='password' label='Password' type='password' />
+              <LoadingButton
+                sx={{
+                  border: '2px solid black',
+                  background: 'orange',
+                  color: 'black',
+                  '&:hover': {
+                    border: '2px solid #164920',
+                    color: 'white',
+                    background: '#164920',
+                  },
+                }}
+                variant='outlined'
+                loading={isSubmitting && loginLoading}
+                type='submit'
+              >
+                Login
+              </LoadingButton>
+              or
+              <NextLink href='/register'>
+                <Button
+                  sx={{
+                    border: '2px solid orange',
+                    color: 'orange',
+                    background: 'black',
+                    '&:hover': {
+                      border: '2px solid #164920',
+                      background: '#164920',
+                      color: 'white',
+                    },
+                  }}
+                  variant='contained'
+                >
+                  Register
+                </Button>
+              </NextLink>
+            </Box>
             {exceptionErr && (
               <Alert variant='filled' severity='error'>
                 {exceptionErr}
@@ -77,7 +106,9 @@ const Login = () => {
         )}
       </Formik>
       <NextLink href='/account/forgotPassword'>
-        <Button>forgot password</Button>
+        <Button sx={{ margin: '1em', textDecoration: 'underline', textTransform: 'lowercase' }}>
+          Forgot password
+        </Button>
       </NextLink>
     </div>
   );
