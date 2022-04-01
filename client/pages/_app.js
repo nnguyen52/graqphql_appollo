@@ -8,6 +8,8 @@ import createEmotionCache from '../src/createEmotionCache';
 import Navbar from '../components/Navbar';
 import { ApolloProvider } from '@apollo/client';
 import { initializeApollo } from '../lib/apolloClient';
+import { Box } from '@mui/material';
+
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 function MyApp({ Component, emotionCache = clientSideEmotionCache, pageProps }) {
@@ -21,8 +23,16 @@ function MyApp({ Component, emotionCache = clientSideEmotionCache, pageProps }) 
         </Head>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Navbar />
-          <Component {...pageProps} />
+          <Box
+            sx={{
+              margin: 'auto',
+              width: '80%',
+              height: '100vh',
+            }}
+          >
+            <Navbar />
+            <Component {...pageProps} />
+          </Box>
         </ThemeProvider>
       </CacheProvider>
     </ApolloProvider>

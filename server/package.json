@@ -14,6 +14,7 @@
     "apollo-server-core": "^3.6.3",
     "apollo-server-express": "^3.6.3",
     "argon2": "^0.28.5",
+    "cloudinary": "^1.29.0",
     "connect-mongo": "^4.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",

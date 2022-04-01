@@ -9,6 +9,7 @@ import Post from '../models/Post';
 import { logout } from '../utils/logout';
 import { deletePost } from '../utils/deletePost';
 import user from '../schema/user';
+
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
 const toCursorHash = (string) => Buffer.from(string).toString('base64');
 const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
@@ -24,7 +25,7 @@ export default {
           },
           data: null,
         };
-      const user = await User.findById({ _id: req.session.userId });
+      const user = await User.findOne({ _id: req.session.userId.toString() });
       if (!user)
         return {
           network: {
@@ -50,6 +51,7 @@ export default {
       return await User.findById(id);
     },
     getUserByID: async (parent, { id }) => {
+      console.log('ID:', id);
       try {
         const user = await User.findOne({ _id: id.toString() });
         if (!user) {
@@ -444,8 +446,8 @@ export default {
               ],
             },
           };
-        const { userName, password, email } = newUserInfo;
-        const user = await User.findOne({ _id: req.session.userId, email });
+        const { userName, password, email, avatar } = newUserInfo;
+        const user = await User.findOne({ _id: req.session.userId.toString(), email });
         // change username directly
         // but changing password must be done by email verification
         if (!user) {
@@ -463,16 +465,28 @@ export default {
             },
           };
         }
+        // delete user's current avatar
+        const cloudinary = await import('cloudinary').then(async (cloud) => {
+          cloud.config({
+            cloud_name: process.env.CLOUDINARY_NAME,
+            api_key: process.env.CLOUDINARY_APIKEY,
+            api_secret: process.env.CLOUDINARY_SECRET,
+          });
+          return cloud;
+        });
+        await cloudinary.uploader.destroy(
+          `${
+            (
+              user.avatar.split('/')[user.avatar.split('/').length - 2] +
+              '/' +
+              user.avatar.split('/')[user.avatar.split('/').length - 1]
+            ).split('.')[0]
+          }`
+        );
         let updatedUser = user;
-        if (userName)
-          updatedUser = await User.findOneAndUpdate(
-            { _id: req.session.userId.toString() },
-            {
-              ...userName,
-              userName,
-            },
-            { new: true }
-          );
+        if (userName) updatedUser.userName = userName;
+        if (avatar) updatedUser.avatar = newUserInfo.avatar.toString();
+        await updatedUser.save();
         if (!password)
           return {
             network: {
@@ -481,13 +495,13 @@ export default {
               message: 'Profile updated!',
             },
             data: {
-              id: updatedUser._id.toString(),
+              id: req.session.userId.toString(),
               userName,
               email,
               password: null,
+              avatar,
             },
           };
-
         // if updating password -> send mail to confirm
         await Token.findOneAndDelete({ userId: req.session.userId.toString() });
         const updatePasswordToken = uuidv4();
@@ -503,6 +517,7 @@ export default {
           `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
           'Update your password'
         );
+
         return {
           network: {
             code: 200,

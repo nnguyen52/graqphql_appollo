@@ -28,6 +28,7 @@ const Login = () => {
         password: values.password,
       },
       update(cache, { data }) {
+        console.log(data);
         if (!data.login.network.success) {
           setExceptionError(
             data.login.network.errors && data.login.network.errors.length == 1

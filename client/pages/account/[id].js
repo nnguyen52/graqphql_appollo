@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import AuthEdit from '../../components/AuthEdit';
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Query_me } from '../../graphql-client/queries/user';
-import { Alert, LinearProgress, Button, Box } from '@mui/material';
+import { Alert, LinearProgress, Button, Box, Input } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Query_getUserByID } from '../../graphql-client/queries/getUserByID';
 import NextLink from 'next/link';
+import { checkImageUpload, imageUpload } from '../../src/utils/uploadImage';
+import Image from 'next/image';
+import { Mutation_editMe } from '../../graphql-client/mutations/editMe';
 
 const hideEmail = (email) => {
   let hiddenMail = '';
@@ -86,6 +89,37 @@ const Account = () => {
   );
 };
 const UserInfo = ({ data }) => {
+  const [avatar, setAvatar] = useState(null);
+  const [images, setImages] = useState([]);
+  const [editMe, { loading: loadingEditMe }] = useMutation(Mutation_editMe);
+  const changeAvatar = (e) => {
+    const file = e.target.files[0];
+
+    const err = checkImageUpload(file);
+    if (err) return console.log(err);
+    else {
+      setAvatar(file);
+      setImages([...images, file]);
+    }
+  };
+  const upload = async () => {
+    try {
+      const media = await imageUpload(images);
+      // delete current avatar in cloud
+      await editMe({
+        variables: {
+          newUserInfo: {
+            userName: data.userName,
+            email: data.email,
+            avatar: media[0].url.toString(),
+          },
+        },
+        update(cache, { data }) {},
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <Box
       sx={{
@@ -96,6 +130,27 @@ const UserInfo = ({ data }) => {
       <span style={{ color: 'blue' }}> userName</span>: <b> {data.userName}</b> <br />
       <span style={{ color: 'blue' }}>email</span>: <b>{hideEmail(data.email)}</b> <br />
       <span style={{ color: 'orange' }}>karma</span>: <b>{data.karma}</b>
+      <br />
+      {avatar && (
+        <Image
+          src={`${URL.createObjectURL(avatar)}`}
+          alt='picture from cloud deleted (alt text)'
+          width={100}
+          height={100}
+        />
+      )}
+      <input
+        // multiple
+        // only accept 1 img
+        type='file'
+        name='file'
+        id='file_up'
+        accept='image/*'
+        onChange={changeAvatar}
+      />
+      <button onClick={() => console.log(images)}>images</button>
+      <button onClick={upload}>upload</button>
+      <button onClick={() => deleteImage()}>delete testting</button>
     </Box>
   );
 };

@@ -5,6 +5,7 @@ import { Query_getPosts } from '../graphql-client/queries/posts';
 import Post from './Post';
 import { LoadingButton } from '@mui/lab';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 const ShowPosts = () => {
   const {
     loading: loadingPosts,
