@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Mutation_editMe } from '../../graphql-client/mutations/editMe';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { LoadingButton } from '@mui/lab';
+
 const hideEmail = (email) => {
   let hiddenMail = '';
   // case1: abc@gmail.com
@@ -64,6 +65,7 @@ const Account = () => {
   return (
     <div>
       <UserInfo
+        isEditing={isEditing}
         data={
           dataMe?.me?.data && router.query.id.toString() == dataMe?.me?.data?.id.toString()
             ? dataMe?.me?.data
@@ -73,23 +75,38 @@ const Account = () => {
       <hr />
       {dataMe?.me?.data?.id.toString() == router.query?.id.toString() && (
         <>
-          <Button
-            variant='contained'
+          <Box
             sx={{
-              margin: '1em',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
             }}
-            onClick={() => setIsEditing(!isEditing)}
           >
-            Edit Profile
-          </Button>
-          {isEditing && <AuthEdit me={dataMe.me} />}
-          <hr />
+            <Button
+              variant='contained'
+              sx={{
+                margin: '1em',
+                color: 'white',
+                background: isEditing ? '#bc074c' : '#28c940',
+                '&:hover': {
+                  color: 'white',
+                  background: isEditing ? 'crimson' : '#28c940',
+                },
+              }}
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              {!isEditing ? 'Edit Profile' : 'Cancel'}
+            </Button>
+            <hr />
+          </Box>
+          {isEditing && <AuthEdit setIsEditing={setIsEditing} me={dataMe.me} />}
         </>
       )}
     </div>
   );
 };
-const UserInfo = ({ data }) => {
+const UserInfo = ({ data, isEditing }) => {
+  const router = useRouter();
   const { data: dataMe, loading: loadingMe } = useQuery(Query_me);
   const [avatar, setAvatar] = useState(null);
   const [images, setImages] = useState([]);
@@ -98,10 +115,8 @@ const UserInfo = ({ data }) => {
     message: null,
   });
   const [editMe, { loading: loadingEditMe }] = useMutation(Mutation_editMe);
-
   useEffect(() => {
     if (checkImgSizeMsg.message == null) return;
-    console.log(checkImgSizeMsg);
     setTimeout(() => {
       setAvatar(null);
       setImages([]);
@@ -183,11 +198,17 @@ const UserInfo = ({ data }) => {
       }}
     >
       <Box sx={{ width: '70%' }}>
-        <h2>Hello, {data.userName}!</h2>
-        <span style={{ color: 'blue' }}> userName</span>: <b> {data.userName}</b> <br />
-        <span style={{ color: 'blue' }}>email</span>: <b>{hideEmail(data.email)}</b> <br />
-        <span style={{ color: 'orange' }}>karma</span>: <b>{data.karma}</b>
-        <br />
+        {!isEditing ? (
+          <>
+            <h2>Hello, {data.userName}!</h2>
+            <span style={{ color: 'blue' }}> userName</span>: <b> {data.userName}</b> <br />
+            <span style={{ color: 'blue' }}>email</span>: <b>{hideEmail(data.email)}</b> <br />
+            <span style={{ color: 'orange' }}>karma</span>: <b>{data.karma}</b>
+            <br />
+          </>
+        ) : (
+          <h2>You are in editing mode!</h2>
+        )}
       </Box>
       <Box
         sx={{ width: '30%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
@@ -211,88 +232,92 @@ const UserInfo = ({ data }) => {
             <Image
               width={'100%'}
               height={'100%'}
-              src={avatar ? `${URL.createObjectURL(avatar)}` : data.avatar.toString()}
+              src={avatar ? `${URL.createObjectURL(avatar)}` : data?.avatar}
               alt='picture from cloud deleted (alt text)'
               layout='responsive'
             />
           </Box>
-          <Tooltip title='Edit' arrow>
-            <input
-              style={{
-                zIndex: 9001,
-                position: 'absolute',
-                top: 7,
-                right: -5,
-                width: '1.6em',
-                fontSize: '1.6em',
-                opacity: 0,
-              }}
-              // multiple
-              // only accept 1 img
-              type='file'
-              name='file'
-              id='file_up'
-              accept='image/*'
-              onChange={changeAvatar}
-            />
-          </Tooltip>
-          <SettingsIcon
-            sx={{
-              border: '2px solid black',
-              borderRadius: '50%',
-              zIndex: 9000,
-              position: 'absolute',
-              top: 10,
-              right: 0,
-              width: '1.2em',
-              height: '1.2em',
-              padding: 0,
-            }}
-          />
-          {images.length > 0 && (
-            <LoadingButton
-              loading={loadingMe || loadingEditMe}
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                background: 'orange',
-                color: 'white',
-                borderRadius: '5px',
-                '&:hover': {
-                  background: '#ffbf1e',
-                },
-              }}
-              onClick={upload}
-            >
-              Save
-            </LoadingButton>
-          )}
-          {images.length > 0 && (
-            <LoadingButton
-              loading={loadingMe || loadingEditMe}
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                color: 'white',
-                background: '#bc074c',
-                '&:hover': {
-                  color: 'white',
-                  background: 'crimson',
-                },
-              }}
-              onClick={() => {
-                setAvatar(null);
-                setImages([]);
-                setCheckImgSizeMsg({
-                  code: null,
-                  message: null,
-                });
-              }}
-            >
-              Cancel
-            </LoadingButton>
+          {dataMe?.me?.data?.id.toString() == router?.query?.id.toString() && (
+            <>
+              <Tooltip title='Edit' arrow>
+                <input
+                  style={{
+                    zIndex: 9001,
+                    position: 'absolute',
+                    top: 7,
+                    right: -5,
+                    width: '1.6em',
+                    fontSize: '1.6em',
+                    opacity: 0,
+                  }}
+                  // multiple
+                  // only accept 1 img
+                  type='file'
+                  name='file'
+                  id='file_up'
+                  accept='image/*'
+                  onChange={changeAvatar}
+                />
+              </Tooltip>
+              <SettingsIcon
+                sx={{
+                  border: '2px solid black',
+                  borderRadius: '50%',
+                  zIndex: 9000,
+                  position: 'absolute',
+                  top: 10,
+                  right: 0,
+                  width: '1.2em',
+                  height: '1.2em',
+                  padding: 0,
+                }}
+              />
+              {images.length > 0 && (
+                <LoadingButton
+                  loading={loadingMe || loadingEditMe}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    background: 'orange',
+                    color: 'white',
+                    borderRadius: '5px',
+                    '&:hover': {
+                      background: '#ffbf1e',
+                    },
+                  }}
+                  onClick={upload}
+                >
+                  Save
+                </LoadingButton>
+              )}
+              {images.length > 0 && (
+                <LoadingButton
+                  loading={loadingMe || loadingEditMe}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    color: 'white',
+                    background: '#bc074c',
+                    '&:hover': {
+                      color: 'white',
+                      background: 'crimson',
+                    },
+                  }}
+                  onClick={() => {
+                    setAvatar(null);
+                    setImages([]);
+                    setCheckImgSizeMsg({
+                      code: null,
+                      message: null,
+                    });
+                  }}
+                >
+                  Cancel
+                </LoadingButton>
+              )}
+            </>
           )}
         </Box>
         {checkImgSizeMsg?.message && (

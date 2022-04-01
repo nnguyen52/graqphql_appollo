@@ -7,6 +7,7 @@ export default gql`
     email: String
     karma: Int
     avatar: String
+    about: String
   }
   type DataUsersPaginationResponse {
     users: [User]
@@ -45,6 +46,7 @@ export default gql`
     email: String
     karma: Int
     avatar: String
+    about: String
     # hide password
   }
 `;

@@ -6,5 +6,6 @@ export const Fragment_userInfo = gql`
     email
     karma
     avatar
+    about
   }
 `;

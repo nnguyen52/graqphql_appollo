@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import { randomEmote } from '../utils/randomEmote';
 export const userSchema = new mongoose.Schema(
   {
     userName: {
@@ -27,6 +27,10 @@ export const userSchema = new mongoose.Schema(
       type: String,
       default:
         'https://res.cloudinary.com/cloudinarystore/image/upload/v1648827117/Reddis/redditChar_ohsrow.jpg',
+    },
+    about: {
+      type: String,
+      default: `a fellow Reddisor ${randomEmote()}`,
     },
   },
   { timestamps: true }

@@ -8,7 +8,6 @@ import { checkAuth } from '../customMiddleware/checkAuth';
 import Post from '../models/Post';
 import { logout } from '../utils/logout';
 import { deletePost } from '../utils/deletePost';
-import user from '../schema/user';
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
 const toCursorHash = (string) => Buffer.from(string).toString('base64');
@@ -51,7 +50,6 @@ export default {
       return await User.findById(id);
     },
     getUserByID: async (parent, { id }) => {
-      console.log('ID:', id);
       try {
         const user = await User.findOne({ _id: id.toString() });
         if (!user) {
@@ -499,8 +497,9 @@ export default {
               userName,
               email,
               password: null,
-              avatar,
+              avatar: avatar ? avatar : updatedUser.avatar,
               karma: updatedUser.karma,
+              about: updatedUser.about,
             },
           };
         // if updating password -> send mail to confirm

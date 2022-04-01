@@ -9,7 +9,7 @@ import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { Mutation_editMe } from '../graphql-client/mutations/editMe';
 import { Query_me } from '../graphql-client/queries/user';
 
-const AuthEdit = ({ me }) => {
+const AuthEdit = ({ me, setIsEditing }) => {
   const initPasswordValue = {
     password: '',
     email: '',
@@ -59,6 +59,7 @@ const AuthEdit = ({ me }) => {
       update(cache, { data }) {
         if (!data.editMe.network.success) {
           messageEditMe(data.editMe.network.errors[0].message);
+          setIsEditing(false);
           return;
         }
         // update cache Query_me
@@ -72,6 +73,7 @@ const AuthEdit = ({ me }) => {
           },
         });
         setMessageEditMe(data.editMe.network.message);
+        setIsEditing(false);
       },
     });
   };
@@ -108,7 +110,20 @@ const AuthEdit = ({ me }) => {
                       type='password'
                       label='Password'
                     />
-                    <Button type='submit'>Confirm</Button>
+                    <Button
+                      sx={{
+                        width: 100,
+                        background: 'orange',
+                        color: 'white',
+                        borderRadius: '5px',
+                        '&:hover': {
+                          background: '#ffbf1e',
+                        },
+                      }}
+                      type='submit'
+                    >
+                      Save
+                    </Button>
                   </Box>
                 </Form>
               )}
