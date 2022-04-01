@@ -1,10 +1,10 @@
 export const checkImageUpload = (file) => {
   let err = '';
   if (!file) err = 'File does not exist.';
-  //if file > 1mb => reject
-  if (file.size > 1024 * 1024) err = 'The largest size of image is 1mb.';
+  //file must < 1mb
+  if (file?.size > 1024 * 1024) err = 'The largest size of image is 1mb!';
   //check format
-  if (file.type !== 'image/jpeg' && file.type !== 'image/png')
+  if (file?.type !== 'image/jpeg' && file?.type !== 'image/png')
     err = 'File format must be JPEG or PNG.';
   return err;
 };

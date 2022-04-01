@@ -25,6 +25,8 @@ export const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
+      default:
+        'https://res.cloudinary.com/cloudinarystore/image/upload/v1648827117/Reddis/redditChar_ohsrow.jpg',
     },
   },
   { timestamps: true }

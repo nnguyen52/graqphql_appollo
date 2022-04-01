@@ -500,6 +500,7 @@ export default {
               email,
               password: null,
               avatar,
+              karma: updatedUser.karma,
             },
           };
         // if updating password -> send mail to confirm
@@ -517,7 +518,6 @@ export default {
           `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
           'Update your password'
         );
-
         return {
           network: {
             code: 200,
