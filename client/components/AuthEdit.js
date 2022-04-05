@@ -3,13 +3,16 @@ import { Form, Formik } from 'formik';
 import InputField from './InputField';
 import { LoadingButton } from '@mui/lab';
 import { Alert, Box, Button, LinearProgress } from '@mui/material';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_verifyPassword } from '../graphql-client/mutations/verifyPassword';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { Mutation_editMe } from '../graphql-client/mutations/editMe';
 import { Query_me } from '../graphql-client/queries/user';
+import theme from '../src/theme';
+import { ThemeProvider } from '@mui/material/styles';
 
 const AuthEdit = ({ me, setIsEditing }) => {
+  const { refetch: refetchMe } = useQuery(Query_me);
   const initPasswordValue = {
     password: '',
     email: '',
@@ -35,6 +38,7 @@ const AuthEdit = ({ me, setIsEditing }) => {
       },
       update(cache, { data }) {
         if (!data.verifyPassword.network.success) {
+          refetchMe();
           setErrorCheckPassword(data.verifyPassword.network.errors[0].message);
           return;
         }
@@ -58,6 +62,7 @@ const AuthEdit = ({ me, setIsEditing }) => {
       },
       update(cache, { data }) {
         if (!data.editMe.network.success) {
+          refetchMe();
           messageEditMe(data.editMe.network.errors[0].message);
           setIsEditing(false);
           return;
@@ -79,105 +84,107 @@ const AuthEdit = ({ me, setIsEditing }) => {
   };
   return (
     <>
-      {!checkPassword && (
-        <Alert
-          sx={{
-            alignItems: 'center',
-            gap: '1em',
-          }}
-        >
-          <Box
+      <ThemeProvider theme={theme}>
+        {!checkPassword && (
+          <Alert
             sx={{
-              display: 'flex',
               alignItems: 'center',
               gap: '1em',
             }}
           >
-            <u> Before changing your credentials, please enter your Email and Password</u>
-            <Formik initialValues={initPasswordValue} onSubmit={handleSubmitCheckPass}>
-              {({ isSubmitting: isSubmittingCheckPass }) => (
-                <Form>
-                  <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
-                    <InputField
-                      disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
-                      name='email'
-                      type='email'
-                      label='Email'
-                    />
-                    <InputField
-                      disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
-                      name='password'
-                      type='password'
-                      label='Password'
-                    />
-                    <Button
-                      sx={{
-                        width: 100,
-                        background: 'orange',
-                        color: 'white',
-                        borderRadius: '5px',
-                        '&:hover': {
-                          background: '#ffbf1e',
-                        },
-                      }}
-                      type='submit'
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
-          </Box>
-        </Alert>
-      )}
-      {errorCheckPassword && <Alert severity='error'>{errorCheckPassword}</Alert>}
-      {checkPassword && (
-        <>
-          <Alert severity='success' sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
-            <u> You can now edit your profile!</u>
-            <Formik initialValues={initialValues} onSubmit={handleEditMe}>
-              {({ isSubmitting: isSubmittingCheckPass }) => (
-                <Form>
-                  <Box sx={{ display: 'flex', gap: '1em', marginTop: '1em' }}>
-                    <InputField
-                      defaultValue={initialValues.userName}
-                      name='userName'
-                      type='text'
-                      label='User name'
-                      helperText='leave blank you dont want to update user name.'
-                    />
-                    <InputField
-                      disabled
-                      value={initialValues.email}
-                      name='email'
-                      type='email'
-                      label='Email'
-                    />
-                    <InputField
-                      defaultValue={initialValues.password}
-                      name='password'
-                      type='password'
-                      label='New password'
-                      helperText='leave blank you dont want to update password.'
-                    />
-                    <LoadingButton
-                      disabled={messageEditMe}
-                      style={{ height: 'fit-content' }}
-                      loading={isSubmittingCheckPass && loadingEditMe}
-                      type='submit'
-                    >
-                      Update Profile
-                    </LoadingButton>
-                  </Box>
-                  {isSubmittingCheckPass && loadingEditMe && <LinearProgress />}
-                </Form>
-              )}
-            </Formik>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1em',
+              }}
+            >
+              <u> Before changing your credentials, please enter your Email and Password</u>
+              <Formik initialValues={initPasswordValue} onSubmit={handleSubmitCheckPass}>
+                {({ isSubmitting: isSubmittingCheckPass }) => (
+                  <Form>
+                    <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
+                      <InputField
+                        disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
+                        name='email'
+                        type='email'
+                        label='Email'
+                      />
+                      <InputField
+                        disabled={(isSubmittingCheckPass || loadingVerifyPasword) && checkPassword}
+                        name='password'
+                        type='password'
+                        label='Password'
+                      />
+                      <Button
+                        sx={{
+                          width: 100,
+                          background: theme.palette.upvoteButton.main,
+                          color: 'white',
+                          borderRadius: '5px',
+                          '&:hover': {
+                            background: '#ffbf1e',
+                          },
+                        }}
+                        type='submit'
+                      >
+                        Save
+                      </Button>
+                    </Box>
+                  </Form>
+                )}
+              </Formik>
+            </Box>
           </Alert>
-        </>
-      )}
-      {messageEditMe && <Alert severity='success'>{messageEditMe}</Alert>}
+        )}
+        {errorCheckPassword && <Alert severity='error'>{errorCheckPassword}</Alert>}
+        {checkPassword && (
+          <>
+            <Alert severity='success' sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
+              <u> You can now edit your profile!</u>
+              <Formik initialValues={initialValues} onSubmit={handleEditMe}>
+                {({ isSubmitting: isSubmittingCheckPass }) => (
+                  <Form>
+                    <Box sx={{ display: 'flex', gap: '1em', marginTop: '1em' }}>
+                      <InputField
+                        defaultValue={initialValues.userName}
+                        name='userName'
+                        type='text'
+                        label='User name'
+                        helperText='leave blank you dont want to update user name.'
+                      />
+                      <InputField
+                        disabled
+                        value={initialValues.email}
+                        name='email'
+                        type='email'
+                        label='Email'
+                      />
+                      <InputField
+                        defaultValue={initialValues.password}
+                        name='password'
+                        type='password'
+                        label='New password'
+                        helperText='leave blank you dont want to update password.'
+                      />
+                      <LoadingButton
+                        disabled={messageEditMe}
+                        style={{ height: 'fit-content' }}
+                        loading={isSubmittingCheckPass && loadingEditMe}
+                        type='submit'
+                      >
+                        Update Profile
+                      </LoadingButton>
+                    </Box>
+                    {isSubmittingCheckPass && loadingEditMe && <LinearProgress />}
+                  </Form>
+                )}
+              </Formik>
+            </Alert>
+          </>
+        )}
+        {messageEditMe && <Alert severity='success'>{messageEditMe}</Alert>}
+      </ThemeProvider>
     </>
   );
 };

@@ -16,6 +16,9 @@ import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
 import { useRouter } from 'next/router';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../src/theme';
+
 const Post = ({ data }) => {
   const client = useApolloClient();
   const dataGetPosts = client.readQuery({ query: Query_getPosts });
@@ -95,165 +98,167 @@ const Post = ({ data }) => {
       });
   };
   return (
-    <Box sx={{ display: 'flex', position: 'relative' }}>
-      {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data.userId.toString() ? (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '1.5em',
-            left: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ArrowCircleUpRoundedIcon
+    <ThemeProvider theme={theme}>
+      <Box sx={{ display: 'flex', position: 'relative' }}>
+        {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data.userId.toString() ? (
+          <Box
             sx={{
-              cursor: 'pointer',
-              fontSize: '2.5em',
-              borderRadius: '50%',
-              background:
-                !loadingUserVoted &&
-                dataUserVoted?.checkPostVotedFromUser?.data &&
-                dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                  ? 'orange'
-                  : null,
-              '&:hover': {
-                color:
+              position: 'absolute',
+              top: '1.5em',
+              left: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ArrowCircleUpRoundedIcon
+              sx={{
+                cursor: 'pointer',
+                fontSize: '2.5em',
+                borderRadius: '50%',
+                background:
                   !loadingUserVoted &&
                   dataUserVoted?.checkPostVotedFromUser?.data &&
                   dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                    ? null
-                    : 'orange',
-              },
-            }}
-            onClick={() => handleVote(1)}
-          />
-          <b>{data.points}</b>
-          <ArrowCircleDownRoundedIcon
-            sx={{
-              cursor: 'pointer',
-              fontSize: '2.5em',
-              borderRadius: '50%',
-              background:
-                !loadingUserVoted &&
-                dataUserVoted?.checkPostVotedFromUser?.data &&
-                dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                  ? 'blue'
-                  : null,
-              '&:hover': {
-                color:
+                    ? theme.palette.upvoteButton.main
+                    : null,
+                '&:hover': {
+                  color:
+                    !loadingUserVoted &&
+                    dataUserVoted?.checkPostVotedFromUser?.data &&
+                    dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                      ? null
+                      : theme.palette.upvoteButton.main,
+                },
+              }}
+              onClick={() => handleVote(1)}
+            />
+            <b>{data.points}</b>
+            <ArrowCircleDownRoundedIcon
+              sx={{
+                cursor: 'pointer',
+                fontSize: '2.5em',
+                borderRadius: '50%',
+                background:
                   !loadingUserVoted &&
                   dataUserVoted?.checkPostVotedFromUser?.data &&
                   dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                    ? null
-                    : 'blue',
-              },
-            }}
-            onClick={() => handleVote(-1)}
-          />
-        </Box>
-      ) : (
-        <Box></Box>
-      )}
-      <NextLink href={`/post/${data._id}/detail`}>
-        <Box
-          sx={{
-            minWidth: '50%',
-            minHeight: '150px',
-            padding: '1em',
-            margin: '1em 0 1em 3em',
-            '&:hover': {
-              background: '#f4f4f4',
-              cursor: 'pointer',
-            },
-          }}
-        >
+                    ? theme.palette.downvoteButton.main
+                    : null,
+                '&:hover': {
+                  color:
+                    !loadingUserVoted &&
+                    dataUserVoted?.checkPostVotedFromUser?.data &&
+                    dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                      ? null
+                      : theme.palette.downvoteButton.main,
+                },
+              }}
+              onClick={() => handleVote(-1)}
+            />
+          </Box>
+        ) : (
+          <Box></Box>
+        )}
+        <NextLink href={`/post/${data._id}/detail`}>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1em',
+              minWidth: '50%',
+              minHeight: '150px',
+              padding: '1em',
+              margin: '1em 0 1em 3em',
+              '&:hover': {
+                background: '#f4f4f4',
+                cursor: 'pointer',
+              },
             }}
           >
-            <h3>{data.title}</h3>{' '}
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
-              <DeleteIcon
-                sx={{
-                  color: 'red',
-                  cursor: 'pointer',
-                }}
-                onClick={!loadingDeletePost ? handleDeletePost : null}
-              />
-            )}
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
-              <NextLink href={`/account/editPost/${data._id}`}>
-                <EditIcon
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1em',
+              }}
+            >
+              <h3>{data.title}</h3>{' '}
+              {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+                <DeleteIcon
                   sx={{
-                    color: 'green',
+                    color: 'red',
                     cursor: 'pointer',
                   }}
+                  onClick={!loadingDeletePost ? handleDeletePost : null}
                 />
-              </NextLink>
+              )}
+              {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data.userId.toString() && (
+                <NextLink href={`/account/editPost/${data._id}`}>
+                  <EditIcon
+                    sx={{
+                      color: 'green',
+                      cursor: 'pointer',
+                    }}
+                  />
+                </NextLink>
+              )}
+            </Box>
+            <Box>
+              {commentMode ? (
+                <Button
+                  sx={{
+                    color: 'white',
+                    background: 'black',
+                    maxHeight: '1.5em',
+                    fontSize: '.8em',
+                    padding: 1,
+                    '&.MuiButtonBase-root:hover': {
+                      bgcolor: theme.palette.upvoteButton.main,
+                    },
+                  }}
+                  onClick={() => setCommentMode(!commentMode)}
+                >
+                  Cancel
+                </Button>
+              ) : (
+                <Button
+                  sx={{
+                    color: 'white',
+                    background: 'black',
+                    maxHeight: '1.5em',
+                    fontSize: '.8em',
+                    padding: 1,
+                    '&.MuiButtonBase-root:hover': {
+                      bgcolor: theme.palette.upvoteButton.main,
+                    },
+                  }}
+                  onClick={() => setCommentMode(!commentMode)}
+                >
+                  Comment
+                </Button>
+              )}
+            </Box>
+            {commentMode && (
+              <InputComment
+                setCommentMode={setCommentMode}
+                dataGetPosts={dataGetPosts}
+                post={data}
+                dataMe={dataMe}
+              />
             )}
+            {!query.detail && `${data.comments.length} comments`}
+            {query.detail ? (
+              <Comments
+                post={data}
+                dataGetPosts={dataGetPosts}
+                dataMe={dataMe}
+                loadingVoteComment={loadingVoteComment}
+                voteComment={voteComment}
+              />
+            ) : null}
           </Box>
-          <Box>
-            {commentMode ? (
-              <Button
-                sx={{
-                  color: 'white',
-                  background: 'black',
-                  maxHeight: '1.5em',
-                  fontSize: '.8em',
-                  padding: 1,
-                  '&.MuiButtonBase-root:hover': {
-                    bgcolor: 'orange',
-                  },
-                }}
-                onClick={() => setCommentMode(!commentMode)}
-              >
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                sx={{
-                  color: 'white',
-                  background: 'black',
-                  maxHeight: '1.5em',
-                  fontSize: '.8em',
-                  padding: 1,
-                  '&.MuiButtonBase-root:hover': {
-                    bgcolor: 'orange',
-                  },
-                }}
-                onClick={() => setCommentMode(!commentMode)}
-              >
-                Comment
-              </Button>
-            )}
-          </Box>
-          {commentMode && (
-            <InputComment
-              setCommentMode={setCommentMode}
-              dataGetPosts={dataGetPosts}
-              post={data}
-              dataMe={dataMe}
-            />
-          )}
-          {!query.detail && `${data.comments.length} comments`}
-          {query.detail ? (
-            <Comments
-              post={data}
-              dataGetPosts={dataGetPosts}
-              dataMe={dataMe}
-              loadingVoteComment={loadingVoteComment}
-              voteComment={voteComment}
-            />
-          ) : null}
-        </Box>
-      </NextLink>
-    </Box>
+        </NextLink>
+      </Box>
+    </ThemeProvider>
   );
 };
 

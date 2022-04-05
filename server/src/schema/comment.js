@@ -1,5 +1,7 @@
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 export default gql`
+  scalar Date
+
   type Comment {
     _id: String
     user: User
@@ -11,6 +13,7 @@ export default gql`
     points: Int
     postId: String
     postUserId: String
+    createdAt: Date
   }
   type queryCommentResponse {
     network: MutationResponse
@@ -31,9 +34,17 @@ export default gql`
     network: MutationResponse
     data: [VoteComment]
   }
+  type voteValue {
+    value: Int
+  }
+  type checkCommentVotedFromUserResponse {
+    network: MutationResponse
+    data: voteValue
+  }
   type Query {
     getVoteComment: mutationGetVoteCommentResponse
     getComments: queryCommentResponse
+    checkCommentVotedFromUser(commentId: String): checkCommentVotedFromUserResponse
     # if there is _id in reply after nested fetch 3 comments
     # => fetch 1 comment => but in Client, write nested query with fragment 3 level
     getComment(commentId: String): mutationCommentResponse
@@ -49,11 +60,7 @@ export default gql`
     ): mutationCommentResponse
     updateComment(commentId: String, content: String): mutationCommentResponse
     deleteComment(commentId: String): mutationCommentResponse
-    voteComment(
-      postId: String
-      commentId: String
-      voteValue: Int
-    ): mutationCommentResponse
+    voteComment(postId: String, commentId: String, voteValue: Int): mutationCommentResponse
     testMakeComment: mutationCommentResponse
     clearAllComment: mutationCommentResponse
   }

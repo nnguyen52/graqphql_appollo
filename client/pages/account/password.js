@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import InputField from '../../components/InputField';
 import { Box, LinearProgress, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useRouter } from 'next/router';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_changePassword } from '../../graphql-client/mutations/changePassword';
 import { Query_me } from '../../graphql-client/queries/user';
 
 const Password = () => {
-  const { data: dataMe, loading: loadingMe } = useQuery(Query_me);
+  const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
   const router = useRouter();
   const { id, token, type } = router.query;
   const [changePassword, { loading: loadingChangePassword }] = useMutation(Mutation_changePassword);
@@ -34,8 +34,11 @@ const Password = () => {
         type,
       },
       update(cache, { data }) {
-        if (!data.changePassword.network.success)
+        if (!data.changePassword.network.success) {
+          refetchMe();
+
           return setMessageError(data.changePassword.network.errors[0].message);
+        }
         if (data.changePassword.network.success) {
           return setMessage(data.changePassword.network.message);
         }

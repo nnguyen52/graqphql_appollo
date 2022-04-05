@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Comment from './Comment';
-import { Button } from '@mui/material';
+import { Button, Avatar, Box } from '@mui/material';
 import CommentMenu from './CommentMenu';
-import { useApolloClient } from '@apollo/client';
-import { Query_getPosts } from '../graphql-client/queries/posts';
+import { dateFormat } from '../src/utils/dateFormat';
 
 const DisplayComments = ({
   comment,
@@ -15,9 +14,7 @@ const DisplayComments = ({
   loadingVoteComment,
   voteComment,
 }) => {
-  const client = useApolloClient();
-  const posts = client.readQuery({ query: Query_getPosts });
-  let rootPaddingLeft = 10;
+  let rootPaddingLeft = 1;
   const [repliesForThisComment, setRepliesForThisComment] = useState([]);
   const [showReplies, setShowReplies] = useState([]);
   const [next, setNext] = useState(2);
@@ -33,7 +30,25 @@ const DisplayComments = ({
   }, [repliesForThisComment, next]);
   return (
     <>
-      <Comment comment={comment} post={post}>
+      <Box
+        sx={{
+          display: 'flex',
+          paddingLeft: `${rootPaddingLeft}em`,
+          marginTop: '1em',
+          gap: '.5em',
+          alignItems: 'center',
+        }}
+      >
+        <Avatar
+          alt={comment?.user?.userName}
+          src={comment?.user?.avatar}
+          sx={{
+            border: '1px solid black',
+          }}
+        />
+        <h4>{comment?.user?.userName}</h4>({dateFormat(comment?.createdAt.toString())})
+      </Box>
+      <Comment rootPaddingLeft={rootPaddingLeft} comment={comment} post={post}>
         {/* children is its reply */}
         <CommentMenu
           post={post}
@@ -49,7 +64,7 @@ const DisplayComments = ({
           {showReplies.length > 0 &&
             showReplies.map((each, index) => {
               return (
-                <div key={index} style={{ paddingLeft: `${rootPaddingLeft}px` }}>
+                <div key={index} style={{ paddingLeft: `${rootPaddingLeft}em` }}>
                   <DisplayComments
                     loadingDataGetPosts={loadingDataGetPosts}
                     dataGetPosts={dataGetPosts}

@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@apollo/client';
 import { Query_getPostByID } from '../../../graphql-client/queries/getPostByID';
-import { Alert, Button, LinearProgress } from '@mui/material';
+import { Box, Alert, LinearProgress } from '@mui/material';
 import Post from '../../../components/Post';
-import NextLink from 'next/link';
 
 const PostDetail = () => {
   const router = useRouter();
@@ -20,7 +19,15 @@ const PostDetail = () => {
   ) {
     return <Alert severity='error'>Post Not Found</Alert>;
   }
-  return <Post data={data?.getPostByID?.data} detail={true} />;
+  return (
+    <Box
+      sx={{
+        paddingBottom: '1em',
+      }}
+    >
+      <Post data={data?.getPostByID?.data} detail={true} />
+    </Box>
+  );
 };
 
 export default PostDetail;

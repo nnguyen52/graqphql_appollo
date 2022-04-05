@@ -32,6 +32,12 @@ const theme = createTheme({
     error: {
       main: red.A400,
     },
+    upvoteButton: {
+      main: '#d1663c',
+    },
+    downvoteButton: {
+      main: '#3c93d1',
+    },
   },
 });
 

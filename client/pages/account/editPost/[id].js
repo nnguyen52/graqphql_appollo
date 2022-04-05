@@ -9,9 +9,11 @@ import InputField from '../../../components/InputField';
 import { LoadingButton } from '@mui/lab';
 import { mapFieldErrors } from '../../../../server/src/utils/mapFieldErrors';
 import NextLink from 'next/link';
+import { Query_me } from '../../../graphql-client/queries/user';
 
 const EditPost = () => {
   const router = useRouter();
+  const { refetch: refetchMe } = useQuery(Query_me);
   const { data: dataPost, loading } = useQuery(Query_getPostByID, {
     variables: {
       id: router.query.id,
@@ -37,6 +39,7 @@ const EditPost = () => {
       },
       update(cache, { data }) {
         if (!data.updatePost.network.success) {
+          refetchMe();
           setErrors(mapFieldErrors(data.updatePost.network.errors));
           return;
         }

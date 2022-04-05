@@ -16,10 +16,10 @@ import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-
+import theme from '../src/theme';
+import { ThemeProvider } from '@mui/material/styles';
 const Post = ({ data, detail }) => {
-  const client = useApolloClient();
-  const dataGetPosts = client.readQuery({ query: Query_getPosts });
+  const dataGetPosts = useQuery(Query_getPosts);
   const { data: dataMe } = useQuery(Query_me);
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
@@ -48,9 +48,9 @@ const Post = ({ data, detail }) => {
               query: Query_getPosts,
               data: {
                 getPosts: {
-                  ...dataGetPosts.getPosts,
+                  ...dataGetPosts.data.getPosts,
                   data: {
-                    ...dataGetPosts.getPosts.data,
+                    ...dataGetPosts.data.getPosts.data,
                     posts: [],
                   },
                 },
@@ -78,10 +78,10 @@ const Post = ({ data, detail }) => {
               query: Query_getPosts,
               data: {
                 getPosts: {
-                  ...dataGetPosts.getPosts,
+                  ...dataGetPosts.data.getPosts,
                   data: {
-                    ...dataGetPosts.getPosts.data,
-                    posts: dataGetPosts.getPosts.data.posts.filter(
+                    ...dataGetPosts.data.getPosts.data,
+                    posts: dataGetPosts.data.getPosts.data.posts.filter(
                       (each) => each._id != data._id.toString()
                     ),
                   },
@@ -94,184 +94,170 @@ const Post = ({ data, detail }) => {
   };
   return (
     <>
-      <Box
-        sx={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'row',
-          width: '65%',
-          margin: '1em',
-        }}
-      >
+      <ThemeProvider theme={theme}>
         <Box
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '15%',
-            height: '100%',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'row',
+            width: '65%',
+            margin: '1em',
           }}
         >
-          {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'end',
-                paddingRight: '1em',
-              }}
-            >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '15%',
+              height: '100%',
+            }}
+          >
+            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
               <Box
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <ArrowCircleUpRoundedIcon
-                  sx={{
-                    cursor: 'pointer',
-                    fontSize: '2.5em',
-                    borderRadius: '50%',
-                    background:
-                      !loadingUserVoted &&
-                      dataUserVoted?.checkPostVotedFromUser?.data &&
-                      dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                        ? 'orange'
-                        : null,
-                    '&:hover': {
-                      color:
-                        !loadingUserVoted &&
-                        dataUserVoted?.checkPostVotedFromUser?.data &&
-                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
-                          ? null
-                          : 'orange',
-                    },
-                  }}
-                  onClick={() => handleVote(1)}
-                />
-                <b>{data?.points}</b>
-                <ArrowCircleDownRoundedIcon
-                  sx={{
-                    cursor: 'pointer',
-                    fontSize: '2.5em',
-                    borderRadius: '50%',
-                    background:
-                      !loadingUserVoted &&
-                      dataUserVoted?.checkPostVotedFromUser?.data &&
-                      dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                        ? 'blue'
-                        : null,
-                    '&:hover': {
-                      color:
-                        !loadingUserVoted &&
-                        dataUserVoted?.checkPostVotedFromUser?.data &&
-                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
-                          ? null
-                          : 'blue',
-                    },
-                  }}
-                  onClick={() => handleVote(-1)}
-                />
-              </Box>
-            </Box>
-          ) : (
-            <Box></Box>
-          )}
-        </Box>
-        {/* main - 80% */}
-        <Box
-          sx={{
-            marginLeft: '15%',
-            width: '85%',
-            display: 'flex',
-          }}
-        >
-          {/* content - 80% */}
-          <Box
-            component='div'
-            sx={{
-              width: '100%',
-              border: '1px solid black',
-              borderRadius: '5px',
-            }}
-          >
-            <NextLink href={`/post/${data?._id}/detail`}>
-              <Card
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: '150px',
-                  '&:hover': !detail
-                    ? {
-                        background: '#f4f4f4',
-                        cursor: 'pointer',
-                      }
-                    : null,
+                  alignItems: 'end',
+                  paddingRight: '1em',
                 }}
               >
                 <Box
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    flex: data.comments.length > 0 ? null : 1,
-                    padding: '1em',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
                 >
-                  <h3>{data?.title}</h3>
-                  <p>{data?.content}</p>
-                </Box>
-                {detail && <InputComment dataGetPosts={dataGetPosts} post={data} dataMe={dataMe} />}
-                {detail ? (
-                  <Comments
-                    post={data}
-                    dataGetPosts={dataGetPosts}
-                    dataMe={dataMe}
-                    loadingVoteComment={loadingVoteComment}
-                    voteComment={voteComment}
+                  <ArrowCircleUpRoundedIcon
+                    sx={{
+                      cursor: 'pointer',
+                      fontSize: '2.5em',
+                      borderRadius: '50%',
+                      background:
+                        !loadingUserVoted &&
+                        dataUserVoted?.checkPostVotedFromUser?.data &&
+                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                          ? theme.palette.upvoteButton.main
+                          : null,
+                      '&:hover': {
+                        color:
+                          !loadingUserVoted &&
+                          dataUserVoted?.checkPostVotedFromUser?.data &&
+                          dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                            ? null
+                            : theme.palette.upvoteButton.main,
+                      },
+                    }}
+                    onClick={() => handleVote(1)}
                   />
-                ) : null}
-              </Card>
-            </NextLink>
+                  <b
+                    style={{
+                      color:
+                        data?.points >= 0
+                          ? theme.palette.upvoteButton.main
+                          : theme.palette.downvoteButton.main,
+                    }}
+                  >
+                    {data?.points}
+                  </b>
+                  <ArrowCircleDownRoundedIcon
+                    sx={{
+                      cursor: 'pointer',
+                      fontSize: '2.5em',
+                      borderRadius: '50%',
+                      background:
+                        !loadingUserVoted &&
+                        dataUserVoted?.checkPostVotedFromUser?.data &&
+                        dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                          ? theme.palette.downvoteButton.main
+                          : null,
+                      '&:hover': {
+                        color:
+                          !loadingUserVoted &&
+                          dataUserVoted?.checkPostVotedFromUser?.data &&
+                          dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                            ? null
+                            : theme.palette.downvoteButton.main,
+                      },
+                    }}
+                    onClick={() => handleVote(-1)}
+                  />
+                </Box>
+              </Box>
+            ) : (
+              <Box></Box>
+            )}
           </Box>
-          {/* menu - 20% */}
+          {/* main - 80% */}
           <Box
             sx={{
+              marginLeft: '15%',
+              width: '85%',
               display: 'flex',
-              flexDirection: 'column',
-              padding: '1em',
-              gap: '.3em',
             }}
           >
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
-              <Button
-                variant='contained'
-                sx={{
-                  padding: '5px',
-                  minWidth: '4em',
-                  width: 'fit-content',
-                  color: 'white',
-                  background: '#bc074c',
-                  '&:hover': {
-                    color: 'white',
-                    background: 'crimson',
-                  },
-                }}
-              >
-                <DeleteIcon
+            {/* content - 80% */}
+            <Box
+              component='div'
+              sx={{
+                width: '100%',
+                border: '1px solid black',
+                borderRadius: '5px',
+              }}
+            >
+              <NextLink href={`/post/${data?._id}/detail`}>
+                <Card
                   sx={{
-                    color: 'white',
-                    cursor: 'pointer',
-                    margin: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: '150px',
+                    '&:hover': !detail
+                      ? {
+                          background: '#f4f4f4',
+                          cursor: 'pointer',
+                        }
+                      : null,
                   }}
-                  onClick={!loadingDeletePost ? handleDeletePost : null}
-                />
-              </Button>
-            )}
-            {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
-              <NextLink href={`/account/editPost/${data._id}`}>
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flex: data.comments.length > 0 ? null : 1,
+                      padding: '1em',
+                    }}
+                  >
+                    <h3>{data?.title}</h3>
+                    <p>{data?.content}</p>
+                  </Box>
+                  {detail && (
+                    <InputComment dataGetPosts={dataGetPosts.data} post={data} dataMe={dataMe} />
+                  )}
+                  {detail ? (
+                    <Comments
+                      post={data}
+                      dataGetPosts={dataGetPosts.data}
+                      dataMe={dataMe}
+                      loadingVoteComment={loadingVoteComment}
+                      voteComment={voteComment}
+                    />
+                  ) : null}
+                </Card>
+              </NextLink>
+            </Box>
+            {/* menu - 20% */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '1em',
+                gap: '.3em',
+              }}
+            >
+              {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
                 <Button
                   variant='contained'
                   sx={{
@@ -279,66 +265,93 @@ const Post = ({ data, detail }) => {
                     minWidth: '4em',
                     width: 'fit-content',
                     color: 'white',
-                    background: 'green',
+                    background: '#bc074c',
                     '&:hover': {
                       color: 'white',
-                      background: '#24d645',
+                      background: 'crimson',
                     },
                   }}
                 >
-                  <EditIcon
+                  <DeleteIcon
                     sx={{
                       color: 'white',
                       cursor: 'pointer',
+                      margin: 0,
                     }}
+                    onClick={!loadingDeletePost ? handleDeletePost : null}
                   />
                 </Button>
-              </NextLink>
-            )}
-            <Box sx={{ position: 'relative', display: 'flex' }}>
-              <NextLink href={`/post/${data._id.toString()}/detail`}>
-                <Button
-                  sx={{
-                    minWidth: '4em',
-                    width: 'fit-content',
-                    background: 'black',
-                    color: 'orange',
-                    '&:hover': {
-                      background: '#353535',
-                    },
-                  }}
-                >
-                  <ChatBubbleOutlineIcon />
-                  <Box
+              )}
+              {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
+                <NextLink href={`/account/editPost/${data._id}`}>
+                  <Button
+                    variant='contained'
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      padding: 0,
-                      borderRadius: '50%',
-                      height: 'fit-content',
-                      padding: '0 5px 0 5px',
-                      position: 'absolute',
-                      right: '-15%',
-                      bottom: '-30%',
-                      background: 'crimson',
+                      padding: '5px',
+                      minWidth: '4em',
+                      width: 'fit-content',
                       color: 'white',
+                      background: 'green',
+                      '&:hover': {
+                        color: 'white',
+                        background: '#24d645',
+                      },
                     }}
                   >
-                    <b
-                      style={{
+                    <EditIcon
+                      sx={{
+                        color: 'white',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </Button>
+                </NextLink>
+              )}
+              <Box sx={{ position: 'relative', display: 'flex' }}>
+                <NextLink href={`/post/${data._id.toString()}/detail`}>
+                  <Button
+                    sx={{
+                      minWidth: '4em',
+                      width: 'fit-content',
+                      background: 'black',
+                      color: theme.palette.upvoteButton.main,
+                      '&:hover': {
+                        background: '#353535',
+                      },
+                    }}
+                  >
+                    <ChatBubbleOutlineIcon />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                         padding: 0,
+                        borderRadius: '50%',
+                        height: 'fit-content',
+                        padding: '0 5px 0 5px',
+                        position: 'absolute',
+                        right: '-15%',
+                        bottom: '-30%',
+                        background: 'crimson',
+                        color: 'white',
                       }}
                     >
-                      {data.comments.length}
-                    </b>
-                  </Box>
-                </Button>
-              </NextLink>
+                      <b
+                        style={{
+                          padding: 0,
+                        }}
+                      >
+                        {data.comments.length}
+                      </b>
+                    </Box>
+                  </Button>
+                </NextLink>
+              </Box>
             </Box>
           </Box>
         </Box>
-      </Box>
+      </ThemeProvider>
     </>
   );
 };

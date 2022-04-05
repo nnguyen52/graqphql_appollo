@@ -13,5 +13,6 @@ export const Fragment_comment = gql`
       ...user
     }
     postId
+    createdAt
   }
 `;

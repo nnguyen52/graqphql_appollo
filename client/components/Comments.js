@@ -1,5 +1,5 @@
-import { Button } from '@mui/material';
 import React, { useState, useEffect } from 'react';
+import { Button, Box } from '@mui/material';
 import DisplayComments from './DisplayComments';
 
 // display 2 latest comments
@@ -49,7 +49,11 @@ const Comments = ({
     };
   };
   return (
-    <div>
+    <Box
+      style={{
+        paddingBottom: comments.legnth > 0 || replies.length > 0 ? '.5em' : 0,
+      }}
+    >
       {showComments.map((each, index) => {
         return (
           <DisplayComments
@@ -73,7 +77,7 @@ const Comments = ({
           <Button onClick={() => setNext((prev) => prev - 10)}>Hide comment</Button>
         )
       )}
-    </div>
+    </Box>
   );
 };
 

@@ -1,10 +1,18 @@
 import React from 'react';
-const Comment = ({ children, comment }) => {
+import { Box } from '@mui/material';
+
+const Comment = ({ children, comment, rootPaddingLeft }) => {
   return (
-    <div>
-      {comment.content}
-      {children}
-    </div>
+    <>
+      <Box
+        sx={{
+          paddingLeft: `${3 * rootPaddingLeft}em`,
+        }}
+      >
+        {comment.content}
+        {children}
+      </Box>
+    </>
   );
 };
 

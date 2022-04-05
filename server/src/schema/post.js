@@ -1,5 +1,7 @@
 import { gql } from 'apollo-server-express';
 export default gql`
+  scalar Date
+
   type Post {
     _id: String
     userId: String
@@ -8,6 +10,7 @@ export default gql`
     content: String
     points: Int
     comments: [Comment]
+    createdAt: Date
   }
   type PostInfo {
     hasNextPage: Boolean

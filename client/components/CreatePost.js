@@ -12,7 +12,7 @@ import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 const CreatePost = () => {
   const initialValues = { title: '', content: '' };
   const [createPost, { loading: loadingCraetePost }] = useMutation(Mutation_createPost);
-  const { data: meData, loading: meLoading } = useQuery(Query_me);
+  const { data: meData, loading: meLoading, refetch: refetchMe } = useQuery(Query_me);
   const [exceptionErr, setExceptionErr] = useState(null);
   const handleSubmit = async (values, { setErrors }) => {
     const { title, content } = values;
@@ -24,6 +24,7 @@ const CreatePost = () => {
       variables: { title, content },
       update(cache, { data }) {
         if (!data.createPost.network.success) {
+          refetchMe();
           setExceptionErr(data.createPost.network.errors[0].message);
           setTimeout(() => setExceptionErr(null), 3000);
           return;

@@ -11,6 +11,8 @@ import Image from 'next/image';
 import { Mutation_editMe } from '../../graphql-client/mutations/editMe';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { LoadingButton } from '@mui/lab';
+import theme from '../../src/theme';
+import { ThemeProvider } from '@mui/material/styles';
 
 const hideEmail = (email) => {
   let hiddenMail = '';
@@ -87,10 +89,10 @@ const Account = () => {
               sx={{
                 margin: '1em',
                 color: 'white',
-                background: isEditing ? '#bc074c' : '#28c940',
+                background: isEditing ? '#bc074c' : 'green',
                 '&:hover': {
                   color: 'white',
-                  background: isEditing ? 'crimson' : '#28c940',
+                  background: isEditing ? 'crimson' : '#24d645',
                 },
               }}
               onClick={() => setIsEditing(!isEditing)}
@@ -191,142 +193,147 @@ const UserInfo = ({ data, isEditing }) => {
     }
   };
   return (
-    <Box
-      sx={{
-        padding: '1em',
-        display: 'flex',
-      }}
-    >
-      <Box sx={{ width: '70%' }}>
-        {!isEditing ? (
-          <>
-            <h2>Hello, {data.userName}!</h2>
-            <span style={{ color: 'blue' }}> userName</span>: <b> {data.userName}</b> <br />
-            <span style={{ color: 'blue' }}>email</span>: <b>{hideEmail(data.email)}</b> <br />
-            <span style={{ color: 'orange' }}>karma</span>: <b>{data.karma}</b>
-            <br />
-          </>
-        ) : (
-          <h2>You are in editing mode!</h2>
-        )}
-      </Box>
+    <ThemeProvider theme={theme}>
       <Box
-        sx={{ width: '30%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+        sx={{
+          padding: '1em',
+          display: 'flex',
+        }}
       >
+        <Box sx={{ width: '70%' }}>
+          {!isEditing ? (
+            <>
+              <h2>Hello, {data.userName}!</h2>
+              <span style={{ color: theme.palette.downvoteButton.main }}> userName</span>:
+              <b> {data.userName}</b> <br />
+              <span style={{ color: theme.palette.downvoteButton.main }}>email</span>:
+              <b>{hideEmail(data.email)}</b> <br />
+              <span style={{ color: theme.palette.upvoteButton.main }}>karma</span>:
+              <b>{data.karma}</b>
+              <br />
+            </>
+          ) : (
+            <h2>You are in editing mode!</h2>
+          )}
+        </Box>
         <Box
-          sx={{
-            width: 'fit-content',
-            position: 'relative',
-            margin: '0 auto',
-          }}
+          sx={{ width: '30%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
         >
           <Box
             sx={{
+              width: 'fit-content',
               position: 'relative',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              height: '200px',
-              width: '200px',
+              margin: '0 auto',
             }}
           >
-            <Image
-              width={'100%'}
-              height={'100%'}
-              src={avatar ? `${URL.createObjectURL(avatar)}` : data?.avatar}
-              alt='picture from cloud deleted (alt text)'
-              layout='responsive'
-            />
-          </Box>
-          {dataMe?.me?.data?.id.toString() == router?.query?.id.toString() && (
-            <>
-              <Tooltip title='Edit' arrow>
-                <input
-                  style={{
-                    zIndex: 9001,
-                    position: 'absolute',
-                    top: 7,
-                    right: -5,
-                    width: '1.6em',
-                    fontSize: '1.6em',
-                    opacity: 0,
-                  }}
-                  // multiple
-                  // only accept 1 img
-                  type='file'
-                  name='file'
-                  id='file_up'
-                  accept='image/*'
-                  onChange={changeAvatar}
-                />
-              </Tooltip>
-              <SettingsIcon
-                sx={{
-                  border: '2px solid black',
-                  borderRadius: '50%',
-                  zIndex: 9000,
-                  position: 'absolute',
-                  top: 10,
-                  right: 0,
-                  width: '1.2em',
-                  height: '1.2em',
-                  padding: 0,
-                }}
+            <Box
+              sx={{
+                position: 'relative',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                height: '200px',
+                width: '200px',
+              }}
+            >
+              <Image
+                width={'100%'}
+                height={'100%'}
+                src={avatar ? `${URL.createObjectURL(avatar)}` : data?.avatar}
+                alt='picture from cloud deleted (alt text)'
+                layout='responsive'
               />
-              {images.length > 0 && (
-                <LoadingButton
-                  loading={loadingMe || loadingEditMe}
+            </Box>
+            {dataMe?.me?.data?.id.toString() == router?.query?.id.toString() && (
+              <>
+                <Tooltip title='Edit' arrow>
+                  <input
+                    style={{
+                      zIndex: 9001,
+                      position: 'absolute',
+                      top: 7,
+                      right: -5,
+                      width: '1.6em',
+                      fontSize: '1.6em',
+                      opacity: 0,
+                    }}
+                    // multiple
+                    // only accept 1 img
+                    type='file'
+                    name='file'
+                    id='file_up'
+                    accept='image/*'
+                    onChange={changeAvatar}
+                  />
+                </Tooltip>
+                <SettingsIcon
                   sx={{
+                    border: '2px solid black',
+                    borderRadius: '50%',
+                    zIndex: 9000,
                     position: 'absolute',
-                    bottom: 0,
+                    top: 10,
                     right: 0,
-                    background: 'orange',
-                    color: 'white',
-                    borderRadius: '5px',
-                    '&:hover': {
-                      background: '#ffbf1e',
-                    },
+                    width: '1.2em',
+                    height: '1.2em',
+                    padding: 0,
                   }}
-                  onClick={upload}
-                >
-                  Save
-                </LoadingButton>
-              )}
-              {images.length > 0 && (
-                <LoadingButton
-                  loading={loadingMe || loadingEditMe}
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    color: 'white',
-                    background: '#bc074c',
-                    '&:hover': {
+                />
+                {images.length > 0 && (
+                  <LoadingButton
+                    loading={loadingMe || loadingEditMe}
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      background: theme.palette.upvoteButton.main,
                       color: 'white',
-                      background: 'crimson',
-                    },
-                  }}
-                  onClick={() => {
-                    setAvatar(null);
-                    setImages([]);
-                    setCheckImgSizeMsg({
-                      code: null,
-                      message: null,
-                    });
-                  }}
-                >
-                  Cancel
-                </LoadingButton>
-              )}
-            </>
+                      borderRadius: '5px',
+                      '&:hover': {
+                        background: '#ffbf1e',
+                      },
+                    }}
+                    onClick={upload}
+                  >
+                    Save
+                  </LoadingButton>
+                )}
+                {images.length > 0 && (
+                  <LoadingButton
+                    loading={loadingMe || loadingEditMe}
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      color: 'white',
+                      background: '#bc074c',
+                      '&:hover': {
+                        color: 'white',
+                        background: 'crimson',
+                      },
+                    }}
+                    onClick={() => {
+                      setAvatar(null);
+                      setImages([]);
+                      setCheckImgSizeMsg({
+                        code: null,
+                        message: null,
+                      });
+                    }}
+                  >
+                    Cancel
+                  </LoadingButton>
+                )}
+              </>
+            )}
+          </Box>
+          {checkImgSizeMsg?.message && (
+            <Alert severity={checkImgSizeMsg.code !== 200 ? 'error' : 'success'}>
+              {checkImgSizeMsg.message}
+            </Alert>
           )}
         </Box>
-        {checkImgSizeMsg?.message && (
-          <Alert severity={checkImgSizeMsg.code !== 200 ? 'error' : 'success'}>
-            {checkImgSizeMsg.message}
-          </Alert>
-        )}
       </Box>
-    </Box>
+    </ThemeProvider>
   );
 };
 export default Account;

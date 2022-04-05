@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import InputField from './InputField';
 import { Form, Formik } from 'formik';
 import { Alert } from '@mui/material';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_createComment } from '../graphql-client/mutations/createComment';
 import { Query_getPosts } from '../graphql-client/queries/posts';
+import { Query_me } from '../graphql-client/queries/user';
 
 const InputComment = ({
   post,
@@ -15,12 +16,12 @@ const InputComment = ({
   loadingDataGetPosts,
   dataGetPosts,
 }) => {
+  const { refetch: refetchMe } = useQuery(Query_me);
   const [createComment, { loading: loadingCreateComment }] = useMutation(Mutation_createComment);
   const [exceptionErr, setexceptionErr] = useState(null);
   const initialValues = {
     commentContent: '',
   };
-
   const handleSubmit = async (values, { setErrors }) => {
     if (loadingCreateComment || values.commentContent == '' || loadingDataGetPosts) return;
     await createComment({
@@ -41,6 +42,8 @@ const InputComment = ({
       update(cache, { data }) {
         if (!data.createComment.network.success) {
           // handle errors
+          refetchMe();
+          setReplyMode(false);
           setexceptionErr(data.createComment.network.errors[0].message);
         } else {
           if (setReplyMode) setReplyMode(false);

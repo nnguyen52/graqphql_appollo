@@ -13,7 +13,7 @@ const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii
 export default {
   Comment: {
     reply: async (parent) => {
-      console.log('parent of comment', parent);
+      // console.log('parent of comment', parent);
     },
   },
   Post: {
@@ -22,9 +22,6 @@ export default {
     },
     comments: async (parent) => {
       const comments = await Comment.find({ postId: parent._id.toString() });
-      // .sort({
-      //   createdAt: 1,
-      // });
       return comments;
     },
   },

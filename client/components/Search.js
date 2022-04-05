@@ -39,6 +39,7 @@ const Search = () => {
     setInitialValues({
       input: '',
     });
+    setOpenSearchResult(false);
   };
 
   const handleSearch = async (values) => {

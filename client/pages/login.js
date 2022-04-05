@@ -19,6 +19,8 @@ import char5 from '../assets/redditChars5.jpg';
 import char6 from '../assets/redditChars6.jpg';
 import char7 from '../assets/redditChars7.jpg';
 import char8 from '../assets/redditChars8.jpg';
+import theme from '../src/theme';
+import { ThemeProvider } from '@mui/material/styles';
 
 // responsive
 import { styled } from '@mui/material/styles';
@@ -109,249 +111,251 @@ const Login = () => {
   }
   if (error) setExceptionError(error);
   return (
-    <ResponsiveBox>
-      <Grid
-        container
-        sx={{
-          width: '100%',
-          height: '100%',
-        }}
-      >
+    <ThemeProvider theme={theme}>
+      <ResponsiveBox>
         <Grid
-          item
+          container
           sx={{
-            width: '33%',
-            height: '25%',
-            objectFit: 'cover',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            width: '100%',
+            height: '100%',
           }}
         >
-          <Box>
-            <Image src={char1.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          className='decor_img_login'
-          item
-          sx={{
-            width: '34%',
-            height: '25%',
-            objectFit: 'cover',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Box>
-            <Image src={char2.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          item
-          sx={{
-            width: '33%',
-            height: '25%',
-            objectFit: 'cover',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Box>
-            <Image src={char3.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          className='hide_mobile'
-          item
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            width: '20%',
-            height: '50%',
-            alignItems: 'center',
-            objectFit: 'cover',
-          }}
-        >
-          <Box
+          <Grid
+            item
             sx={{
-              height: 'fit-content',
+              width: '33%',
+              height: '25%',
+              objectFit: 'cover',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            <Image src={char4.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          className='grid_login'
-          item
-          sx={{
-            width: '60%',
-            height: '50%',
-            overflow: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Box
+            <Box>
+              <Image src={char1.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            className='decor_img_login'
+            item
             sx={{
-              width: '100%',
+              width: '34%',
+              height: '25%',
+              objectFit: 'cover',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-              {({ isSubmitting }) => (
-                <Form>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '1em',
-                      width: '100%',
-                    }}
-                  >
-                    <Box
-                      sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1em' }}
-                    >
-                      <InputField name='userNameOrEmail' label='User Name' type='text' />
-                      <InputField name='password' label='Password' type='password' />
-                    </Box>
-                    {exceptionErr && <Alert severity='error'>{exceptionErr}</Alert>}
-                    <Box sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
-                      <LoadingButton
-                        sx={{
-                          border: '2px solid black',
-                          background: 'orange',
-                          color: 'black',
-                          '&:hover': {
-                            border: '2px solid #164920',
-                            color: 'white',
-                            background: '#164920',
-                          },
-                        }}
-                        variant='outlined'
-                        loading={isSubmitting && loginLoading}
-                        type='submit'
-                      >
-                        Login
-                      </LoadingButton>
-                      or
-                      <NextLink href='/register'>
-                        <Button
-                          sx={{
-                            border: '2px solid orange',
-                            color: 'orange',
-                            background: 'black',
-                            '&:hover': {
-                              border: '2px solid #164920',
-                              background: '#164920',
-                              color: 'white',
-                            },
-                          }}
-                          variant='contained'
-                        >
-                          Register
-                        </Button>
-                      </NextLink>
-                    </Box>
-                  </Box>
-                  {isSubmitting && loginLoading && <LinearProgress />}
-                </Form>
-              )}
-            </Formik>
+            <Box>
+              <Image src={char2.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            item
+            sx={{
+              width: '33%',
+              height: '25%',
+              objectFit: 'cover',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <Image src={char3.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            className='hide_mobile'
+            item
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              width: '20%',
+              height: '50%',
+              alignItems: 'center',
+              objectFit: 'cover',
+            }}
+          >
             <Box
               sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                width: '100%',
-                justifyContent: 'flex-end',
+                height: 'fit-content',
               }}
             >
-              <NextLink href='/account/forgotPassword'>
-                <Button
-                  sx={{
-                    width: 'fit-content',
-                    margin: '1em',
-                    textDecoration: 'underline',
-                    textTransform: 'lowercase',
-                  }}
-                >
-                  Forgot password
-                </Button>
-              </NextLink>
+              <Image src={char4.src} width={'150em'} height={'150em'} />
             </Box>
-          </Box>
-        </Grid>
-        <Grid
-          className='hide_mobile'
-          item
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            width: '20%',
-            alignItems: 'center',
-            objectFit: 'cover',
-          }}
-        >
-          <Box
+          </Grid>
+          <Grid
+            className='grid_login'
+            item
             sx={{
-              height: 'fit-content',
+              width: '60%',
+              height: '50%',
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <Image src={char5.src} width={'150em'} height={'150em'} />
-          </Box>
+            <Box
+              sx={{
+                width: '100%',
+              }}
+            >
+              <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+                {({ isSubmitting }) => (
+                  <Form>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '1em',
+                        width: '100%',
+                      }}
+                    >
+                      <Box
+                        sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1em' }}
+                      >
+                        <InputField name='userNameOrEmail' label='User Name' type='text' />
+                        <InputField name='password' label='Password' type='password' />
+                      </Box>
+                      {exceptionErr && <Alert severity='error'>{exceptionErr}</Alert>}
+                      <Box sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
+                        <LoadingButton
+                          sx={{
+                            border: '2px solid black',
+                            background: theme.palette.upvoteButton.main,
+                            color: 'black',
+                            '&:hover': {
+                              border: '2px solid #164920',
+                              color: 'white',
+                              background: '#164920',
+                            },
+                          }}
+                          variant='outlined'
+                          loading={isSubmitting && loginLoading}
+                          type='submit'
+                        >
+                          Login
+                        </LoadingButton>
+                        or
+                        <NextLink href='/register'>
+                          <Button
+                            sx={{
+                              border: `2px solid ${theme.palette.upvoteButton.main} `,
+                              color: theme.palette.upvoteButton.main,
+                              background: 'black',
+                              '&:hover': {
+                                border: '2px solid #164920',
+                                background: '#164920',
+                                color: 'white',
+                              },
+                            }}
+                            variant='contained'
+                          >
+                            Register
+                          </Button>
+                        </NextLink>
+                      </Box>
+                    </Box>
+                    {isSubmitting && loginLoading && <LinearProgress />}
+                  </Form>
+                )}
+              </Formik>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  width: '100%',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <NextLink href='/account/forgotPassword'>
+                  <Button
+                    sx={{
+                      width: 'fit-content',
+                      margin: '1em',
+                      textDecoration: 'underline',
+                      textTransform: 'lowercase',
+                    }}
+                  >
+                    Forgot password
+                  </Button>
+                </NextLink>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid
+            className='hide_mobile'
+            item
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              width: '20%',
+              alignItems: 'center',
+              objectFit: 'cover',
+            }}
+          >
+            <Box
+              sx={{
+                height: 'fit-content',
+              }}
+            >
+              <Image src={char5.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            item
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '33%',
+              height: '25%',
+              objectFit: 'cover',
+            }}
+          >
+            <Box>
+              <Image src={char6.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            item
+            sx={{
+              width: '34%',
+              height: '25%',
+              objectFit: 'cover',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <Image src={char7.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
+          <Grid
+            item
+            sx={{
+              width: '33%',
+              height: '25%',
+              objectFit: 'cover',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <Image src={char8.src} width={'150em'} height={'150em'} />
+            </Box>
+          </Grid>
         </Grid>
-        <Grid
-          item
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '33%',
-            height: '25%',
-            objectFit: 'cover',
-          }}
-        >
-          <Box>
-            <Image src={char6.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          item
-          sx={{
-            width: '34%',
-            height: '25%',
-            objectFit: 'cover',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Box>
-            <Image src={char7.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-        <Grid
-          item
-          sx={{
-            width: '33%',
-            height: '25%',
-            objectFit: 'cover',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Box>
-            <Image src={char8.src} width={'150em'} height={'150em'} />
-          </Box>
-        </Grid>
-      </Grid>
-    </ResponsiveBox>
+      </ResponsiveBox>
+    </ThemeProvider>
   );
 };
 

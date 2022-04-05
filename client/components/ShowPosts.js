@@ -21,7 +21,11 @@ const ShowPosts = () => {
   if (error) return <Alert severity='error'>Server error... {error}</Alert>;
   if (loadingPosts) return <LinearProgress />;
   return (
-    <Fragment>
+    <Box
+      sx={{
+        paddingBottom: '1em',
+      }}
+    >
       {data?.getPosts?.data?.posts?.map((each, index) => {
         return (
           <Fragment key={index}>
@@ -58,7 +62,7 @@ const ShowPosts = () => {
           </LoadingButton>
         )}
       </Box>
-    </Fragment>
+    </Box>
   );
 };
 
