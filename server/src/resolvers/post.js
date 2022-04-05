@@ -3,7 +3,6 @@ import Comment from '../models/comment';
 import Post from '../models/Post';
 import User from '../models/user';
 import Vote from '../models/votes';
-import VoteComment from '../models/voteComment';
 import { deletePost } from '../utils/deletePost';
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
@@ -490,7 +489,7 @@ export default {
             network: {
               success: true,
               code: 200,
-              message: 'Opps, we can not find any posts you requested. Please try again.',
+              message: 'Opps, we can not find any posts you requested. Please try again!',
             },
             data: {
               posts: [],

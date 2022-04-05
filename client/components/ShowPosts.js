@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client';
-import { Alert, LinearProgress, Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import React, { Fragment } from 'react';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import Post from './Post';
@@ -19,7 +19,7 @@ const ShowPosts = () => {
     notifyOnNetworkStatusChange: true,
   });
   if (error) return <Alert severity='error'>Server error... {error}</Alert>;
-  if (loadingPosts) return <LinearProgress />;
+
   return (
     <Box
       sx={{

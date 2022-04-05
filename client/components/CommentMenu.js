@@ -16,7 +16,26 @@ import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { Query_checkCommentVotedFromUser } from '../graphql-client/queries/checkCommentVotedFromUser';
+import { Query_me } from '../graphql-client/queries/user';
+import { styled } from '@mui/material/styles';
 
+const CommentMenuResponsive = styled('div')(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    '.editPostContainer': {
+      flexDirection: 'column',
+      background: '#f2efea',
+      padding: '.1em',
+      borderRadius: '5px',
+    },
+    '.editPostContainer button ': {
+      background: 'white',
+    },
+  },
+  [theme.breakpoints.up('md')]: {},
+  [theme.breakpoints.up('lg')]: {
+    // default is for desktop
+  },
+}));
 const CommentMenu = ({
   post,
   comment,
@@ -27,6 +46,7 @@ const CommentMenu = ({
   loadingVoteComment,
   voteComment,
 }) => {
+  const { refetch: refetchMe } = useQuery(Query_me);
   const [replyMode, setReplyMode] = useState(false);
   const [deleteComment, { loading: loadingDeleteComment }] = useMutation(Mutation_deleteComment);
   const [updateComment, { loading: loadingEditComment }] = useMutation(Mutation_editComment);
@@ -50,6 +70,7 @@ const CommentMenu = ({
     },
   });
   useEffect(() => {
+    console.log('run1');
     if (!messageResult.message) return;
     setTimeout(
       () =>
@@ -73,6 +94,7 @@ const CommentMenu = ({
         },
         update(cache, { data }) {
           if (!data?.voteComment?.network?.success) {
+            refetchMe();
             refetch();
             return alert(data?.voteComment?.network?.errors[0].message);
           }
@@ -87,6 +109,7 @@ const CommentMenu = ({
     if (!loadingMe && (!dataMe?.me?.data || !dataMe.me)) {
       return alert('Please login to vote comment!');
     }
+    if (isEditing) setIsEditing(false);
     setReplyMode(!replyMode);
   };
   const handleDeleteComment = async () => {
@@ -97,11 +120,13 @@ const CommentMenu = ({
           commentId: comment._id.toString(),
         },
         update(cache, { data }) {
-          if (!data?.deleteComment?.network?.success)
+          if (!data?.deleteComment?.network?.success) {
+            refetchMe();
             return setMessageResult({
               severity: 'error',
               message: data.deleteComment.network.errors[0].message,
             });
+          }
           let modifiedPosts = dataGetPosts.getPosts.data.posts;
           modifiedPosts = modifiedPosts.map((eachPost) => {
             if (eachPost._id.toString() == post._id.toString()) {
@@ -149,6 +174,7 @@ const CommentMenu = ({
       },
       update(cache, { data }) {
         if (!data?.updateComment?.network?.success) {
+          refetchMe();
           setMessageResult({
             severity: 'error',
             message: data?.updateComment?.network?.errors[0]?.message,
@@ -168,185 +194,195 @@ const CommentMenu = ({
   };
   return (
     <>
-      <ThemeProvider theme={theme}>
-        <Box
-          sx={{
-            display: 'flex',
-            marginTop: '.2em',
-            flexDirection: 'row',
-            flexWrap: 'warp',
-            alignItems: 'center',
-            gap: '.3em',
-          }}
-        >
-          <ArrowCircleUpRoundedIcon
+      <CommentMenuResponsive>
+        <ThemeProvider theme={theme}>
+          <Box
             sx={{
-              borderRadius: '50%',
-              cursor: 'pointer',
-              background:
-                !loadingCheckCommentVotedFromUser &&
-                datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
-                datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value >= 1
-                  ? theme.palette.upvoteButton.main
-                  : null,
-              '&:hover': {
-                color:
+              display: 'flex',
+              marginTop: '.2em',
+              flexDirection: 'row',
+              flexWrap: 'warp',
+              alignItems: 'center',
+              gap: '.3em',
+            }}
+          >
+            <ArrowCircleUpRoundedIcon
+              sx={{
+                borderRadius: '50%',
+                cursor: 'pointer',
+                background:
                   !loadingCheckCommentVotedFromUser &&
                   datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
                   datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value >= 1
-                    ? null
-                    : theme.palette.upvoteButton.main,
-              },
-            }}
-            onClick={() => handleVote(comment, 1)}
-          />
-          {comment.points}
-          <ArrowCircleDownRoundedIcon
-            sx={{
-              cursor: 'pointer',
-              borderRadius: '50%',
-              background:
-                !loadingCheckCommentVotedFromUser &&
-                datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
-                datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value <= -1
-                  ? theme.palette.downvoteButton.main
-                  : null,
-              '&:hover': {
-                color:
+                    ? theme.palette.upvoteButton.main
+                    : null,
+                '&:hover': {
+                  color:
+                    !loadingCheckCommentVotedFromUser &&
+                    datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
+                    datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value >= 1
+                      ? null
+                      : theme.palette.upvoteButton.main,
+                },
+              }}
+              onClick={() => handleVote(comment, 1)}
+            />
+            {comment.points}
+            <ArrowCircleDownRoundedIcon
+              sx={{
+                cursor: 'pointer',
+                borderRadius: '50%',
+                background:
                   !loadingCheckCommentVotedFromUser &&
                   datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
                   datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value <= -1
-                    ? null
-                    : theme.palette.downvoteButton.main,
-              },
-            }}
-            onClick={() => handleVote(comment, -1)}
-          />
-          <LoadingButton
-            loading={loadingDataGetPosts || loadingMe || loadingVoteComment}
-            sx={{
-              color: 'white',
-              background: !replyMode ? 'black' : 'crimson',
-              maxHeight: '1.5em',
-              fontSize: '.8em',
-              padding: 0,
-              '&.MuiButtonBase-root:hover': {
-                bgcolor: !replyMode ? theme.palette.upvoteButton.main : 'crimson',
-              },
-            }}
-            onClick={() => handleReply(comment)}
-          >
-            {replyMode ? (
-              'Cancel'
-            ) : (
-              <Box
-                sx={{
-                  fontSize: '1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-around',
-                }}
-              >
-                <ChatBubbleIcon
+                    ? theme.palette.downvoteButton.main
+                    : null,
+                '&:hover': {
+                  color:
+                    !loadingCheckCommentVotedFromUser &&
+                    datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data &&
+                    datacheckCommentVotedFromUser?.checkCommentVotedFromUser?.data?.value <= -1
+                      ? null
+                      : theme.palette.downvoteButton.main,
+                },
+              }}
+              onClick={() => handleVote(comment, -1)}
+            />
+            <LoadingButton
+              loading={loadingDataGetPosts || loadingMe || loadingVoteComment}
+              sx={{
+                color: 'white',
+                background: !replyMode ? 'black' : 'crimson',
+                maxHeight: '1.5em',
+                fontSize: '.8em',
+                padding: 0,
+                '&.MuiButtonBase-root:hover': {
+                  bgcolor: !replyMode ? theme.palette.upvoteButton.main : 'crimson',
+                },
+              }}
+              onClick={() => handleReply(comment)}
+            >
+              {replyMode ? (
+                'Cancel'
+              ) : (
+                <Box
                   sx={{
-                    fontSize: '1.2em',
+                    fontSize: '1em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-around',
+                  }}
+                >
+                  <ChatBubbleIcon
+                    sx={{
+                      fontSize: '1.2em',
+                    }}
+                  />
+                  Reply
+                </Box>
+              )}
+            </LoadingButton>
+            {!messageResult?.message &&
+              dataMe?.me?.data &&
+              comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+                <DeleteIcon
+                  sx={{
+                    color: 'white',
+                    cursor: 'pointer',
+                    borderRadius: '5px',
+                    background: '#bc074c',
+                    '&:hover': {
+                      color: 'white',
+                      background: 'crimson',
+                    },
+                  }}
+                  onClick={loadingDeleteComment ? null : handleDeleteComment}
+                />
+              )}
+            {!messageResult?.message &&
+              dataMe?.me?.data &&
+              comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+                <EditIcon
+                  sx={{
+                    color: 'green',
+                    cursor: 'pointer',
+                    borderRadius: '5px',
+                    color: 'white',
+                    background: 'green',
+                    '&:hover': {
+                      color: 'white',
+                      background: '#24d645',
+                    },
+                  }}
+                  onClick={() => {
+                    if (replyMode) setReplyMode(false);
+                    setIsEditing(!isEditing);
                   }}
                 />
-                Reply
-              </Box>
-            )}
-          </LoadingButton>
-          {!messageResult?.message &&
-            dataMe?.me?.data &&
-            comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
-              <DeleteIcon
-                sx={{
-                  color: 'white',
-                  cursor: 'pointer',
-                  borderRadius: '5px',
-                  background: '#bc074c',
-                  '&:hover': {
-                    color: 'white',
-                    background: 'crimson',
-                  },
-                }}
-                onClick={loadingDeleteComment ? null : handleDeleteComment}
-              />
-            )}
-          {!messageResult?.message &&
-            dataMe?.me?.data &&
-            comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
-              <EditIcon
-                sx={{
-                  color: 'green',
-                  cursor: 'pointer',
-                  borderRadius: '5px',
-                  color: 'white',
-                  background: 'green',
-                  '&:hover': {
-                    color: 'white',
-                    background: '#24d645',
-                  },
-                }}
-                onClick={() => setIsEditing(!isEditing)}
-              />
-            )}
-        </Box>
-        {replyMode && (
-          <InputComment
-            mode='reply'
-            comment={comment}
-            loadingMe={loadingMe}
-            dataMe={dataMe}
-            setReplyMode={setReplyMode}
-            loadingDataGetPosts={loadingDataGetPosts}
-            dataGetPosts={dataGetPosts}
-          />
-        )}
-        {isEditing && (
-          <>
-            <Formik initialValues={initialValues} onSubmit={handleEditComment}>
-              {({ isSubmitting }) => (
-                <Form>
-                  <Box sx={{ display: 'flex', gap: '.2em' }}>
-                    <InputField
-                      style={{
-                        height: '100%',
-                      }}
-                      type='text'
-                      textarea
-                      defaultValue={initialValues.content}
-                      name='content'
-                    />
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '.2em' }}>
-                      <LoadingButton
-                        loading={loadingEditComment && isSubmitting}
-                        size='small'
-                        variant='outlined'
-                        color='success'
-                        type='submit'
-                      >
-                        Edit comment
-                      </LoadingButton>
-                      <Button
-                        size='small'
-                        color='error'
-                        variant='outlined'
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </Box>
-                  </Box>
-                </Form>
               )}
-            </Formik>
-          </>
-        )}
-        {messageResult?.message && (
-          <Alert severity={messageResult.severity}>{messageResult.message}</Alert>
-        )}
-      </ThemeProvider>
+          </Box>
+          {replyMode && (
+            <Box sx={{ paddingTop: '.5em' }}>
+              <InputComment
+                mode='reply'
+                comment={comment}
+                loadingMe={loadingMe}
+                dataMe={dataMe}
+                setReplyMode={setReplyMode}
+                loadingDataGetPosts={loadingDataGetPosts}
+                dataGetPosts={dataGetPosts}
+              />
+            </Box>
+          )}
+          {isEditing && (
+            <Box sx={{ paddingTop: '.5em' }}>
+              <Formik initialValues={initialValues} onSubmit={handleEditComment}>
+                {({ isSubmitting }) => (
+                  <Form>
+                    <Box
+                      className='editPostContainer'
+                      sx={{ display: 'flex', gap: '.2em', width: '100%' }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <InputField
+                          style={{ width: '100%' }}
+                          type='text'
+                          textarea
+                          defaultValue={initialValues.content}
+                          name='content'
+                        />
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '.2em' }}>
+                        <LoadingButton
+                          loading={loadingEditComment && isSubmitting}
+                          size='small'
+                          variant='outlined'
+                          color='success'
+                          type='submit'
+                        >
+                          Edit comment
+                        </LoadingButton>
+                        <Button
+                          size='small'
+                          color='error'
+                          variant='outlined'
+                          onClick={() => setIsEditing(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Form>
+                )}
+              </Formik>
+            </Box>
+          )}
+          {messageResult?.message && (
+            <Alert severity={messageResult.severity}>{messageResult.message}</Alert>
+          )}
+        </ThemeProvider>
+      </CommentMenuResponsive>
     </>
   );
 };

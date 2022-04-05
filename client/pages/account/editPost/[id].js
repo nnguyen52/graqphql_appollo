@@ -26,6 +26,8 @@ const EditPost = () => {
   const [updatePost, { loading: loadingEditPost }] = useMutation(Mutation_editPost);
   const [message, setMessage] = useState('');
   useEffect(() => {
+    console.log('run8');
+
     if (!router.query.id) return router.push('/');
   }, []);
 

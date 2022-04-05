@@ -5,7 +5,7 @@ import { LoadingButton } from '@mui/lab';
 import { useMutation } from '@apollo/client';
 import { Mutation_SearchPosts } from '../graphql-client/mutations/searchPosts';
 import { Mutation_SearchUsers } from '../graphql-client/mutations/searchUsers';
-import { Box, LinearProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import SearchResults from './SearchResults';
 
 const Search = () => {
@@ -15,6 +15,9 @@ const Search = () => {
   const [searchPosts, { loading: loadingSearchPosts }] = useMutation(Mutation_SearchPosts);
   const [searchUsers, { loading: loadingSearchUsers }] = useMutation(Mutation_SearchUsers);
   const [postsResult, setPostsResult] = useState([]);
+  const [msgPostsResult, setMsgPostsResult] = useState(null);
+  const [msgUsersResult, setMsgUsersResult] = useState(null);
+
   const [searchPostsPagination, setSearchPostsPagination] = useState({
     endCursor: null,
     hasNextPage: false,
@@ -51,6 +54,7 @@ const Search = () => {
       },
       update(cache, { data }) {
         if (data?.searchPosts?.data?.posts) {
+          setMsgPostsResult(data?.searchPosts?.network?.message);
           setPostsResult(data?.searchPosts?.data?.posts);
           setSearchPostsPagination(data?.searchPosts?.data?.pageInfo);
           if (!openSearchResult) setOpenSearchResult(true);
@@ -64,6 +68,7 @@ const Search = () => {
       },
       update(cache, { data }) {
         if (data?.searchUsers?.data?.users) {
+          setMsgUsersResult(data?.searchUsers?.network?.message);
           setUsersResult(data?.searchUsers?.data?.users);
           setSearchUsersPagination(data?.searchUsers?.data?.pageInfo);
           if (!openSearchResult) setOpenSearchResult(true);
@@ -77,7 +82,12 @@ const Search = () => {
       <Formik initialValues={initialValues} onSubmit={handleSearch}>
         {({ isSubmitting }) => (
           <Form>
-            <InputField type='text' label='Search...' name='input' />
+            <InputField
+              style={{ background: 'white' }}
+              type='text'
+              label='Search...'
+              name='input'
+            />
             <LoadingButton
               loading={loadingSearchUsers && loadingSearchPosts && isSubmitting}
               style={{ display: 'none' }}
@@ -103,6 +113,10 @@ const Search = () => {
         input={initialValues.input}
         setUsersResult={setUsersResult}
         setPostsResult={setPostsResult}
+        msgPostsResult={msgPostsResult}
+        setMsgPostsResult={setMsgPostsResult}
+        msgUsersResult={msgUsersResult}
+        setMsgUsersResult={setMsgUsersResult}
       />
     </Box>
   );

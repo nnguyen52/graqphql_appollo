@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal, Card, Box, Avatar } from '@mui/material';
+import React, { useState } from 'react';
+import { Modal, Card, Box, Avatar, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { LoadingButton } from '@mui/lab';
 import { useRouter } from 'next/router';
@@ -38,9 +38,14 @@ const SearchResults = ({
   setOpenSearchResult,
   setUsersResult,
   setPostsResult,
+  msgPostsResult,
+  setMsgPostsResult,
+  msgUsersResult,
+  setMsgUsersResult,
   input,
 }) => {
   const router = useRouter();
+
   const fetchMoreSearchPosts = async () => {
     await searchPosts({
       variables: {
@@ -49,6 +54,7 @@ const SearchResults = ({
       },
       update(cache, { data }) {
         if (data?.searchPosts?.data?.posts.length > 0) {
+          setMsgPostsResult(data?.searchPosts?.network?.message);
           setPostsResult([...postsResult.concat(data?.searchPosts?.data?.posts)]);
           if (data?.searchPosts?.data?.pageInfo?.hasNextPage)
             setSearchPostsPagination(data?.searchPosts?.data?.pageInfo);
@@ -69,6 +75,7 @@ const SearchResults = ({
       },
       update(cache, { data }) {
         if (data?.searchUsers?.data?.users.length > 0) {
+          setMsgUsersResult(data?.searchUsers?.network?.message);
           setUsersResult([...usersResult.concat(data?.searchUsers?.data?.users)]);
           if (data?.searchUsers?.data?.pageInfo?.hasNextPage)
             setSearchUsersPagination(data?.searchUsers?.data?.pageInfo);
@@ -209,7 +216,11 @@ const SearchResults = ({
                   )}
                 </>
               ) : (
-                'No posts'
+                <Box sx={{ padding: '1em' }}>
+                  <Alert>
+                    <b>{msgPostsResult}</b>
+                  </Alert>
+                </Box>
               )}
               <br />
               <Box sx={{ display: 'flex', alignItems: 'center', width: 'fit-content' }}>
@@ -218,7 +229,7 @@ const SearchResults = ({
                 </b>
                 <PersonIcon />
               </Box>
-              {usersResult.length > 0 && (
+              {usersResult.length > 0 ? (
                 <>
                   {usersResult.map((each, index) => {
                     return (
@@ -265,6 +276,12 @@ const SearchResults = ({
                     </>
                   )}
                 </>
+              ) : (
+                <Box sx={{ padding: '1em' }}>
+                  <Alert severity='error'>
+                    <b>{msgUsersResult}</b>
+                  </Alert>
+                </Box>
               )}
             </Card>
           </Box>

@@ -39,6 +39,9 @@ export const ResponsiveBox = styled('div')(({ theme }) => ({
     '.grid_login': {
       width: '100%',
     },
+    '.loginContainer': {
+      marginTop: '15vh',
+    },
   },
   // tablet
   [theme.breakpoints.up('md')]: {
@@ -73,6 +76,8 @@ const Login = () => {
   const [exceptionErr, setExceptionError] = useState(null);
 
   useEffect(() => {
+    console.log('ru5');
+
     if (!exceptionErr) return;
     setTimeout(() => {
       setExceptionError(null);
@@ -114,6 +119,7 @@ const Login = () => {
     <ThemeProvider theme={theme}>
       <ResponsiveBox>
         <Grid
+          className='loginContainer'
           container
           sx={{
             width: '100%',

@@ -13,8 +13,8 @@ const InputField = ({ textarea, ...props }) => {
     >
       {textarea ? (
         <TextareaAutosize
-          minRows={3}
-          style={{ width: '100%' }}
+          minRows={10}
+          sx={{ width: '100%' }}
           {...field}
           id={field.name}
           {...props}

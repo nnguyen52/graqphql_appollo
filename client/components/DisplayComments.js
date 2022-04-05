@@ -20,11 +20,15 @@ const DisplayComments = ({
   const [next, setNext] = useState(2);
 
   useEffect(() => {
+    console.log('run3');
+
     if (!comment || !post) return;
     setRepliesForThisComment(comment.replies ? comment.replies : []);
   }, [comment, post]);
 
   useEffect(() => {
+    console.log('run3');
+
     if (!repliesForThisComment) return;
     setShowReplies(repliesForThisComment.slice(0, next));
   }, [repliesForThisComment, next]);
@@ -43,7 +47,7 @@ const DisplayComments = ({
           alt={comment?.user?.userName}
           src={comment?.user?.avatar}
           sx={{
-            border: '1px solid black',
+            border: '1px solid grey',
           }}
         />
         <h4>{comment?.user?.userName}</h4>({dateFormat(comment?.createdAt.toString())})

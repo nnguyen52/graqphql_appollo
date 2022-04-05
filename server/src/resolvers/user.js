@@ -718,7 +718,7 @@ export default {
             network: {
               code: 200,
               success: true,
-              mesasge: 'Opps, we can not find any users you requested. Please try again.',
+              message: 'Opps, we can not find any users you requested. Please try again!',
             },
             data: {
               users: [],
