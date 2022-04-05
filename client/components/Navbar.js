@@ -45,7 +45,13 @@ const NavbarResponsive = styled('div')(({ theme, ...props }) => ({
       width: '100%',
     },
   },
-  [theme.breakpoints.up('md')]: {},
+  [theme.breakpoints.up('md')]: {
+    position: 'sticky',
+    top: 0,
+    left: 0,
+    zIndex: 9999,
+    background: 'white',
+  },
   [theme.breakpoints.up('lg')]: {
     // default is for desktop
   },

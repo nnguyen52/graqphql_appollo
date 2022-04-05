@@ -67,6 +67,16 @@ const PostResponsive = styled('div')(({ theme }) => ({
       marginTop: '.5em',
       marginBottom: '.5em',
     },
+    '.postMenu': {
+      left: 0,
+      top: 0,
+    },
+    '.postMenu > button': {
+      fontSize: '10px',
+    },
+    '.postMenu > .commentsIcon': {
+      display: 'none',
+    },
   },
   [theme.breakpoints.up('md')]: {
     '.postContainerFullHeight': {
@@ -319,13 +329,13 @@ const Post = ({ data, detail }) => {
                       sx={{
                         display: 'flex',
                         flexDirection: 'column',
-                        height: '100%',
-                        flex: 2,
+                        flex: 1,
+                        overflow: 'auto',
                       }}
                     >
-                      <Box sx={{ padding: '1em', flex: 1 }}>
+                      <Box className='textContent' sx={{ padding: '1em', flex: 1 }}>
                         <h3>{data?.title}</h3>
-                        <p>{data?.content}</p>
+                        <p>{!detail ? `${data?.content.slice(0, 200)}...` : data?.content}</p>
                       </Box>
                       {!detail && (
                         <Box
@@ -441,7 +451,7 @@ const Post = ({ data, detail }) => {
                     </Button>
                   </NextLink>
                 )}
-                <Box sx={{ position: 'relative', display: 'flex' }}>
+                <Box className='commentsIcon' sx={{ position: 'relative', display: 'flex' }}>
                   <NextLink href={`/post/${data._id.toString()}/detail`}>
                     <Button
                       sx={{
