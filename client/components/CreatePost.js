@@ -13,15 +13,28 @@ import { styled } from '@mui/material/styles';
 const CreatePostResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     '.createPost': {
+      marginTop: '1em',
+      marginBottom: '1em',
       display: 'flex',
       flexDirection: 'column',
+      background: '#dff7c8',
     },
     '.createPost > *': {
       width: '100%',
       padding: '.5em',
     },
+    '.createPost span': {
+      padding: 0,
+      margin: 0,
+      paddingLeft: '1em',
+    },
   },
-  [theme.breakpoints.up('md')]: {},
+  [theme.breakpoints.up('md')]: {
+    '.createPost': {
+      background: '#dff7c8',
+      padding: '.5em',
+    },
+  },
   [theme.breakpoints.up('lg')]: {
     // default is for desktop
   },
@@ -86,6 +99,9 @@ const CreatePost = () => {
                     gap: '1em',
                   }}
                 >
+                  <span>
+                    <h4> Create Post: </h4>
+                  </span>
                   <InputField name='title' label='Title' type='text' />
                   <InputField name='content' label='Content' type='text' />
                   <LoadingButton

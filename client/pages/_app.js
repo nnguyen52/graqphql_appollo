@@ -10,8 +10,8 @@ import { ApolloProvider } from '@apollo/client';
 import { initializeApollo } from '../lib/apolloClient';
 import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
-
 import { styled } from '@mui/material/styles';
+
 const MainBodyResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     '.mainBody': {

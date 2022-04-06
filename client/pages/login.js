@@ -110,10 +110,6 @@ const Login = () => {
       },
     });
   };
-  if (meData?.me?.data) {
-    router.push('/');
-    return null;
-  }
   if (error) setExceptionError(error);
   return (
     <ThemeProvider theme={theme}>

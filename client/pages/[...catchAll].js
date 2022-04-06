@@ -4,7 +4,7 @@ const CatchAll = () => {
   const router = useRouter();
   useEffect(() => {
     console.log('run4');
-
+    alert('catch all');
     router.push('/');
   });
   return <></>;

@@ -7,6 +7,31 @@ import { useRouter } from 'next/router';
 import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_changePassword } from '../../graphql-client/mutations/changePassword';
 import { Query_me } from '../../graphql-client/queries/user';
+import { styled } from '@mui/material/styles';
+
+const PasswordResponsive = styled('div')(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    '.confirmNewPasswordContainer .form': {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      padding: '.5em',
+      background: '#dff7c8',
+    },
+    '.confirmNewPasswordContainer .form button': {
+      alignSelf: 'end',
+    },
+  },
+  [theme.breakpoints.up('md')]: {
+    '.confirmNewPasswordContainer': {
+      background: '#dff7c8',
+      padding: '.5em',
+    },
+  },
+  [theme.breakpoints.up('lg')]: {
+    // default is for desktop
+  },
+}));
 
 const Password = () => {
   const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
@@ -36,10 +61,10 @@ const Password = () => {
       update(cache, { data }) {
         if (!data.changePassword.network.success) {
           refetchMe();
-
           return setMessageError(data.changePassword.network.errors[0].message);
         }
         if (data.changePassword.network.success) {
+          refetchMe();
           return setMessage(data.changePassword.network.message);
         }
       },
@@ -47,33 +72,39 @@ const Password = () => {
   };
   if (loadingMe) return <LinearProgress />;
   return (
-    <div>
-      {!loadingMe && !dataMe?.me?.network?.success && (
+    <>
+      <PasswordResponsive>
+        <Box className='confirmNewPasswordContainer'>
+          {/* {!loadingMe && !dataMe?.me?.network?.success && (
         <Alert severity='error'>Please login to access this content!</Alert>
-      )}
-      {dataMe?.me?.network.success && (
-        <Formik initialValues={initialValues} onSubmit={handleResetPassword}>
-          {({ isSubmitting }) => (
-            <Form>
-              <Box sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
-                <InputField name='newPassword' type='password' label='New Password' />
-                <InputField
-                  name='confirmNewPassword'
-                  type='password'
-                  label='Confirm new password'
-                />
-                <LoadingButton disabled={message} loading={isSubmitting} type='submit'>
-                  Update password
-                </LoadingButton>
-              </Box>
-              {isSubmitting && loadingChangePassword && loadingMe && <LinearProgress />}
-              {message && <Alert severity='success'>{message} </Alert>}
-              {messageError && <Alert severity='error'>{messageError} </Alert>}
-            </Form>
-          )}
-        </Formik>
-      )}
-    </div>
+      )} */}
+          {/* {dataMe?.me?.network.success && ( */}
+          <Formik initialValues={initialValues} onSubmit={handleResetPassword}>
+            {({ isSubmitting }) => (
+              <Form>
+                <Box className='form' sx={{ display: 'flex', gap: '.5em', flexDirection: 'row' }}>
+                  <InputField name='newPassword' type='password' label='New Password' />
+                  <InputField
+                    name='confirmNewPassword'
+                    type='password'
+                    label='Confirm new password'
+                  />
+                  <LoadingButton disabled={message} loading={isSubmitting} type='submit'>
+                    Update password
+                  </LoadingButton>
+                </Box>
+                {isSubmitting && loadingChangePassword && loadingMe && <LinearProgress />}
+                <Box sx={{ marginTop: '.5em' }}>
+                  {message && <Alert severity='success'>{message} </Alert>}
+                  {messageError && <Alert severity='error'>{messageError} </Alert>}
+                </Box>
+              </Form>
+            )}
+          </Formik>
+          {/* )} */}
+        </Box>
+      </PasswordResponsive>
+    </>
   );
 };
 

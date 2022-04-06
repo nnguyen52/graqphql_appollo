@@ -6,7 +6,7 @@ import { Query_getPosts } from '../graphql-client/queries/posts';
 import Comments from './Comments';
 import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
 import InputComment from './InputComment';
-import { Box, Button, Card } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Mutation_deletePost } from '../graphql-client/mutations/deletePost';
@@ -70,12 +70,18 @@ const PostResponsive = styled('div')(({ theme }) => ({
     '.postMenu': {
       left: 0,
       top: 0,
+      padding: 0,
+      margin: 0,
     },
     '.postMenu > button': {
       fontSize: '10px',
     },
     '.postMenu > .commentsIcon': {
       display: 'none',
+    },
+    '.postContainer': {
+      width: '100%',
+      paddingLeft: '1em',
     },
   },
   [theme.breakpoints.up('md')]: {

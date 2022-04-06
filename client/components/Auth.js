@@ -99,7 +99,7 @@ const Auth = () => {
               },
             }}
             onClick={async () => {
-              if (confirm('You are logging out. Are you sure? '))
+              if (confirm('You are logging out. Are you sure? ')) {
                 logout({
                   variables: null,
                   update(cache, { data }) {
@@ -111,6 +111,8 @@ const Auth = () => {
                     });
                   },
                 });
+                router.push('/login');
+              }
             }}
           >
             <LogoutIcon />
