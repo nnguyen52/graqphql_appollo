@@ -11,9 +11,7 @@ const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii
 
 export default {
   Comment: {
-    reply: async (parent) => {
-      // console.log('parent of comment', parent);
-    },
+    reply: async (parent) => {},
   },
   Post: {
     user: async (parent) => {
@@ -227,7 +225,7 @@ export default {
     },
   },
   Mutation: {
-    createPost: async (parent, { title, content }, { req }) => {
+    createPost: async (parent, { title, content, publicIDs }, { req }) => {
       try {
         const allowed = await checkAuth(req);
         if (!allowed) {
@@ -246,6 +244,7 @@ export default {
           user,
           title,
           content,
+          images: publicIDs,
         });
         await newPost.save();
         return {
@@ -521,6 +520,35 @@ export default {
             code: 500,
             success: false,
             message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
+    deleteImages: async (parent, { publicIDs }) => {
+      try {
+        const cloudinary = await import('cloudinary').then(async (cloud) => {
+          cloud.config({
+            cloud_name: process.env.CLOUDINARY_NAME,
+            api_key: process.env.CLOUDINARY_APIKEY,
+            api_secret: process.env.CLOUDINARY_SECRET,
+          });
+          return cloud;
+        });
+        publicIDs.forEach(async (each) => await cloudinary.uploader.destroy(each));
+        return {
+          network: {
+            code: 200,
+            message: 'images deleted',
+            errors: null,
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Error: ${e}`,
           },
         };
       }

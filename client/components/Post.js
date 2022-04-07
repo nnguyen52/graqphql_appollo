@@ -15,6 +15,8 @@ import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import Slider from 'react-slick';
+import Image from 'next/image';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
@@ -131,6 +133,13 @@ const Post = ({ data, detail }) => {
       postId: data?._id.toString(),
     },
   });
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
   const handleVote = async (value) => {
     try {
       if (!dataMe?.me?.data || !dataMe.me) {
@@ -339,9 +348,27 @@ const Post = ({ data, detail }) => {
                         overflow: 'auto',
                       }}
                     >
-                      <Box className='textContent' sx={{ padding: '1em', flex: 1 }}>
-                        <h3>{data?.title}</h3>
-                        <p>{!detail ? `${data?.content.slice(0, 200)}...` : data?.content}</p>
+                      <Box
+                        className='textContent'
+                        sx={{ position: 'relative', padding: '1em', flex: 1 }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: '1px solid red',
+                          }}
+                        >
+                          <h3>{data?.title}</h3>
+                          {!detail && data?.images.length > 0 && (
+                            <Image
+                              layout='fill'
+                              objectFit='contain'
+                              src={`https://res.cloudinary.com/cloudinarystore/image/upload/v1649313101/${data.images[0]}.jpg`}
+                            />
+                          )}
+                          {detail && <div dangerouslySetInnerHTML={{ __html: data.content }} />}
+                        </Box>
                       </Box>
                       {!detail && (
                         <Box

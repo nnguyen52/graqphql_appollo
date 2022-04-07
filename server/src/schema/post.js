@@ -10,6 +10,7 @@ export default gql`
     content: String
     points: Int
     comments: [Comment]
+    images: [String]
     createdAt: Date
   }
   type PostInfo {
@@ -60,10 +61,11 @@ export default gql`
     checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
   }
   type Mutation {
-    createPost(title: String, content: String): CreatePost
+    createPost(title: String, content: String, publicIDs: [String]): CreatePost
     updatePost(id: String, title: String, content: String): UpdatePost
     deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
     searchPosts(cursor: String, limit: Int, input: String): getAllPostResponse
+    deleteImages(publicIDs: [String]): networkResponse
   }
 `;

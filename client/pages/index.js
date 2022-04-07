@@ -6,8 +6,6 @@ import { initializeApollo, addApolloState } from '../lib/apolloClient';
 export default function Home() {
   return (
     <>
-      <CreatePost />
-      <hr />
       <ShowPosts />
     </>
   );

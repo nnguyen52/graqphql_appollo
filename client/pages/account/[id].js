@@ -197,7 +197,7 @@ const UserInfo = ({ data, isEditing }) => {
   }, [checkImgSizeMsg.message]);
 
   const changeAvatar = (e) => {
-    console.log(e.target);
+    // console.log(e.target);
     if (loadingMe || loadingEditMe) return;
     const file = e.target.files[0];
     const err = checkImageUpload(file);

@@ -1,14 +1,14 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export const postSchema = new mongoose.Schema(
   {
     title: {
       type: String,
     },
-    userId: { type: mongoose.Types.ObjectId, ref: "User" },
+    userId: { type: mongoose.Types.ObjectId, ref: 'User' },
     user: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     content: {
       type: String,
@@ -17,9 +17,10 @@ export const postSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    comments: [{ type: mongoose.Types.ObjectId, ref: "Comment" }],
+    comments: [{ type: mongoose.Types.ObjectId, ref: 'Comment' }],
+    images: [{ type: String }],
   },
   { timestamps: true }
 );
-const Post = mongoose.model("Post", postSchema);
+const Post = mongoose.model('Post', postSchema);
 export default Post;

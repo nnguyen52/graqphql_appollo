@@ -16,6 +16,7 @@ export const Fragment_postInfo = gql`
     comments {
       ...commentThreelevels
     }
+    images
     createdAt
   }
 `;
