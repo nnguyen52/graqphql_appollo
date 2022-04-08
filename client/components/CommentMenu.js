@@ -285,7 +285,7 @@ const CommentMenu = ({
             </LoadingButton>
             {!messageResult?.message &&
               dataMe?.me?.data &&
-              comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+              comment.user._id.toString() == dataMe?.me?.data._id.toString() && (
                 <DeleteIcon
                   sx={{
                     color: 'white',
@@ -302,7 +302,7 @@ const CommentMenu = ({
               )}
             {!messageResult?.message &&
               dataMe?.me?.data &&
-              comment.user.id.toString() == dataMe?.me?.data.id.toString() && (
+              comment.user._id.toString() == dataMe?.me?.data._id.toString() && (
                 <EditIcon
                   sx={{
                     color: 'green',

@@ -99,7 +99,7 @@ const Auth = () => {
             </NextLink>
           )}
           {router.route !== '/account/[id]' && (
-            <NextLink href={`/account/${data?.me?.data?.id?.toString()}`}>
+            <NextLink href={`/account/${data?.me?.data?._id?.toString()}`}>
               <Tooltip title='Profile'>
                 <Avatar
                   sx={{ border: '2px solid black', cursor: 'pointer' }}

@@ -28,14 +28,14 @@ const InputComment = ({
       variables: setReplyMode
         ? {
             content: values.commentContent.toString(),
-            tag: comment.tag.id.toString(),
+            tag: comment.tag._id.toString(),
             postId: comment.postId.toString(),
-            postUserId: comment.tag.id.toString(),
+            postUserId: comment.tag._id.toString(),
             reply: comment._id.toString(),
           }
         : {
             content: values.commentContent.toString(),
-            tag: dataMe.me.data.id.toString(),
+            tag: dataMe.me.data._id.toString(),
             postId: post._id.toString(),
             postUserId: post.userId.toString(),
           },

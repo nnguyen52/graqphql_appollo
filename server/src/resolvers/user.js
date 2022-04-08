@@ -199,7 +199,7 @@ export default {
         const hashedPassword = await argon2.hash(password);
         const newUser = new User({ userName, email, password: hashedPassword });
         newUser.save();
-        req.session.userId = newUser.id;
+        req.session.userId = newUser._id.toString();
         return {
           network: {
             code: 200,
@@ -251,7 +251,7 @@ export default {
             },
           };
         // all good -> add cookie userId
-        req.session.userId = existingUser.id;
+        req.session.userId = existingUser._id.toString();
         return {
           network: {
             code: 200,
@@ -408,7 +408,7 @@ export default {
         const updatedPassword = await argon2.hash(newPassword);
         await User.findOneAndUpdate({ _id: userId }, { password: updatedPassword });
         await resetPasswordTokenRecord.deleteOne();
-        req.session.userId = user.id;
+        req.session.userId = user._id.toString();
         return {
           network: {
             code: 200,

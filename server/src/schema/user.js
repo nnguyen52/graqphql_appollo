@@ -41,7 +41,7 @@ export default gql`
     searchUsers(input: String, limit: Int, cursor: String): UsersPaginationResponse
   }
   type User {
-    id: ID
+    _id: ID
     userName: String
     email: String
     karma: Int

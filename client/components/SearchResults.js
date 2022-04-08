@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { styled } from '@mui/material/styles';
 import { dateFormat } from '../src/utils/dateFormat';
 import NextLink from 'next/link';
-import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import PersonIcon from '@mui/icons-material/Person';
 
@@ -196,7 +196,7 @@ const SearchResults = ({
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', padding: '.5em' }}>
-                            <ChatBubbleIcon sx={{ marginRight: '.2em' }} />
+                            <ChatBubbleOutlineIcon sx={{ marginRight: '.2em' }} />
                             <b>
                               {each?.comments.length}{' '}
                               {each?.comments.length > 0 ? `Comments` : `Comment`}
@@ -245,7 +245,7 @@ const SearchResults = ({
                         onClick={() => {
                           closeSearchResult();
                           setOpenSearchResult(false);
-                          router.push(`/account/${each.id.toString()}`);
+                          router.push(`/account/${each._id.toString()}`);
                         }}
                       >
                         <Box

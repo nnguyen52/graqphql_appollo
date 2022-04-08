@@ -228,7 +228,7 @@ const Post = ({ data, detail }) => {
                 height: '100%',
               }}
             >
-              {dataMe?.me?.data && dataMe?.me?.data?.id.toString() !== data?.userId.toString() ? (
+              {dataMe?.me?.data && dataMe?.me?.data?._id.toString() !== data?.userId.toString() ? (
                 <Box
                   sx={{
                     display: 'flex',
@@ -447,7 +447,7 @@ const Post = ({ data, detail }) => {
                   gap: '.3em',
                 }}
               >
-                {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
+                {dataMe?.me?.data && dataMe?.me?.data?._id.toString() == data?.userId.toString() && (
                   <Button
                     variant='contained'
                     sx={{
@@ -472,7 +472,7 @@ const Post = ({ data, detail }) => {
                     />
                   </Button>
                 )}
-                {dataMe?.me?.data && dataMe?.me?.data?.id.toString() == data?.userId.toString() && (
+                {dataMe?.me?.data && dataMe?.me?.data?._id.toString() == data?.userId.toString() && (
                   <NextLink href={`/account/editPost/${data._id}`}>
                     <Button
                       variant='contained'

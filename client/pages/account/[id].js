@@ -132,13 +132,13 @@ const Account = () => {
           <UserInfo
             isEditing={isEditing}
             data={
-              dataMe?.me?.data && router.query.id.toString() == dataMe?.me?.data?.id.toString()
+              dataMe?.me?.data && router.query.id.toString() == dataMe?.me?.data?._id.toString()
                 ? dataMe?.me?.data
                 : dataUserByID?.getUserByID?.data
             }
           />
           <hr />
-          {dataMe?.me?.data?.id.toString() == router.query?.id.toString() && (
+          {dataMe?.me?.data?._id.toString() == router.query?.id.toString() && (
             <>
               <Box
                 sx={{
@@ -275,7 +275,13 @@ const UserInfo = ({ data, isEditing }) => {
           <Box sx={{ width: '70%' }}>
             {!isEditing ? (
               <>
-                <h2>Hello, {data.userName}!</h2>
+                {dataMe?.me?.data?._id.toString() == router.query?.id.toString() ? (
+                  <h2>Hello, {data.userName}!</h2>
+                ) : (
+                  <>
+                    <h2>{`${data.userName}'s profile:`}</h2>
+                  </>
+                )}
                 <span style={{ color: theme.palette.downvoteButton.main }}> userName</span>:
                 <b> {data.userName}</b> <br />
                 <span style={{ color: theme.palette.downvoteButton.main }}>email</span>:
@@ -321,7 +327,7 @@ const UserInfo = ({ data, isEditing }) => {
                   layout='responsive'
                 />
               </Box>
-              {dataMe?.me?.data?.id.toString() == router?.query?.id.toString() && (
+              {dataMe?.me?.data?._id.toString() == router?.query?.id.toString() && (
                 <>
                   <Tooltip title='Edit' arrow>
                     <input
