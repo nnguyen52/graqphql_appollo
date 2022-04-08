@@ -4,12 +4,18 @@ import Post from '../models/Post';
 import User from '../models/user';
 import Vote from '../models/votes';
 import { deletePost } from '../utils/deletePost';
+import {
+  GraphQLUpload,
+  // A Koa implementation is also exported.
+} from 'graphql-upload';
+import { uploadFile } from '../utils/uploadFile';
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
 const toCursorHash = (string) => Buffer.from(string).toString('base64');
 const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
 
 export default {
+  Upload: GraphQLUpload,
   Comment: {
     reply: async (parent) => {},
   },
@@ -27,7 +33,7 @@ export default {
     // cursor is objectId of last posts[]
     getPosts: async (parent, { cursor, limit = 10 }) => {
       try {
-        let realLimit = limit > 10 ? 10 : limit;
+        let realLimit = limit > 10 ? 100 : limit;
         const cursorOptions = cursor
           ? {
               createdAt: {
@@ -225,7 +231,7 @@ export default {
     },
   },
   Mutation: {
-    createPost: async (parent, { title, content, publicIDs }, { req }) => {
+    createPost: async (parent, { title, content, publicIDs, imgCoverFile }, { req }) => {
       try {
         const allowed = await checkAuth(req);
         if (!allowed) {
@@ -239,14 +245,18 @@ export default {
           };
         }
         const user = await User.findById(req.session.userId);
+        const photoImageCover = await uploadFile(imgCoverFile);
+
         const newPost = new Post({
           userId: req.session.userId,
           user,
           title,
           content,
-          images: publicIDs,
+          images: publicIDs ? publicIDs : null,
+          imageCover: photoImageCover ? photoImageCover.public_id : null,
         });
         await newPost.save();
+
         return {
           network: {
             code: 200,
@@ -266,7 +276,7 @@ export default {
         };
       }
     },
-    updatePost: async (parent, { id, title, content }, { req }) => {
+    updatePost: async (parent, { id, title, content, publicIDs, imgCoverFile }, { req }) => {
       try {
         const allowed = await checkAuth(req);
         if (!allowed) {
@@ -279,7 +289,28 @@ export default {
             },
           };
         }
-        const post = await Post.findByIdAndUpdate({ _id: id }, { title, content }, { new: true });
+        const post = await Post.findOne({ _id: id.toString() });
+        const currentImgtCover = post.imageCover;
+        if (currentImgtCover) {
+          // delete it in cloudinary
+          const cloudinary = await import('cloudinary').then(async (cloud) => {
+            cloud.config({
+              cloud_name: process.env.CLOUDINARY_NAME,
+              api_key: process.env.CLOUDINARY_APIKEY,
+              api_secret: process.env.CLOUDINARY_SECRET,
+            });
+            return cloud;
+          });
+          await cloudinary.uploader.destroy(currentImgtCover);
+        }
+        if (imgCoverFile) {
+          const photoImageCover = await uploadFile(imgCoverFile);
+          post.imageCover = photoImageCover.public_id;
+        }
+        post.title = title;
+        post.content = content;
+        post.images = publicIDs;
+        await post.save();
         return {
           network: {
             code: 200,
@@ -312,10 +343,12 @@ export default {
             },
           };
         }
+
         const postToDelete = await Post.findOne({
           _id: id,
           userId: req.session.userId,
         });
+
         if (!postToDelete) {
           return {
             network: {
@@ -331,6 +364,20 @@ export default {
             },
           };
         }
+        const cloudinary = await import('cloudinary').then(async (cloud) => {
+          cloud.config({
+            cloud_name: process.env.CLOUDINARY_NAME,
+            api_key: process.env.CLOUDINARY_APIKEY,
+            api_secret: process.env.CLOUDINARY_SECRET,
+          });
+          return cloud;
+        });
+        // delete all images and imageCover first
+        if (postToDelete.images.length > 0) {
+          postToDelete.images.forEach(async (each) => await cloudinary.uploader.destroy(each));
+        }
+        if (postToDelete.imageCover) await cloudinary.uploader.destroy(postToDelete.imageCover);
+
         await deletePost(postToDelete);
         return {
           network: {

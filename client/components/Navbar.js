@@ -1,4 +1,4 @@
-import { Box, ThemeProvider, Typography } from '@mui/material';
+import { Box, ThemeProvider, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { headingFont } from '../src/theme';
 import Auth from './Auth';
@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import NextLink from 'next/link';
 import Search from './Search';
 import { useTheme, styled } from '@mui/material/styles';
-import AddIcon from '@mui/icons-material/Add';
 
 const NavbarResponsive = styled('div')(({ theme, ...props }) => ({
   [theme.breakpoints.down('md')]: {
@@ -53,7 +52,6 @@ const NavbarResponsive = styled('div')(({ theme, ...props }) => ({
     background: 'white',
     '.navContainer .navAuth': {
       display: 'flex',
-      border: '1px solid blue',
       gap: '.5em',
     },
   },
@@ -116,22 +114,6 @@ const Header = () => {
             </Box>
           )}
           <Box className='navAuth'>
-            {router.route !== '/post/create' && (
-              <NextLink href='/post/create'>
-                <AddIcon
-                  sx={{
-                    border: '2px solid black',
-                    fontSize: '2.5em',
-                    borderRadius: '50%',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      background: 'black',
-                      color: 'white',
-                    },
-                  }}
-                />
-              </NextLink>
-            )}
             <Auth />
           </Box>
         </Box>

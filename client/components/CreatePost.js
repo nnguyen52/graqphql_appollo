@@ -1,20 +1,21 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import InputField from './InputField';
 import { Formik, Form, useFormik } from 'formik';
-import { Alert, Box, Button } from '@mui/material';
+import { Alert, Box, Tooltip, Input, LinearProgress } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_createPost } from '../graphql-client/mutations/createPost';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { Query_me } from '../graphql-client/queries/user';
+import Image from 'next/image';
 import { mapFieldErrors } from '../../server/src/utils/mapFieldErrors';
 import { styled } from '@mui/material/styles';
-import char1 from '../assets/redditChars1.jpg';
 import { checkImageUpload, imageUpload } from '../src/utils/uploadImage';
 import { Mutation_deleteImages } from '../graphql-client/mutations/deleteImages';
+import CancelIcon from '@mui/icons-material/Cancel';
 
-const ReactQuill = dynamic(
+export const ReactQuill = dynamic(
   async () => {
     const { default: RQ } = await import('react-quill');
     return ({ forwardedRef, ...props }) => <RQ ref={forwardedRef} {...props} />;
@@ -25,28 +26,11 @@ const ReactQuill = dynamic(
 );
 const CreatePostResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
-    // '.createPost': {
-    //   marginTop: '1em',
-    //   marginBottom: '1em',
-    //   display: 'flex',
-    //   flexDirection: 'column',
-    //   background: '#dff7c8',
-    // },
-    // '.createPost > *': {
-    //   width: '100%',
-    //   padding: '.5em',
-    // },
-    // '.createPost span': {
-    //   padding: 0,
-    //   margin: 0,
-    //   paddingLeft: '1em',
-    // },
+    '.createPostQuillContainer': {
+      marginTop: '3em',
+    },
   },
   [theme.breakpoints.up('md')]: {
-    // '.createPost': {
-    //   background: '#dff7c8',
-    //   padding: '.5em',
-    // },
     '.createPostQuillContainer': {
       width: '60%',
       margin: '0 auto',
@@ -71,10 +55,24 @@ const CreatePost = () => {
   const [imgPublicIDs, setImgPublicIDs] = useState([]);
   const [imgMsg, setImgMsg] = useState(null);
   const [deleteImages, { loading: loadingDeleteImages }] = useMutation(Mutation_deleteImages);
+  const [imgCoverFile, setImgCoverFile] = useState(null);
+  const imgCoverFileRef = useRef(null);
+  const titleRef = useRef(null);
+
+  const handleChangeImgCover = async (e) => {
+    if (loadingCreatePost || loadingDeleteImages) return;
+    const file = e.target.files[0];
+    const err = checkImageUpload(file);
+    if (err) {
+      imgCoverFileRef.current.value = '';
+      return setImgMsg(err);
+    }
+    setImgCoverFile(file);
+    return;
+  };
 
   // Quill
   let quillRef = useRef(null);
-
   const customImageHandler = async () => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -95,7 +93,6 @@ const CreatePost = () => {
         quill?.getEditor().insertEmbed(range, 'image', `${photo[0].url}`);
         quill?.getEditor().insertText(range, '\n');
       }
-      setImgMsg('done uploading');
     };
   };
 
@@ -139,36 +136,41 @@ const CreatePost = () => {
     code: null,
     message: null,
   });
-  const handleSubmitTest = async (values, { setErrors }) => {
+  const handleSubmit = async (values, { setErrors }) => {
     // loop thru public_ids
     // check if content.include(each publicid)
     // if not -> destroy that public id
-    if (!values.title)
+    if (!values.title) {
       return setErrors(
         mapFieldErrors([
           {
             field: 'title',
-            message: 'Dont get lazy, please give me a title!',
+            message: 'Your post must have a title!',
           },
         ])
       );
+    }
     if (loadingCreatePost || loadingDeleteImages) return;
-    const publicIDs_toDelete = imgPublicIDs.filter((each) => !content.includes(each.toString()));
-    let publicIDs = imgPublicIDs.filter((each) => content.includes(each.toString()));
-    await deleteImages({
-      variables: { publicIDs: publicIDs_toDelete },
-      // update(cache, { data }) {
-      // },
-    });
+    let publicIDs_toDelete;
+    let publicIDs;
+    if (imgPublicIDs.length > 0) {
+      publicIDs_toDelete = imgPublicIDs.filter((each) => !content.includes(each.toString()));
+      publicIDs = imgPublicIDs.filter((each) => content.includes(each.toString()));
+      await deleteImages({
+        variables: { publicIDs: publicIDs_toDelete },
+        // update(cache, { data }) {
+        // },
+      });
+    }
     // all good
     await createPost({
       variables: {
         title: values.title.toString(),
-        content: content.toString(),
-        publicIDs,
+        content: content ? content.toString() : null,
+        publicIDs: publicIDs ? publicIDs : [],
+        imgCoverFile: imgCoverFile ? imgCoverFile : null,
       },
       update(cache, { data }) {
-        console.log(data);
         if (!data.createPost.network.success) {
           refetchMe();
           setSubmitMsg({
@@ -189,8 +191,12 @@ const CreatePost = () => {
               title: '',
             },
           });
+
+          imgCoverFileRef.current.value = '';
+          titleRef.current.value = '';
           setContent(null);
           setImgPublicIDs([]);
+          setImgCoverFile(null);
           setImgMsg(null);
           const { getPosts } = cache.readQuery({ query: Query_getPosts });
           // incoming data -> will get checked by typePolicies for merging
@@ -214,9 +220,14 @@ const CreatePost = () => {
   return (
     <CreatePostResponsive>
       <Box className='createPostQuillContainer'>
-        <Formik initialValues={formik.initialValues} onSubmit={handleSubmitTest}>
+        <h3 style={{ padding: '.5em' }}> Create post </h3>
+        <Formik
+          enctype='multipart/form-data'
+          initialValues={formik.initialValues}
+          onSubmit={handleSubmit}
+        >
           {({ isSubmitting }) => (
-            <Form>
+            <Form enctype='multipart/form-data'>
               <Box
                 sx={{
                   display: 'flex',
@@ -224,7 +235,68 @@ const CreatePost = () => {
                   width: '100%',
                 }}
               >
-                <InputField name='title' type='text' label='Title' placeholder='Title (required)' />
+                <InputField
+                  ref={titleRef}
+                  name='title'
+                  type='text'
+                  label='Title'
+                  placeholder='Title (required)'
+                />
+                <Box
+                  sx={{
+                    padding: '1em',
+                  }}
+                >
+                  Cover image (optional)
+                  <input
+                    ref={imgCoverFileRef}
+                    sx={{ width: '100%', marginTop: '.2em' }}
+                    type='file'
+                    name='file'
+                    accept='image/*'
+                    onChange={handleChangeImgCover}
+                  />
+                  {imgCoverFile && (
+                    <>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: '100%',
+                          height: '300px',
+                        }}
+                      >
+                        <Image
+                          src={URL.createObjectURL(imgCoverFile)}
+                          width={'300px'}
+                          height={'300px'}
+                          objectFit='contain'
+                        />
+                        <Tooltip title='remove'>
+                          <CancelIcon
+                            onClick={() => {
+                              setImgCoverFile(null);
+                              imgCoverFileRef.current.value = '';
+                            }}
+                            sx={{
+                              position: 'absolute',
+                              top: 0,
+                              right: 0,
+                              fontSize: '2em',
+                              cursor: 'pointer',
+                              borderRadius: '50%',
+                              color: 'white',
+                              background: '#bc074c',
+                              '&:hover': {
+                                color: 'white',
+                                background: 'crimson',
+                              },
+                            }}
+                          />
+                        </Tooltip>
+                      </Box>
+                    </>
+                  )}
+                </Box>
                 <ReactQuill
                   onChange={quillHandleChange}
                   value={content}
@@ -233,11 +305,19 @@ const CreatePost = () => {
                   forwardedRef={quillRef}
                   placeholder='Text (optional)'
                 />
+                {imgMsg && <Alert severity='error'>{imgMsg}</Alert>}
                 <LoadingButton
                   type='submit'
                   loading={loadingCreatePost && loadingDeleteImages && isSubmitting}
                   sx={{
+                    marginTop: '.5em',
                     alignSelf: 'end',
+                    color: 'white',
+                    background: 'green',
+                    '&:hover': {
+                      color: 'white',
+                      background: '#24d645',
+                    },
                   }}
                 >
                   Create Post
@@ -251,11 +331,8 @@ const CreatePost = () => {
             </Form>
           )}
         </Formik>
+        {loadingCreatePost && loadingDeleteImages && <LinearProgress />}
       </Box>
-      {/* <button onClick={() => console.log(content)}>content </button> <br />
-      <button onClick={() => console.log(imgPublicIDs)}>public_id </button>
-      <Button onClick={() => handleSubmitTest()}>Test submit</Button> */}
-      {imgMsg && <h3>{imgMsg}</h3>}
     </CreatePostResponsive>
   );
 };

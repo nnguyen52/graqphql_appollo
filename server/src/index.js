@@ -18,6 +18,7 @@ import Comment from './models/comment';
 import Post from './models/Post';
 import VoteComment from './models/voteComment';
 import Vote from './models/votes';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 async function startApolloServer() {
   const app = express();
@@ -27,7 +28,6 @@ async function startApolloServer() {
       credentials: true,
     })
   );
-
   const httpServer = http.createServer(app);
 
   // mongo
@@ -70,7 +70,9 @@ async function startApolloServer() {
       ApolloServerPluginLandingPageGraphQLPlayground(),
       ApolloServerPluginDrainHttpServer({ httpServer }),
     ],
+    uploads: false,
   });
+  app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
 
   await server.start();
   server.applyMiddleware({ app, cors: false });

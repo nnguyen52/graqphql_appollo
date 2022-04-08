@@ -17,6 +17,7 @@ export const Fragment_postInfo = gql`
       ...commentThreelevels
     }
     images
+    imageCover
     createdAt
   }
 `;

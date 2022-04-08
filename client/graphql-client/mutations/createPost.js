@@ -9,8 +9,18 @@ export const Mutation_createPost = gql`
   ${Fragment_userInfo}
   ${Fragment_commentThreelevels}
   ${Fragment_postInfo}
-  mutation createPost($title: String, $content: String, $publicIDs: [String]) {
-    createPost(title: $title, content: $content, publicIDs: $publicIDs) {
+  mutation createPost(
+    $title: String
+    $content: String
+    $publicIDs: [String]
+    $imgCoverFile: Upload
+  ) {
+    createPost(
+      title: $title
+      content: $content
+      publicIDs: $publicIDs
+      imgCoverFile: $imgCoverFile
+    ) {
       network {
         ...network
       }

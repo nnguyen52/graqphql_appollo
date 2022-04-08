@@ -42,15 +42,20 @@ const AccountResponsive = styled('div')(({ theme }) => ({
       height: '1.5em',
     },
   },
-  [theme.breakpoints.up('md')]: {},
-  [theme.breakpoints.up('lg')]: {
-    // default is for desktop
+  [theme.breakpoints.up('md')]: {
     '.loggedinAccount .btn': {
       width: '2em',
       height: '2em',
       fontSize: '1em',
       padding: '2px',
     },
+    '.loggedinAccount': {
+      width: '80%',
+      margin: '0 auto',
+    },
+  },
+  [theme.breakpoints.up('lg')]: {
+    // default is for desktop
   },
 }));
 
@@ -197,7 +202,6 @@ const UserInfo = ({ data, isEditing }) => {
   }, [checkImgSizeMsg.message]);
 
   const changeAvatar = (e) => {
-    // console.log(e.target);
     if (loadingMe || loadingEditMe) return;
     const file = e.target.files[0];
     const err = checkImageUpload(file);

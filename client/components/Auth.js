@@ -3,10 +3,11 @@ import { useQuery, useMutation } from '@apollo/client';
 import { Query_me } from '../graphql-client/queries/user';
 import { Mutation_logout } from '../graphql-client/mutations/logout';
 import { useRouter } from 'next/router';
-import { Box, Button, Avatar } from '@mui/material';
+import { Box, Button, Avatar, Tooltip } from '@mui/material';
 import NextLink from 'next/link';
 import { LoadingButton } from '@mui/lab';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AddIcon from '@mui/icons-material/Add';
 import HomeIcon from '@mui/icons-material/Home';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
@@ -73,19 +74,42 @@ const Auth = () => {
                   },
                 }}
               >
-                <HomeIcon />
+                <Tooltip title='Homepage'>
+                  <HomeIcon />
+                </Tooltip>
               </LoadingButton>
+            </NextLink>
+          )}
+          {router.route !== '/post/create' && (
+            <NextLink href='/post/create'>
+              <Tooltip title='Craete post'>
+                <AddIcon
+                  sx={{
+                    border: '2px solid black',
+                    fontSize: '2.5em',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      background: 'black',
+                      color: 'white',
+                    },
+                  }}
+                />
+              </Tooltip>
             </NextLink>
           )}
           {router.route !== '/account/[id]' && (
             <NextLink href={`/account/${data?.me?.data?.id?.toString()}`}>
-              <Avatar
-                sx={{ border: '2px solid black', cursor: 'pointer' }}
-                src={data?.me?.data?.avatar}
-                alt={`${data?.me?.data?.userName} avatar`}
-              />
+              <Tooltip title='Profile'>
+                <Avatar
+                  sx={{ border: '2px solid black', cursor: 'pointer' }}
+                  src={data?.me?.data?.avatar}
+                  alt={`${data?.me?.data?.userName} avatar`}
+                />
+              </Tooltip>
             </NextLink>
           )}
+
           <Button
             className='logout'
             variant='contained'
@@ -115,7 +139,9 @@ const Auth = () => {
               }
             }}
           >
-            <LogoutIcon />
+            <Tooltip title='logout'>
+              <LogoutIcon />
+            </Tooltip>
           </Button>
         </Box>
       </AuthResponsive>

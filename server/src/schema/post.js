@@ -1,7 +1,14 @@
 import { gql } from 'apollo-server-express';
 export default gql`
   scalar Date
+  scalar File
+  scalar Upload
 
+  type File {
+    filename: String!
+    mimetype: String!
+    encoding: String!
+  }
   type Post {
     _id: String
     userId: String
@@ -11,6 +18,7 @@ export default gql`
     points: Int
     comments: [Comment]
     images: [String]
+    imageCover: String
     createdAt: Date
   }
   type PostInfo {
@@ -61,8 +69,19 @@ export default gql`
     checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
   }
   type Mutation {
-    createPost(title: String, content: String, publicIDs: [String]): CreatePost
-    updatePost(id: String, title: String, content: String): UpdatePost
+    createPost(
+      title: String
+      content: String
+      publicIDs: [String]
+      imgCoverFile: Upload
+    ): CreatePost
+    updatePost(
+      id: String
+      title: String
+      content: String
+      publicIDs: [String]
+      imgCoverFile: Upload
+    ): UpdatePost
     deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
     searchPosts(cursor: String, limit: Int, input: String): getAllPostResponse

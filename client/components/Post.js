@@ -88,7 +88,7 @@ const PostResponsive = styled('div')(({ theme }) => ({
   },
   [theme.breakpoints.up('md')]: {
     '.postContainerFullHeight': {
-      height: '85vh',
+      // height: '85vh',
     },
     '.postContainer': {
       marginTop: '.5em',
@@ -350,23 +350,36 @@ const Post = ({ data, detail }) => {
                     >
                       <Box
                         className='textContent'
-                        sx={{ position: 'relative', padding: '1em', flex: 1 }}
+                        sx={{
+                          position: 'relative',
+                          padding: '1em',
+                          flex: 1,
+                        }}
                       >
                         <Box
                           sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            border: '1px solid red',
                           }}
                         >
                           <h3>{data?.title}</h3>
-                          {!detail && data?.images.length > 0 && (
-                            <Image
-                              layout='fill'
-                              objectFit='contain'
-                              src={`https://res.cloudinary.com/cloudinarystore/image/upload/v1649313101/${data.images[0]}.jpg`}
-                            />
+                          {/* cover */}
+                          {!detail && data?.imageCover && (
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                height: '300px',
+                                width: '100%',
+                              }}
+                            >
+                              <Image
+                                layout='fill'
+                                objectFit='contain'
+                                src={`https://res.cloudinary.com/cloudinarystore/image/upload/v1649313101/${data.imageCover}.jpg`}
+                              />
+                            </Box>
                           )}
+                          {/* detail content */}
                           {detail && <div dangerouslySetInnerHTML={{ __html: data.content }} />}
                         </Box>
                       </Box>

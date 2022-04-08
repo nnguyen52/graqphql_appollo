@@ -8,8 +8,20 @@ export const Mutation_editPost = gql`
   ${Fragment_userInfo}
   ${Fragment_commentThreelevels}
   ${Fragment_postInfo}
-  mutation updatePost($id: String, $title: String, $content: String) {
-    updatePost(id: $id, title: $title, content: $content) {
+  mutation updatePost(
+    $id: String
+    $title: String
+    $content: String
+    $publicIDs: [String]
+    $imgCoverFile: Upload
+  ) {
+    updatePost(
+      id: $id
+      title: $title
+      content: $content
+      publicIDs: $publicIDs
+      imgCoverFile: $imgCoverFile
+    ) {
       network {
         ...network
       }

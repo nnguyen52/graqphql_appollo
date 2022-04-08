@@ -19,6 +19,7 @@ export const postSchema = new mongoose.Schema(
     },
     comments: [{ type: mongoose.Types.ObjectId, ref: 'Comment' }],
     images: [{ type: String }],
+    imageCover: { type: String },
   },
   { timestamps: true }
 );
