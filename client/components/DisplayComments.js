@@ -45,7 +45,7 @@ const DisplayComments = ({
       >
         <Avatar
           alt={comment?.user?.userName}
-          src={comment?.user?.avatar}
+          src={comment?.user?.avatar.toUpperCase()}
           sx={{
             border: '1px solid grey',
           }}

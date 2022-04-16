@@ -15,7 +15,6 @@ import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import Slider from 'react-slick';
 import Image from 'next/image';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';

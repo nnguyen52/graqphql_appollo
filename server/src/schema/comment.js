@@ -15,10 +15,16 @@ export default gql`
     postUserId: String
     createdAt: Date
   }
-  type queryCommentResponse {
-    network: MutationResponse
-    data: [Comment]
+  type getCommentsPaginationResponse {
+    comments: [Comment]
+    pageInfo: pagination
   }
+
+  type getCommentsResponse {
+    network: MutationResponse
+    data: getCommentsPaginationResponse
+  }
+
   type mutationCommentResponse {
     network: MutationResponse
     data: Comment
@@ -43,7 +49,7 @@ export default gql`
   }
   type Query {
     getVoteComment: mutationGetVoteCommentResponse
-    getComments: queryCommentResponse
+    getComments: getCommentsResponse
     checkCommentVotedFromUser(commentId: String): checkCommentVotedFromUserResponse
     # if there is _id in reply after nested fetch 3 comments
     # => fetch 1 comment => but in Client, write nested query with fragment 3 level

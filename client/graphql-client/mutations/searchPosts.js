@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client';
 import { Fragment_commentThreelevels } from '../fragments/comment3level';
 import { Fragment_networkResponse } from '../fragments/networkResponse';
+import { Fragment_pageInfo } from '../fragments/pageInfo';
 import { Fragment_postInfo } from '../fragments/postInfo';
 import { Fragment_userInfo } from '../fragments/userInfo';
 
@@ -9,6 +10,8 @@ export const Mutation_SearchPosts = gql`
   ${Fragment_userInfo}
   ${Fragment_commentThreelevels}
   ${Fragment_postInfo}
+  ${Fragment_pageInfo}
+
   mutation searchPosts($cursor: String, $limit: Int, $input: String) {
     searchPosts(cursor: $cursor, limit: $limit, input: $input) {
       network {
@@ -19,8 +22,7 @@ export const Mutation_SearchPosts = gql`
           ...post
         }
         pageInfo {
-          hasNextPage
-          endCursor
+          ...pageInfo
         }
       }
     }

@@ -116,77 +116,7 @@ export default {
         };
       }
     },
-    getPostsFromUser: async (_, { cursor, limit = 10 }, { req }) => {
-      try {
-        const allowed = await checkAuth(req);
-        if (!allowed) {
-          return {
-            network: {
-              code: 400,
-              success: false,
-              message: 'Access Denied',
-              errors: [{ field: 'post', message: 'Please login to update post.' }],
-            },
-          };
-        }
-        // get posts from me
-        let realLimit = limit > 10 ? 10 : limit;
-        const cursorOptions = cursor
-          ? {
-              createdAt: {
-                $lt: fromCursorHash(cursor),
-              },
-            }
-          : {};
-        let posts = await Post.find(cursorOptions, null, {
-          sort: { createdAt: -1 },
-          limit: realLimit + 1,
-        });
-        posts = posts.filter(
-          (eachPost) => eachPost.userId.toString() == req.session.userId.toString()
-        );
-        if (posts.length == 0) {
-          return {
-            network: {
-              code: 200,
-              success: true,
-            },
-            data: {
-              posts: [],
-              pageInfo: {
-                hasNextPage: false,
-              },
-            },
-          };
-        }
-        const hasNextPage = posts.length > realLimit;
-        const edges = hasNextPage ? posts.slice(0, -1) : posts;
-        return {
-          network: {
-            code: 200,
-            success: true,
-          },
-          data: {
-            posts: edges,
-            pageInfo: {
-              hasNextPage,
-              endCursor: hasNextPage
-                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
-                : null,
-            },
-          },
-        };
-      } catch (e) {
-        console.log(e);
-        return {
-          network: {
-            code: 500,
-            success: false,
-            message: `Internal Server Errors: ${e.message}`,
-          },
-        };
-      }
-    },
+
     checkPostVotedFromUser: async (_, { postId }, { req }) => {
       try {
         const allowed = await checkAuth(req);
@@ -374,7 +304,9 @@ export default {
         });
         // delete all images and imageCover first
         if (postToDelete.images.length > 0) {
-          postToDelete.images.forEach(async (each) => await cloudinary.uploader.destroy(each));
+          await Promiss.all(
+            postToDelete.images.map(async (each) => await cloudinary.uploader.destroy(each))
+          );
         }
         if (postToDelete.imageCover) await cloudinary.uploader.destroy(postToDelete.imageCover);
 
@@ -581,7 +513,7 @@ export default {
           });
           return cloud;
         });
-        publicIDs.forEach(async (each) => await cloudinary.uploader.destroy(each));
+        await Promise.all(publicIDs.map(async (each) => await cloudinary.uploader.destroy(each)));
         return {
           network: {
             code: 200,

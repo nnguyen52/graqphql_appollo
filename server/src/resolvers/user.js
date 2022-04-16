@@ -1,11 +1,15 @@
 import { validateRegisterInput } from '../customMiddleware/validateRegisterInputs';
-import User from '../models/user';
 import argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
-import Token from '../models/token';
 import { sendMail } from '../utils/sendMails';
 import { checkAuth } from '../customMiddleware/checkAuth';
 import Post from '../models/Post';
+import User from '../models/user';
+import Comment from '../models/comment';
+import Token from '../models/token';
+import VoteComment from '../models/voteComment';
+import Vote from '../models/votes';
+
 import { logout } from '../utils/logout';
 import { deletePost } from '../utils/deletePost';
 
@@ -76,6 +80,227 @@ export default {
             code: 500,
             success: false,
             messsage: `Internal Server Error: ${e.message}`,
+          },
+        };
+      }
+    },
+    getPostsFromUser: async (_, { userId, cursor, limit = 10 }, { req }) => {
+      try {
+        if (!userId) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
+            },
+          };
+        }
+        // get posts from me
+        let realLimit = limit > 10 ? 10 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+            }
+          : {};
+        let posts = await Post.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        posts = posts.filter((eachPost) => eachPost.userId.toString() == userId.toString());
+        if (posts.length == 0) {
+          return {
+            network: {
+              code: 200,
+              success: true,
+            },
+            data: {
+              posts: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        }
+        const hasNextPage = posts.length > realLimit;
+        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            posts: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
+    getCommentsFromUser: async (parent, { userId, cursor, limit = 10 }, { req }) => {
+      try {
+        if (!userId) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
+            },
+          };
+        }
+        // get posts from me
+        let realLimit = limit > 10 ? 10 : limit;
+        const cursorOptions = cursor
+          ? {
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+            }
+          : {};
+        let comments = await Comment.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        comments = comments.filter((each) => each.user.toString() == userId.toString());
+        if (comments.length == 0) {
+          return {
+            network: {
+              code: 200,
+              success: true,
+            },
+            data: {
+              comments: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        }
+        const hasNextPage = comments.length > realLimit;
+        const edges = hasNextPage ? comments.slice(0, -1) : comments;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            comments: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
+    getPostsUserVoted: async (parent, { userId, type, cursor, limit = 10 }) => {
+      try {
+        if (!userId) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
+            },
+          };
+        }
+        let realLimit = limit > 10 ? 10 : limit;
+        const options = cursor
+          ? {
+              userId: userId.toString(),
+              value: type == 'upvote' ? 1 : -1,
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+            }
+          : {
+              userId: userId.toString(),
+              value: type == 'upvote' ? 1 : -1,
+            };
+        // find votes from this user
+        let votes = await Vote.find(options, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        // find voteComments from this user
+        // let voteComments = await VoteComment.find(options, null, {
+        //   sort: { createdAt: -1 },
+        //   limit: realLimit + 1,
+        // });
+
+        let posts = [];
+        let postsIds = [...new Set(votes.map((each) => each.postId.toString()))];
+        await Promise.all(
+          postsIds.map(async (e) => {
+            const post = await Post.findOne({ _id: e });
+            posts = [...posts, post];
+          })
+        );
+        if (posts.length == 0)
+          return {
+            network: {
+              code: 200,
+              success: true,
+            },
+            data: {
+              posts: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        const hasNextPage = posts.length > realLimit;
+        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            posts: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal Server Errors: ${e.message}`,
           },
         };
       }

@@ -104,7 +104,7 @@ const Auth = () => {
                 <Avatar
                   sx={{ border: '2px solid black', cursor: 'pointer' }}
                   src={data?.me?.data?.avatar}
-                  alt={`${data?.me?.data?.userName} avatar`}
+                  alt={`${data?.me?.data?.userName.toUpperCase()} avatar`}
                 />
               </Tooltip>
             </NextLink>

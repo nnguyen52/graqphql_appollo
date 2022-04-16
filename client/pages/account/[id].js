@@ -15,8 +15,8 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import theme from '../../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
-
 import { styled } from '@mui/material/styles';
+import AuthedSettings from '../../components/AuthedSettings';
 
 const AccountResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -138,6 +138,7 @@ const Account = () => {
             }
           />
           <hr />
+          {/*VISITING STRANGER */}
           {dataMe?.me?.data?._id.toString() == router.query?.id.toString() && (
             <>
               <Box
@@ -165,6 +166,8 @@ const Account = () => {
                 <hr />
               </Box>
               {isEditing && <AuthEdit setIsEditing={setIsEditing} me={dataMe.me} />}
+              <hr />
+              <AuthedSettings />
             </>
           )}
         </Box>

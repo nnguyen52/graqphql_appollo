@@ -186,14 +186,13 @@ const CreatePost = () => {
             message: data.createPost.network.message,
           });
           refetchMe();
-          formik.resetForm({
-            initialValues: {
-              title: '',
-            },
-          });
-
-          imgCoverFileRef.current.value = '';
-          titleRef.current.value = '';
+          // formik.resetForm({
+          //   initialValues: {
+          //     title: '',
+          //   },
+          // });
+          // imgCoverFileRef.current.value = '';
+          // titleRef.current.value = '';
           setContent(null);
           setImgPublicIDs([]);
           setImgCoverFile(null);
@@ -211,6 +210,7 @@ const CreatePost = () => {
             query: Query_getPosts,
             data: { getPosts: cacheAfterCreatePost },
           });
+          console.log('dont writeQuery with newPosts: ', cacheAfterCreatePost);
           return;
         }
       },

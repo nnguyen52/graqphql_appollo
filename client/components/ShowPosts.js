@@ -18,6 +18,7 @@ const ShowPosts = () => {
     },
     notifyOnNetworkStatusChange: true,
   });
+  console.log(data);
   if (error) return <Alert severity='error'>Server error... {error}</Alert>;
 
   return (

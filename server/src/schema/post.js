@@ -26,18 +26,18 @@ export default gql`
     endCursor: String
   }
 
-  type getAllPostsPagination {
+  type pagination {
     hasNextPage: Boolean
     endCursor: String
   }
-  type getAllPostsPaginationResponse {
+  type getPostsPaginationResponse {
     posts: [Post]
-    pageInfo: getAllPostsPagination
+    pageInfo: pagination
   }
 
-  type getAllPostResponse {
+  type getPostsResponse {
     network: MutationResponse
-    data: getAllPostsPaginationResponse
+    data: getPostsPaginationResponse
   }
 
   type GetPostByIDResponse {
@@ -63,9 +63,8 @@ export default gql`
     network: MutationResponse
   }
   type Query {
-    getPosts(cursor: String, limit: Int): getAllPostResponse
+    getPosts(cursor: String, limit: Int): getPostsResponse
     getPostByID(id: String): GetPostByIDResponse
-    getPostsFromUser(cursor: String, limit: Int): getAllPostResponse
     checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
   }
   type Mutation {
@@ -84,7 +83,7 @@ export default gql`
     ): UpdatePost
     deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
-    searchPosts(cursor: String, limit: Int, input: String): getAllPostResponse
+    searchPosts(cursor: String, limit: Int, input: String): getPostsResponse
     deleteImages(publicIDs: [String]): networkResponse
   }
 `;

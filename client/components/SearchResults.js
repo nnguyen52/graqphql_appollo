@@ -184,8 +184,11 @@ const SearchResults = ({
                               {each?.user?.userName}
                             </Box>
                           </NextLink>
-                          <Avatar src={each?.user?.avatar} alt={each?.user?.userName} />(
-                          {dateFormat(each.createdAt.toString())})
+                          <Avatar
+                            src={each?.user?.avatar}
+                            alt={each?.user?.userName.toUpperCase()}
+                          />
+                          ({dateFormat(each.createdAt.toString())})
                         </Box>
                         {`${each.title.slice(0, 50)}...`}
                         <Box
@@ -259,7 +262,7 @@ const SearchResults = ({
                           }}
                           key={each._id - index}
                         >
-                          <Avatar src={each?.avatar} alt={each.userName} />
+                          <Avatar src={each?.avatar} alt={each?.userName.toUpperCase()} />
                           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                             <b>{each.userName}</b>
                             {each?.about}
