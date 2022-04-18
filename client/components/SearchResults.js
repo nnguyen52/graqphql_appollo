@@ -3,12 +3,12 @@ import { Modal, Card, Box, Avatar, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { LoadingButton } from '@mui/lab';
 import { useRouter } from 'next/router';
-import { styled } from '@mui/material/styles';
 import { dateFormat } from '../src/utils/dateFormat';
 import NextLink from 'next/link';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import PersonIcon from '@mui/icons-material/Person';
+import { styled } from '@mui/material/styles';
 
 const ResponsiveModal = styled('div')(({ theme }) => ({
   // mobile
