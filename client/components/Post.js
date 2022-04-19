@@ -1,138 +1,150 @@
-import React from 'react';
-import { useMutation, useQuery } from '@apollo/client';
-import { Mutation_vote } from '../graphql-client/mutations/votePost';
-import { Query_me } from '../graphql-client/queries/user';
-import { Query_getPosts } from '../graphql-client/queries/posts';
-import Comments from './Comments';
-import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
-import InputComment from './InputComment';
-import { Box, Button, Tooltip } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import { Mutation_deletePost } from '../graphql-client/mutations/deletePost';
-import NextLink from 'next/link';
-import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
-import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
-import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
-import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove';
-import Image from 'next/image';
-import theme from '../src/theme';
-import { ThemeProvider } from '@mui/material/styles';
-import { styled } from '@mui/material/styles';
-import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
-import { LoadingButton } from '@mui/lab';
-import { handleSavePost, handleUnsavePost } from '../src/utils/savePost_unsavePost';
-import { Mutation_savePost } from '../graphql-client/mutations/savePost';
-import { Mutation_unsavePost } from '../graphql-client/mutations/unsavePost';
+import React from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import { Mutation_vote } from "../graphql-client/mutations/votePost";
+import { Query_me } from "../graphql-client/queries/user";
+import { Query_getPosts } from "../graphql-client/queries/posts";
+import Comments from "./Comments";
+import { Mutation_voteComment } from "../graphql-client/mutations/voteComment";
+import InputComment from "./InputComment";
+import { Box, Button, Tooltip } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { Mutation_deletePost } from "../graphql-client/mutations/deletePost";
+import NextLink from "next/link";
+import ArrowCircleUpRoundedIcon from "@mui/icons-material/ArrowCircleUpRounded";
+import ArrowCircleDownRoundedIcon from "@mui/icons-material/ArrowCircleDownRounded";
+import { Query_checkPostVotedFromUser } from "../graphql-client/queries/checkPostVotedFromUser";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
+import BookmarkRemoveIcon from "@mui/icons-material/BookmarkRemove";
+import Image from "next/image";
+import theme from "../src/theme";
+import { ThemeProvider } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
+import { Query_getSaveposts } from "../graphql-client/queries/getSavePosts";
+import { LoadingButton } from "@mui/lab";
+import {
+  handleSavePost,
+  handleUnsavePost,
+} from "../src/utils/savePost_unsavePost";
+import { Mutation_savePost } from "../graphql-client/mutations/savePost";
+import { Mutation_unsavePost } from "../graphql-client/mutations/unsavePost";
 
-const PostResponsive = styled('div')(({ theme }) => ({
-  [theme.breakpoints.down('md')]: {
-    '.postContainer': {
+const PostResponsive = styled("div")(({ theme }) => ({
+  [theme.breakpoints.down("md")]: {
+    ".postContainer": {
       padding: 0,
-      width: '100%',
+      width: "100%",
     },
-    '.postContainerFullHeight': {
-      height: '85vh',
+    ".postContainerFullHeight": {
+      height: "85vh",
     },
-    '.postContainer .postMenu': {
-      position: 'absolute',
+    ".postContainer .postMenu": {
+      position: "absolute",
       top: 0,
       right: 0,
       margin: 0,
-      padding: '.5em',
+      padding: ".5em",
     },
-    '.postContainer .postVoting': {
-      position: 'absolute',
+    ".postContainer .postVoting": {
+      position: "absolute",
       top: 0,
       left: 0,
     },
-    '.postContainer .postVoting > *': {
-      fontSize: '85%',
-      width: 'fit-content',
+    ".postContainer .postVoting > *": {
+      fontSize: "85%",
+      width: "fit-content",
     },
-    '.postContainer .postMainContainer': {
-      width: '100%',
-      margin: '0 .5em 0 .5em',
+    ".postContainer .postMainContainer": {
+      width: "100%",
+      margin: "0 .5em 0 .5em",
     },
-    '.postContainer .postMainContainerDetail': {
+    ".postContainer .postMainContainerDetail": {
       margin: 0,
-      marginLeft: '2.5em',
+      marginLeft: "2.5em",
     },
-    '.postContainer .commentsContainer': {
-      minHeight: '50vh',
-      overflow: 'auto',
+    ".postContainer .commentsContainer": {
+      minHeight: "50vh",
+      overflow: "auto",
     },
-    '.hideComments': {
-      display: 'none',
+    ".hideComments": {
+      display: "none",
     },
-    '.postContainerBordered': {
-      border: '1px solid grey',
-      borderRadius: '3px',
+    ".postContainerBordered": {
+      border: "1px solid grey",
+      borderRadius: "3px",
     },
-    '.postContainerMargin': {
-      marginTop: '.5em',
-      marginBottom: '.5em',
+    ".postContainerMargin": {
+      marginTop: ".5em",
+      marginBottom: ".5em",
     },
-    '.postMenu': {
+    ".postMenu": {
       left: 0,
       top: 0,
       padding: 0,
       margin: 0,
     },
-    '.postMenu > button': {
-      fontSize: '10px',
+    ".postMenu > button": {
+      fontSize: "10px",
     },
-    '.postMenu > .commentsIcon': {
-      display: 'none',
+    ".postMenu > .commentsIcon": {
+      display: "none",
     },
-    '.postContainer': {
-      width: '100%',
-      paddingLeft: '1em',
+    ".postContainer": {
+      width: "100%",
+      paddingLeft: "1em",
     },
   },
-  [theme.breakpoints.up('md')]: {
-    '.postContainerFullHeight': {
+  [theme.breakpoints.up("md")]: {
+    ".postContainerFullHeight": {
       // height: '85vh',
     },
-    '.postContainer': {
-      marginTop: '.5em',
-      marginBottom: '.5em',
+    ".postContainer": {
+      marginTop: ".5em",
+      marginBottom: ".5em",
     },
-    '.postMainContainer': {
-      marginLeft: '15%',
+    ".postMainContainer": {
+      marginLeft: "15%",
     },
-    '.postMainContainerContent': {
-      border: '1px solid grey',
-      borderRadius: '3px',
+    ".postMainContainerContent": {
+      border: "1px solid grey",
+      borderRadius: "3px",
     },
-    '.hideComments': {
-      display: 'none',
+    ".hideComments": {
+      display: "none",
     },
-    '.postContainer .commentsContainer': {
-      minHeight: '50vh',
-      overflow: 'auto',
+    ".postContainer .commentsContainer": {
+      minHeight: "50vh",
+      overflow: "auto",
     },
-    '.postContainerMargin': {
-      marginTop: '.5em',
-      marginBottom: '.5em',
+    ".postContainerMargin": {
+      marginTop: ".5em",
+      marginBottom: ".5em",
     },
   },
-  [theme.breakpoints.up('lg')]: {
+  [theme.breakpoints.up("lg")]: {
     // default is for desktop
   },
 }));
 
 const Post = ({ data, detail }) => {
   const dataGetPosts = useQuery(Query_getPosts);
-  const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
+  const {
+    data: dataMe,
+    loading: loadingMe,
+    refetch: refetchMe,
+  } = useQuery(Query_me);
   const [vote, { loading }] = useMutation(Mutation_vote);
-  const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
-  const [deletePost, { loading: loadingDeletePost }] = useMutation(Mutation_deletePost);
-  const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(Query_getSaveposts, {
-    variables: { cursor: '' },
-  });
+  const [voteComment, { loading: loadingVoteComment }] =
+    useMutation(Mutation_voteComment);
+  const [deletePost, { loading: loadingDeletePost }] =
+    useMutation(Mutation_deletePost);
+  const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(
+    Query_getSaveposts,
+    {
+      variables: { cursor: "" },
+    }
+  );
   const [savePost] = useMutation(Mutation_savePost);
   const [unsavePost] = useMutation(Mutation_unsavePost);
   const {
@@ -154,7 +166,7 @@ const Post = ({ data, detail }) => {
   const handleVote = async (value) => {
     try {
       if (!dataMe?.me?.data || !dataMe.me) {
-        return alert('Please l  ogin to vote posts!');
+        return alert("Please l  ogin to vote posts!");
       }
       await vote({
         variables: { postId: data._id, voteValue: value },
@@ -181,11 +193,11 @@ const Post = ({ data, detail }) => {
         },
       }).catch((e) => console.log(e));
     } catch (e) {
-      console.log('out errors', e);
+      console.log("out errors", e);
     }
   };
   const handleDeletePost = async () => {
-    if (confirm('You are about to delete post. Are you sure?'))
+    if (confirm("You are about to delete post. Are you sure?"))
       await deletePost({
         variables: {
           id: data._id.toString(),
@@ -209,7 +221,7 @@ const Post = ({ data, detail }) => {
                     ),
                   },
                 },
-                message: 'DELETEING UNSAVE',
+                message: "DELETEING UNSAVE",
               },
             });
           }
@@ -221,62 +233,65 @@ const Post = ({ data, detail }) => {
       <PostResponsive>
         <ThemeProvider theme={theme}>
           <Box
-            className={`postContainer ${detail ? 'postContainerFullHeight' : null} ${
-              !detail ? 'postContainerMargin' : null
-            }`}
+            className={`postContainer ${
+              detail ? "postContainerFullHeight" : null
+            } ${!detail ? "postContainerMargin" : null}`}
             sx={{
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'row',
-              width: '65%',
-              border: '1px solid red',
+              position: "relative",
+              display: "flex",
+              flexDirection: "row",
+              width: "65%",
+              border: "1px solid red",
             }}
           >
             <Box
-              className='postVoting'
+              className="postVoting"
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                width: '15%',
-                height: '100%',
-                border: '1px solid green',
+                width: "15%",
+                height: "100%",
+                border: "1px solid green",
               }}
             >
-              {dataMe?.me?.data && dataMe?.me?.data?._id.toString() !== data?.userId.toString() ? (
+              {dataMe?.me?.data &&
+              dataMe?.me?.data?._id.toString() !== data?.userId.toString() ? (
                 <Box
                   sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'end',
-                    paddingRight: '1em',
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "end",
+                    paddingRight: "1em",
                   }}
                 >
                   <Box
                     sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
                     <ArrowCircleUpRoundedIcon
                       sx={{
-                        cursor: 'pointer',
-                        fontSize: '2.5em',
-                        borderRadius: '50%',
+                        cursor: "pointer",
+                        fontSize: "2.5em",
+                        borderRadius: "50%",
                         background:
                           !loadingUserVoted &&
                           dataUserVoted?.checkPostVotedFromUser?.data &&
-                          dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                          dataUserVoted?.checkPostVotedFromUser?.data
+                            .voteValue == 1
                             ? theme.palette.upvoteButton.main
                             : null,
-                        '&:hover': {
+                        "&:hover": {
                           color:
                             !loadingUserVoted &&
                             dataUserVoted?.checkPostVotedFromUser?.data &&
-                            dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
+                            dataUserVoted?.checkPostVotedFromUser?.data
+                              .voteValue == 1
                               ? null
                               : theme.palette.upvoteButton.main,
                         },
@@ -295,20 +310,22 @@ const Post = ({ data, detail }) => {
                     </b>
                     <ArrowCircleDownRoundedIcon
                       sx={{
-                        cursor: 'pointer',
-                        fontSize: '2.5em',
-                        borderRadius: '50%',
+                        cursor: "pointer",
+                        fontSize: "2.5em",
+                        borderRadius: "50%",
                         background:
                           !loadingUserVoted &&
                           dataUserVoted?.checkPostVotedFromUser?.data &&
-                          dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                          dataUserVoted?.checkPostVotedFromUser?.data
+                            .voteValue == -1
                             ? theme.palette.downvoteButton.main
                             : null,
-                        '&:hover': {
+                        "&:hover": {
                           color:
                             !loadingUserVoted &&
                             dataUserVoted?.checkPostVotedFromUser?.data &&
-                            dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
+                            dataUserVoted?.checkPostVotedFromUser?.data
+                              .voteValue == -1
                               ? null
                               : theme.palette.downvoteButton.main,
                         },
@@ -324,33 +341,33 @@ const Post = ({ data, detail }) => {
             {/* main - 80% */}
             <Box
               className={`postMainContainer ${
-                dataMe?.me?.data ? 'postMainContainerDetail' : null
-              } ${!detail ? 'postContainerBordered' : null}`}
+                dataMe?.me?.data ? "postMainContainerDetail" : null
+              } ${!detail ? "postContainerBordered" : null}`}
               sx={{
-                border: '1px solid blue',
-                width: '100%',
-                display: 'flex',
+                border: "1px solid blue",
+                width: "100%",
+                display: "flex",
               }}
             >
               {/* content - 80% */}
               <Box
-                className='postMainContainerContent'
+                className="postMainContainerContent"
                 sx={{
-                  width: '100%',
-                  borderRadius: '5px',
+                  width: "100%",
+                  borderRadius: "5px",
                 }}
               >
                 <NextLink href={`/post/${data?._id}/detail`}>
                   <Box
                     sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      minHeight: '150px',
-                      height: '100%',
-                      '&:hover': !detail
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: "150px",
+                      height: "100%",
+                      "&:hover": !detail
                         ? {
-                            background: '#f4f4f4',
-                            cursor: 'pointer',
+                            background: "#f4f4f4",
+                            cursor: "pointer",
                           }
                         : null,
                     }}
@@ -358,24 +375,24 @@ const Post = ({ data, detail }) => {
                     {/* title + content */}
                     <Box
                       sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
+                        display: "flex",
+                        flexDirection: "column",
                         flex: 1,
-                        overflow: 'auto',
+                        overflow: "auto",
                       }}
                     >
                       <Box
-                        className='textContent'
+                        className="textContent"
                         sx={{
-                          position: 'relative',
-                          padding: '1em',
+                          position: "relative",
+                          padding: "1em",
                           flex: 1,
                         }}
                       >
                         <Box
                           sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
+                            display: "flex",
+                            flexDirection: "column",
                           }}
                         >
                           <h3>{data?.title}</h3>
@@ -383,53 +400,137 @@ const Post = ({ data, detail }) => {
                           {!detail && data?.imageCover && (
                             <Box
                               sx={{
-                                position: 'relative',
-                                height: '300px',
-                                width: '100%',
+                                position: "relative",
+                                height: "300px",
+                                width: "100%",
                               }}
                             >
                               <Image
-                                layout='fill'
-                                objectFit='contain'
+                                layout="fill"
+                                objectFit="contain"
                                 src={`https://res.cloudinary.com/cloudinarystore/image/upload/v1649313101/${data.imageCover}.jpg`}
                               />
                             </Box>
                           )}
                           {/* detail content */}
-                          {detail && <div dangerouslySetInnerHTML={{ __html: data.content }} />}
+                          {detail && (
+                            <div
+                              dangerouslySetInnerHTML={{ __html: data.content }}
+                            />
+                          )}
                         </Box>
                       </Box>
                     </Box>
                     {/* menu  */}
                     <Box
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '.2em',
-                        padding: '.5em',
-                        flexWrap: 'wrap',
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".2em",
+                        padding: ".5em",
+                        flexWrap: "wrap",
                       }}
                     >
+                      {/* upvotes info only */}
                       <Box>
                         <b>
-                          {data.points} {data.points > 1 ? 'Upvotes' : 'Upvote'}
+                          {data.points} {data.points > 1 ? "Upvotes" : "Upvote"}
                         </b>
                       </Box>
+                      {/* comments info only */}
                       <Box>
                         <ChatBubbleOutlineIcon />
                         <b>
-                          {data.comments.length} {data.comments.length > 1 ? `Comments` : `Comment`}
+                          {data.comments.length}{" "}
+                          {data.comments.length > 1 ? `Comments` : `Comment`}
                         </b>
                       </Box>
+                      {/* share */}
                       <Box>Share</Box>
-                      <Box>Save</Box>
+                      {/* save-unsave */}
+                      <Box>
+                        <LoadingButton
+                          onClick={async () =>
+                            dataSaveposts?.getSavePosts &&
+                            !dataSaveposts?.getSavePosts?.data?.posts
+                              .map((each) => each._id)
+                              .includes(data._id.toString())
+                              ? await handleSavePost({
+                                  loadingMe,
+                                  dataMe,
+                                  refetchMe,
+                                  savePost,
+                                  dataSaveposts,
+                                  each: data,
+                                })
+                              : await handleUnsavePost({
+                                  loadingMe,
+                                  dataMe,
+                                  refetchMe,
+                                  unsavePost,
+                                  dataSaveposts,
+                                  each: data,
+                                })
+                          }
+                        >
+                          {dataSaveposts?.getSavePosts &&
+                            !dataSaveposts?.getSavePosts?.data?.posts
+                              .map((each) => each._id)
+                              .includes(data._id.toString()) && (
+                              <BookmarkAddIcon />
+                            )}
+                          {dataSaveposts?.getSavePosts &&
+                            dataSaveposts?.getSavePosts?.data?.posts
+                              .map((each) => each._id)
+                              .includes(data._id.toString()) && (
+                              <BookmarkRemoveIcon />
+                            )}
+                        </LoadingButton>
+                      </Box>
+                      {/* hide */}
                       <Box>Hide</Box>
+                      {/* <Edit -Delete */}
                       {dataMe?.me?.data &&
-                        dataMe?.me?.data?._id.toString() == data?.userId.toString() && (
-                          <>
-                            <Box>Edit</Box>
-                            <Box>Delete</Box>
-                          </>
+                        dataMe?.me?.data?._id.toString() ==
+                          data?.userId.toString() && (
+                          <Box sx={{ display: "flex", gap: ".5em" }}>
+                            {dataMe?.me?.data &&
+                              dataMe?.me?.data?._id.toString() ==
+                                data?.userId.toString() && (
+                                <NextLink
+                                  href={`/account/editPost/${data._id}`}
+                                >
+                                  <Box sx={{ display: "flex" }}>
+                                    <EditIcon
+                                      sx={{
+                                        color: "white",
+                                        cursor: "pointer",
+                                      }}
+                                    />{" "}
+                                    <b> Edit </b>
+                                  </Box>
+                                </NextLink>
+                              )}
+                            {dataMe?.me?.data &&
+                              dataMe?.me?.data?._id.toString() ==
+                                data?.userId.toString() && (
+                                <Box sx={{ display: "flex" }}>
+                                  <DeleteIcon
+                                    sx={{
+                                      color: "white",
+                                      cursor: "pointer",
+                                      margin: 0,
+                                    }}
+                                    onClick={
+                                      !loadingDeletePost
+                                        ? handleDeletePost
+                                        : null
+                                    }
+                                  />{" "}
+                                  <b>Delete</b>
+                                </Box>
+                              )}
+                          </Box>
                         )}
                     </Box>
                     {detail && (
@@ -445,7 +546,9 @@ const Post = ({ data, detail }) => {
                     {detail ? (
                       <Box
                         className={`commentsContainer ${
-                          !detail || data?.comments.length <= 0 ? 'hideComments' : null
+                          !detail || data?.comments.length <= 0
+                            ? "hideComments"
+                            : null
                         }`}
                         sx={{
                           flex: 2,
