@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 import merge from 'deepmerge';
 import isEqual from 'lodash/isEqual';
 import { createUploadLink } from 'apollo-upload-client';
@@ -22,20 +22,17 @@ function createApolloClient() {
             getPosts: {
               keyArgs: false,
               merge(existingData = undefined, incomingData) {
-                console.log('typepolicies getPosts triggered');
                 // case1: post is modified
                 for (let i = 0; i < existingData?.data?.posts.length; i++) {
                   if (
                     JSON.stringify(existingData?.data?.posts[i]) ===
                     JSON.stringify(incomingData?.data?.posts[0])
                   ) {
-                    console.log('case1');
                     return { ...incomingData };
                   }
                 }
                 // case2: new post added
                 if (incomingData.data.posts.length == 1) {
-                  console.log('case2');
                   return {
                     ...incomingData,
                     data: {
@@ -46,8 +43,53 @@ function createApolloClient() {
                     },
                   };
                 }
+                // case: delete last item
+                if (incomingData.data.posts.length == 0) {
+                  return {
+                    ...incomingData,
+                  };
+                }
                 // case 3: get posts at beginning
-                console.log('case3');
+                return {
+                  ...incomingData,
+                  data: {
+                    ...incomingData.data,
+                    posts: existingData
+                      ? [...existingData.data.posts, ...incomingData.data.posts]
+                      : [...incomingData.data.posts],
+                  },
+                };
+              },
+            },
+            getSavePosts: {
+              keyArgs: false,
+              merge(existingData = undefined, incomingData) {
+                for (let i = 0; i < existingData?.data?.posts.length; i++) {
+                  if (
+                    JSON.stringify(existingData?.data?.posts[i]) ===
+                    JSON.stringify(incomingData?.data?.posts[0])
+                  ) {
+                    return { ...incomingData };
+                  }
+                }
+                if (incomingData.data.posts.length == 1) {
+                  return {
+                    ...incomingData,
+                    data: {
+                      ...incomingData.data,
+                      posts: existingData
+                        ? [...existingData.data.posts, ...incomingData.data.posts]
+                        : [...incomingData.data.posts],
+                    },
+                  };
+                }
+                // case: delete last item
+                if (incomingData.data.posts.length == 0) {
+                  return {
+                    ...incomingData,
+                  };
+                }
+                // case 3: get saveposts at beginning
                 return {
                   ...incomingData,
                   data: {

@@ -210,7 +210,6 @@ const CreatePost = () => {
             query: Query_getPosts,
             data: { getPosts: cacheAfterCreatePost },
           });
-          console.log('dont writeQuery with newPosts: ', cacheAfterCreatePost);
           return;
         }
       },

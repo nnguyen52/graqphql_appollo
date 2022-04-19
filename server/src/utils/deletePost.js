@@ -1,7 +1,7 @@
-import Comment from "../models/comment";
-import Vote from "../models/votes";
-import VoteComment from "../models/voteComment";
-import Post from "../models/Post";
+import Comment from '../models/comment';
+import Vote from '../models/votes';
+import VoteComment from '../models/voteComment';
+import Post from '../models/Post';
 export const deletePost = async (postToDelete, userId) => {
   try {
     // delete all votes that have this postId
@@ -10,7 +10,6 @@ export const deletePost = async (postToDelete, userId) => {
       for (const each of votes) {
         await Vote.findOneAndDelete({ _id: each._id.toString() });
       }
-
     // delete all comments that have this postId
     // and delete all vote comments this post have
     const comments = await Comment.find({

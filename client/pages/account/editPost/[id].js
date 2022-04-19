@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-
 import { useRouter } from 'next/router';
 import { useMutation, useQuery } from '@apollo/client';
 import { Query_me } from '../../../graphql-client/queries/user';
 import { Query_getPostByID } from '../../../graphql-client/queries/getPostByID';
 import { Mutation_editPost } from '../../../graphql-client/mutations/editPost';
-
 import { mapFieldErrors } from '../../../../server/src/utils/mapFieldErrors';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
@@ -17,6 +15,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { ReactQuill } from '../../../components/CreatePost';
 import { checkImageUpload, imageUpload } from '../../../src/utils/uploadImage';
 import { Mutation_deleteImages } from '../../../graphql-client/mutations/deleteImages';
+
 const CreatePostResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     '.editPostQuillContainer': {

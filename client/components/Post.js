@@ -6,7 +6,7 @@ import { Query_getPosts } from '../graphql-client/queries/posts';
 import Comments from './Comments';
 import { Mutation_voteComment } from '../graphql-client/mutations/voteComment';
 import InputComment from './InputComment';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Mutation_deletePost } from '../graphql-client/mutations/deletePost';
@@ -15,10 +15,17 @@ import ArrowCircleUpRoundedIcon from '@mui/icons-material/ArrowCircleUpRounded';
 import ArrowCircleDownRoundedIcon from '@mui/icons-material/ArrowCircleDownRounded';
 import { Query_checkPostVotedFromUser } from '../graphql-client/queries/checkPostVotedFromUser';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove';
 import Image from 'next/image';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
+import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
+import { LoadingButton } from '@mui/lab';
+import { handleSavePost, handleUnsavePost } from '../src/utils/savePost_unsavePost';
+import { Mutation_savePost } from '../graphql-client/mutations/savePost';
+import { Mutation_unsavePost } from '../graphql-client/mutations/unsavePost';
 
 const PostResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -119,10 +126,15 @@ const PostResponsive = styled('div')(({ theme }) => ({
 
 const Post = ({ data, detail }) => {
   const dataGetPosts = useQuery(Query_getPosts);
-  const { data: dataMe, refetch: refetchMe } = useQuery(Query_me);
+  const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
   const [deletePost, { loading: loadingDeletePost }] = useMutation(Mutation_deletePost);
+  const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
+  const [savePost] = useMutation(Mutation_savePost);
+  const [unsavePost] = useMutation(Mutation_unsavePost);
   const {
     data: dataUserVoted,
     loading: loadingUserVoted,
@@ -183,6 +195,7 @@ const Post = ({ data, detail }) => {
             refetchMe();
             return alert(response.data.deletePost.network.errors[0].message);
           }
+          // remove from cache
           if (response.data.deletePost.network.success) {
             cache.writeQuery({
               query: Query_getPosts,
@@ -196,6 +209,7 @@ const Post = ({ data, detail }) => {
                     ),
                   },
                 },
+                message: 'DELETEING UNSAVE',
               },
             });
           }
@@ -496,6 +510,51 @@ const Post = ({ data, detail }) => {
                     </Button>
                   </NextLink>
                 )}
+                <Box>
+                  <LoadingButton
+                    loading={loadingDataSaveposts}
+                    sx={{
+                      minWidth: '4em',
+                      width: 'fit-content',
+                      background: 'black',
+                      color: theme.palette.upvoteButton.main,
+                      '&:hover': {
+                        background: '#353535',
+                      },
+                    }}
+                    onClick={async () =>
+                      dataSaveposts?.getSavePosts &&
+                      !dataSaveposts?.getSavePosts?.data?.posts
+                        .map((each) => each._id)
+                        .includes(data._id.toString())
+                        ? await handleSavePost({
+                            loadingMe,
+                            dataMe,
+                            refetchMe,
+                            savePost,
+                            dataSaveposts,
+                            each: data,
+                          })
+                        : await handleUnsavePost({
+                            loadingMe,
+                            dataMe,
+                            refetchMe,
+                            unsavePost,
+                            dataSaveposts,
+                            each: data,
+                          })
+                    }
+                  >
+                    {dataSaveposts?.getSavePosts &&
+                      !dataSaveposts?.getSavePosts?.data?.posts
+                        .map((each) => each._id)
+                        .includes(data._id.toString()) && <BookmarkAddIcon />}
+                    {dataSaveposts?.getSavePosts &&
+                      dataSaveposts?.getSavePosts?.data?.posts
+                        .map((each) => each._id)
+                        .includes(data._id.toString()) && <BookmarkRemoveIcon />}
+                  </LoadingButton>
+                </Box>
                 <Box className='commentsIcon' sx={{ position: 'relative', display: 'flex' }}>
                   <NextLink href={`/post/${data._id.toString()}/detail`}>
                     <Button

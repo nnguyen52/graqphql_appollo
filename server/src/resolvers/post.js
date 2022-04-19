@@ -3,6 +3,7 @@ import Comment from '../models/comment';
 import Post from '../models/Post';
 import User from '../models/user';
 import Vote from '../models/votes';
+import Savepost from '../models/savedPost';
 import { deletePost } from '../utils/deletePost';
 import {
   GraphQLUpload,
@@ -116,7 +117,6 @@ export default {
         };
       }
     },
-
     checkPostVotedFromUser: async (_, { postId }, { req }) => {
       try {
         const allowed = await checkAuth(req);
@@ -155,6 +155,85 @@ export default {
             code: 500,
             success: false,
             message: `Internal Server Errors: ${e.message}`,
+          },
+        };
+      }
+    },
+    getSavePosts: async (parent, { cursor, limit }, { req }) => {
+      const allowed = await checkAuth(req);
+      if (!allowed) {
+        return {
+          network: {
+            code: 400,
+            success: false,
+            message: 'Access Denied',
+            errors: [{ field: 'post', message: 'Please login to see these content!' }],
+          },
+        };
+      }
+      try {
+        let realLimit = limit > 10 ? 100 : limit;
+        const cursorOptions = cursor
+          ? {
+              userId: req.session.userId.toString(),
+              createdAt: {
+                $lt: fromCursorHash(cursor),
+              },
+            }
+          : {
+              userId: req.session.userId.toString(),
+            };
+        const savePosts = await Savepost.find(cursorOptions, null, {
+          sort: { createdAt: -1 },
+          limit: realLimit + 1,
+        });
+        if (savePosts.length == 0) {
+          return {
+            network: {
+              code: 200,
+              success: true,
+            },
+            data: {
+              posts: [],
+              pageInfo: {
+                hasNextPage: false,
+              },
+            },
+          };
+        }
+        const postIds = savePosts.map((each) => each.postId.toString());
+        let posts = [];
+        await Promise.all(
+          postIds.map(async (each) => {
+            const post = await Post.findById(each);
+            posts.push(post);
+          })
+        );
+        const hasNextPage = posts.length > realLimit;
+        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+
+        return {
+          network: {
+            code: 200,
+            success: true,
+          },
+          data: {
+            posts: edges,
+            pageInfo: {
+              hasNextPage,
+              endCursor: hasNextPage
+                ? toCursorHash(edges[edges.length - 1].createdAt.toString())
+                : null,
+            },
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error: ${e.message}`,
           },
         };
       }
@@ -260,6 +339,127 @@ export default {
         };
       }
     },
+    savePost: async (parent, { id }, { req }) => {
+      try {
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access Denied',
+              errors: [{ field: 'post', message: 'Please login to save post!' }],
+            },
+          };
+        }
+        // check if post exist:
+        const exstingPost = await Post.findOne({ _id: id.toString() });
+        if (!exstingPost)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Invalid data',
+              errors: [
+                {
+                  field: 'post',
+                  message: 'Sorry, this post is no longer exist.',
+                },
+              ],
+            },
+          };
+        // check if this post is saved?
+        const post = await Savepost.findOne({ postId: id.toString() });
+        if (post)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              errors: [{ field: 'post', message: 'You saved this post!' }],
+            },
+          };
+        const savePost = new Savepost({
+          postId: id.toString(),
+          userId: req.session.userId.toString(),
+        });
+        await savePost.save();
+        return {
+          network: {
+            code: 200,
+            success: true,
+            message: 'Post saved!',
+          },
+          data: exstingPost,
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error: ${e.message}`,
+          },
+        };
+      }
+    },
+    unsavePost: async (parent, { id }, { req }) => {
+      try {
+        const allowed = await checkAuth(req);
+        if (!allowed) {
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Access Denied',
+              errors: [{ field: 'post', message: 'Please login to save post!' }],
+            },
+          };
+        }
+        // check if post exist:
+        const exstingPost = await Post.findOne({ _id: id.toString() });
+        if (!exstingPost)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              message: 'Invalid data',
+              errors: [
+                {
+                  field: 'post',
+                  message: 'Sorry, this post is no longer exist.',
+                },
+              ],
+            },
+          };
+        // check if this post is saved?
+        const post = await Savepost.findOne({ postId: id.toString() });
+        if (!post)
+          return {
+            network: {
+              code: 400,
+              success: false,
+              errors: [{ field: 'post', message: 'Sorry, this post is no longer exist.' }],
+            },
+          };
+        await Savepost.findOneAndDelete(post);
+        return {
+          network: {
+            code: 200,
+            success: true,
+            message: 'Post unsaved!',
+          },
+        };
+      } catch (e) {
+        console.log(e);
+        return {
+          network: {
+            code: 500,
+            success: false,
+            message: `Internal server error: ${e.message}`,
+          },
+        };
+      }
+    },
     deletePost: async (parent, { id }, { req }) => {
       try {
         const allowed = await checkAuth(req);
@@ -273,7 +473,6 @@ export default {
             },
           };
         }
-
         const postToDelete = await Post.findOne({
           _id: id,
           userId: req.session.userId,
@@ -304,7 +503,7 @@ export default {
         });
         // delete all images and imageCover first
         if (postToDelete.images.length > 0) {
-          await Promiss.all(
+          await Promise.all(
             postToDelete.images.map(async (each) => await cloudinary.uploader.destroy(each))
           );
         }

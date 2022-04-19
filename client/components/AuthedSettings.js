@@ -8,6 +8,7 @@ import { Query_getPostsFromUser } from '../graphql-client/queries/getPostsFromUs
 import AuthSettings_Tab from './AuthSettings_Tab';
 import { Query_getCommentsFromUser } from '../graphql-client/queries/getCommentsFromUser';
 import { Query_getPostsUserVoted } from '../graphql-client/queries/getPostsUserVoted';
+import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
 
 const AuthedSettings = () => {
   const router = useRouter();
@@ -17,19 +18,26 @@ const AuthedSettings = () => {
       id: router?.query?.id?.toString(),
     },
   });
-
+  // tab0
   const { data: dataPosts, loading: loadingPosts } = useQuery(Query_getPostsFromUser, {
     variables: { userId: router?.query?.id.toString() },
   });
+  // tab1
   const { data: dataComments, loading: loadingDataComments } = useQuery(Query_getCommentsFromUser, {
     variables: { userId: router?.query?.id.toString() },
   });
+  // tab2
+  const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
+  // tab3
   const { data: dataPostsUserUpVoted, loading: loadingPostsUserUpVoted } = useQuery(
     Query_getPostsUserVoted,
     {
       variables: { userId: router?.query?.id.toString(), type: 'upvote' },
     }
   );
+  // tab4
   const { data: dataPostsUserDownVoted, loading: loadingPostsUserDownVoted } = useQuery(
     Query_getPostsUserVoted,
     {
@@ -69,7 +77,6 @@ const AuthedSettings = () => {
       'aria-controls': `simple-tabpanel-${index}`,
     };
   }
-  console.log(dataPostsUserUpVoted);
   if (loadingMe || loadingUserByID) return <></>;
   if (!loadingMe && !dataMe?.me?.data) {
     refetchMe();
@@ -91,6 +98,8 @@ const AuthedSettings = () => {
                   ? dataPosts?.getPostsFromUser
                   : value == 1
                   ? dataComments.getCommentsFromUser
+                  : value == 2
+                  ? dataSaveposts.getSavePosts
                   : value == 3
                   ? dataPostsUserUpVoted.getPostsUserVoted
                   : value == 4
@@ -102,6 +111,8 @@ const AuthedSettings = () => {
                   ? loadingPosts
                   : value == 1
                   ? loadingDataComments
+                  : value == 2
+                  ? loadingDataSaveposts
                   : value == 3
                   ? loadingPostsUserUpVoted
                   : value == 4

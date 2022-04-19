@@ -59,6 +59,13 @@ export default gql`
     network: MutationResponse
     data: Post
   }
+  type SavePost {
+    network: MutationResponse
+    data: Post
+  }
+  type UnsavePost {
+    network: MutationResponse
+  }
   type DeletePost {
     network: MutationResponse
   }
@@ -66,6 +73,7 @@ export default gql`
     getPosts(cursor: String, limit: Int): getPostsResponse
     getPostByID(id: String): GetPostByIDResponse
     checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
+    getSavePosts(cursor: String, limit: Int): getPostsResponse
   }
   type Mutation {
     createPost(
@@ -81,6 +89,8 @@ export default gql`
       publicIDs: [String]
       imgCoverFile: Upload
     ): UpdatePost
+    savePost(id: String): SavePost
+    unsavePost(id: String): UnsavePost
     deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
     searchPosts(cursor: String, limit: Int, input: String): getPostsResponse
