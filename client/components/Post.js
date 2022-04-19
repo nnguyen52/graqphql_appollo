@@ -229,6 +229,7 @@ const Post = ({ data, detail }) => {
               display: 'flex',
               flexDirection: 'row',
               width: '65%',
+              border: '1px solid red',
             }}
           >
             <Box
@@ -239,6 +240,7 @@ const Post = ({ data, detail }) => {
                 left: 0,
                 width: '15%',
                 height: '100%',
+                border: '1px solid green',
               }}
             >
               {dataMe?.me?.data && dataMe?.me?.data?._id.toString() !== data?.userId.toString() ? (
@@ -325,7 +327,8 @@ const Post = ({ data, detail }) => {
                 dataMe?.me?.data ? 'postMainContainerDetail' : null
               } ${!detail ? 'postContainerBordered' : null}`}
               sx={{
-                width: '85%',
+                border: '1px solid blue',
+                width: '100%',
                 display: 'flex',
               }}
             >
@@ -396,27 +399,39 @@ const Post = ({ data, detail }) => {
                           {detail && <div dangerouslySetInnerHTML={{ __html: data.content }} />}
                         </Box>
                       </Box>
-                      {!detail && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '.2em',
-                            padding: '.5em',
-                          }}
-                        >
-                          <b>
-                            {data.points} {data.points > 1 ? 'Upvotes' : 'Upvote'}
-                          </b>
-                          <ChatBubbleOutlineIcon />
-                          <b>
-                            {data.comments.length}{' '}
-                            {data.comments.length > 1 ? `Comments` : `Comment`}
-                          </b>
-                        </Box>
-                      )}
                     </Box>
-                    {/* input */}
+                    {/* menu  */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '.2em',
+                        padding: '.5em',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Box>
+                        <b>
+                          {data.points} {data.points > 1 ? 'Upvotes' : 'Upvote'}
+                        </b>
+                      </Box>
+                      <Box>
+                        <ChatBubbleOutlineIcon />
+                        <b>
+                          {data.comments.length} {data.comments.length > 1 ? `Comments` : `Comment`}
+                        </b>
+                      </Box>
+                      <Box>Share</Box>
+                      <Box>Save</Box>
+                      <Box>Hide</Box>
+                      {dataMe?.me?.data &&
+                        dataMe?.me?.data?._id.toString() == data?.userId.toString() && (
+                          <>
+                            <Box>Edit</Box>
+                            <Box>Delete</Box>
+                          </>
+                        )}
+                    </Box>
                     {detail && (
                       <Box>
                         <InputComment
@@ -450,7 +465,7 @@ const Post = ({ data, detail }) => {
                   </Box>
                 </NextLink>
               </Box>
-              {/* menu - 20% */}
+              {/* menu - 20%
               <Box
                 className='postMenu'
                 sx={{
@@ -596,7 +611,7 @@ const Post = ({ data, detail }) => {
                     </Button>
                   </NextLink>
                 </Box>
-              </Box>
+              </Box> */}
             </Box>
           </Box>
         </ThemeProvider>
