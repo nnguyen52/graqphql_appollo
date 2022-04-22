@@ -64,6 +64,8 @@ function createApolloClient() {
             getSavePosts: {
               keyArgs: false,
               merge(existingData = undefined, incomingData) {
+                // initially user have not login
+                if (!incomingData) return;
                 for (let i = 0; i < existingData?.data?.posts.length; i++) {
                   if (
                     JSON.stringify(existingData?.data?.posts[i]) ===
@@ -72,7 +74,7 @@ function createApolloClient() {
                     return { ...incomingData };
                   }
                 }
-                if (incomingData.data.posts.length == 1) {
+                if (incomingData?.data?.posts.length == 1) {
                   return {
                     ...incomingData,
                     data: {
@@ -110,7 +112,6 @@ function createApolloClient() {
 
 export function initializeApollo(initialState = null) {
   const _apolloClient = apolloClient ?? createApolloClient();
-
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // gets hydrated here
   if (initialState) {
@@ -133,7 +134,6 @@ export function initializeApollo(initialState = null) {
   if (typeof window === 'undefined') return _apolloClient;
   // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
-
   return _apolloClient;
 }
 

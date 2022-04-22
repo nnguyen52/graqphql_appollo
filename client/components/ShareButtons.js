@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   // buttons
   EmailShareButton,
@@ -22,40 +22,34 @@ import {
   ViberIcon,
   WeiboIcon,
   WhatsappIcon,
-} from "react-share";
-import { Box } from "@mui/material";
+} from 'react-share';
+import { Box } from '@mui/material';
 const ShareButtons = ({ url }) => {
-  const title = "Reddis by Jerngn";
-  const hashtag = "#Reddis";
-  const hashtags = ["#Reddis", "#ReddisByJerngn"];
+  const title = 'Reddis by Jerngn';
+  const hashtag = '#Reddis';
+  const hashtags = ['#Reddis', '#ReddisByJerngn'];
   //   mail body will be displaying picture of this app (maybe login screen?)
   const mailBody = ``;
   return (
     <Box
       sx={{
-        display: "flex ",
-        flexWrap: "wrap",
-        width: "100%",
-        gap: ".5em",
-        padding: "1em",
-        border: "1px solid black",
+        display: 'flex ',
+        flexWrap: 'wrap',
+        width: '100%',
+        gap: '.5em',
+        padding: '1em',
       }}
     >
       {/* Email  */}
       <EmailShareButton url={url} subject={title} body={mailBody}>
-        <EmailIcon />
+        <EmailIcon size={32} round />
       </EmailShareButton>
       {/* facebook  */}
       <FacebookShareButton url={url} quote={title} hashtag={hashtag}>
         <FacebookIcon size={32} round />
       </FacebookShareButton>
       {/* linkedin  */}
-      <LinkedinShareButton
-        url={url}
-        title={title}
-        summmary={""}
-        source="Reddis"
-      >
+      <LinkedinShareButton url={url} title={title} summmary={''} source='Reddis'>
         <LinkedinIcon size={32} round />
       </LinkedinShareButton>
       {/* reddit  */}

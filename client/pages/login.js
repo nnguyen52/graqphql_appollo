@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useMutation } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { Mutation_Login } from '../graphql-client/mutations/login';
 import { useRouter } from 'next/router';
 import { Query_me } from '../graphql-client/queries/user';
@@ -24,6 +24,7 @@ import { ThemeProvider } from '@mui/material/styles';
 
 // responsive
 import { styled } from '@mui/material/styles';
+import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
 export const ResponsiveBox = styled('div')(({ theme }) => ({
   // mobile
   [theme.breakpoints.down('md')]: {
@@ -75,6 +76,9 @@ const Login = () => {
   const meData = client.readQuery({ query: Query_me });
   const [exceptionErr, setExceptionError] = useState(null);
 
+  const { refetch: refetchSaveposts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
   useEffect(() => {
     console.log('ru5');
 
@@ -105,6 +109,7 @@ const Login = () => {
           });
           const apolloClient = initializeApollo();
           apolloClient.resetStore();
+          refetchSaveposts();
           router.push('/');
         }
       },

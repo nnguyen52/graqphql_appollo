@@ -18,6 +18,11 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Query_checkCommentVotedFromUser } from '../graphql-client/queries/checkCommentVotedFromUser';
 import { Query_me } from '../graphql-client/queries/user';
 import { styled } from '@mui/material/styles';
+import { Query_getPostsFromUser } from '../graphql-client/queries/getPostsFromUser';
+import { Query_getCommentsFromUser } from '../graphql-client/queries/getCommentsFromUser';
+import { Query_getPostsUserVoted } from '../graphql-client/queries/getPostsUserVoted';
+import { Query_getHideposts } from '../graphql-client/queries/getHidePosts';
+import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
 
 const CommentMenuResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -42,11 +47,10 @@ const CommentMenu = ({
   loadingDataGetPosts,
   dataGetPosts,
   loadingMe,
-  dataMe,
   loadingVoteComment,
   voteComment,
 }) => {
-  const { refetch: refetchMe } = useQuery(Query_me);
+  const { data: dataMe, refetch: refetchMe } = useQuery(Query_me);
   const [replyMode, setReplyMode] = useState(false);
   const [deleteComment, { loading: loadingDeleteComment }] = useMutation(Mutation_deleteComment);
   const [updateComment, { loading: loadingEditComment }] = useMutation(Mutation_editComment);
@@ -63,14 +67,36 @@ const CommentMenu = ({
   const {
     data: datacheckCommentVotedFromUser,
     loading: loadingCheckCommentVotedFromUser,
-    refetch,
+    refetch: refetchCheckCommentVotedFromUser,
   } = useQuery(Query_checkCommentVotedFromUser, {
     variables: {
       commentId: comment._id.toString(),
     },
   });
+
+  const { refetch: refetchGetPosts } = useQuery(Query_getPosts, {
+    variables: { cursor: '' },
+  });
+  const { refeth: refetchGetPostsFromUser } = useQuery(Query_getPostsFromUser, {
+    variables: {
+      userId: dataMe?.me?.data?._id.toString(),
+    },
+  });
+  const { refetch: refetchGetCommentsFromUser } = useQuery(Query_getCommentsFromUser, {
+    variables: { userId: dataMe?.me?.data?._id.toString() },
+  });
+  const { refetch: refetchPostsUserUpvoted } = useQuery(Query_getPostsUserVoted, {
+    variables: { type: 'upvote' },
+  });
+  const { refetch: refetchPostsUserDownvoted } = useQuery(Query_getPostsUserVoted);
+  const { refetch: refetchGetHidePosts } = useQuery(Query_getHideposts, {
+    variables: { cursor: '' },
+  });
+  const { refetch: refetchGetSavePosts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
+
   useEffect(() => {
-    console.log('run1');
     if (!messageResult.message) return;
     setTimeout(
       () =>
@@ -81,6 +107,7 @@ const CommentMenu = ({
       3000
     );
   }, [messageResult]);
+
   const handleVote = async (comment, value) => {
     try {
       if (!loadingMe && !dataMe?.me?.data) {
@@ -95,10 +122,13 @@ const CommentMenu = ({
         update(cache, { data }) {
           if (!data?.voteComment?.network?.success) {
             refetchMe();
-            refetch();
+            refetchCheckCommentVotedFromUser();
             return alert(data?.voteComment?.network?.errors[0].message);
           }
-          refetch();
+          refetchMe();
+          refetchCheckCommentVotedFromUser();
+          refetchPostsUserUpvoted();
+          refetchPostsUserDownvoted();
         },
       });
     } catch (e) {
@@ -112,6 +142,7 @@ const CommentMenu = ({
     if (isEditing) setIsEditing(false);
     setReplyMode(!replyMode);
   };
+
   const handleDeleteComment = async () => {
     if (loadingDeleteComment) return;
     if (confirm('You are about to delete comment, are you sure?'))
@@ -127,29 +158,37 @@ const CommentMenu = ({
               message: data.deleteComment.network.errors[0].message,
             });
           }
-          let modifiedPosts = dataGetPosts.getPosts.data.posts;
-          modifiedPosts = modifiedPosts.map((eachPost) => {
-            if (eachPost._id.toString() == post._id.toString()) {
-              return {
-                ...eachPost,
-                comments: eachPost.comments.filter(
-                  (eachCmt) => eachCmt._id.toString() !== comment._id.toString()
-                ),
-              };
-            } else return eachPost;
-          });
-          cache.writeQuery({
-            query: Query_getPosts,
-            data: {
-              getPosts: {
-                ...dataGetPosts.getPosts,
-                data: {
-                  ...dataGetPosts.getPosts.data,
-                  posts: modifiedPosts,
-                },
-              },
-            },
-          });
+          refetchMe();
+          refetchGetPosts();
+          refetchGetPostsFromUser();
+          refetchGetCommentsFromUser();
+          refetchPostsUserUpvoted();
+          refetchPostsUserDownvoted();
+          refetchGetHidePosts();
+          refetchGetSavePosts();
+          // let modifiedPosts = dataGetPosts.getPosts.data.posts;
+          // modifiedPosts = modifiedPosts.map((eachPost) => {
+          //   if (eachPost._id.toString() == post._id.toString()) {
+          //     return {
+          //       ...eachPost,
+          //       comments: eachPost.comments.filter(
+          //         (eachCmt) => eachCmt._id.toString() !== comment._id.toString()
+          //       ),
+          //     };
+          //   } else return eachPost;
+          // });
+          // cache.writeQuery({
+          //   query: Query_getPosts,
+          //   data: {
+          //     getPosts: {
+          //       ...dataGetPosts.getPosts,
+          //       data: {
+          //         ...dataGetPosts.getPosts.data,
+          //         posts: modifiedPosts,
+          //       },
+          //     },
+          //   },
+          // });
           setMessageResult({
             severity: 'success',
             message: data.deleteComment.network.message,
@@ -158,6 +197,7 @@ const CommentMenu = ({
         },
       });
   };
+
   const handleEditComment = async (values, { setErrors }) => {
     if (values.content == initialValues.content) {
       setIsEditing(false);
@@ -187,11 +227,20 @@ const CommentMenu = ({
             message: data?.updateComment?.network?.message,
           });
           setIsEditing(false);
+
+          refetchGetPosts();
+          refetchGetPostsFromUser();
+          refetchGetCommentsFromUser();
+          refetchPostsUserUpvoted();
+          refetchPostsUserDownvoted();
+          refetchGetHidePosts();
+          refetchGetSavePosts();
           return;
         }
       },
     });
   };
+
   return (
     <>
       <CommentMenuResponsive>

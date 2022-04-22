@@ -90,32 +90,6 @@ const Account = () => {
 
   // if loading
   if (loadingMe || loadingDataUserByID) return <LinearProgress />;
-  // if user not login
-  if (!loadingMe && !dataMe?.me?.network.success)
-    return (
-      <AccountResponsive>
-        <Alert
-          className='notloggedinAccount'
-          sx={{ display: 'flex', alignItems: 'center' }}
-          severity='error'
-        >
-          <Box className='container' sx={{ display: 'flex', alignItems: 'center' }}>
-            <span>Please login to see these contents!</span> &nbsp;
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              Don't have an account?
-              <NextLink href='/register'>
-                <Button>Register</Button>
-              </NextLink>
-            </Box>
-          </Box>
-        </Alert>
-      </AccountResponsive>
-    );
   // if user not found
   if (!dataUserByID?.getUserByID?.data && dataMe?.me?.network.success)
     return (
@@ -167,9 +141,10 @@ const Account = () => {
               </Box>
               {isEditing && <AuthEdit setIsEditing={setIsEditing} me={dataMe.me} />}
               <hr />
-              <AuthedSettings />
             </>
           )}
+          {/* If stranger => inly show post and comment tabs */}
+          <AuthedSettings />
         </Box>
       </AccountResponsive>
     </>

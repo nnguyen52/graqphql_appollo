@@ -127,7 +127,7 @@ const AuthEdit = ({ me, setIsEditing }) => {
                   gap: '1em',
                 }}
               >
-                <u> Before changing your credentials, please enter your Email and Password</u>
+                <u> Before changing your credentials, please verify!</u>
                 <Formik initialValues={initPasswordValue} onSubmit={handleSubmitCheckPass}>
                   {({ isSubmitting: isSubmittingCheckPass }) => (
                     <Form>
@@ -163,7 +163,7 @@ const AuthEdit = ({ me, setIsEditing }) => {
                           }}
                           type='submit'
                         >
-                          Save
+                          Verify
                         </Button>
                       </Box>
                     </Form>

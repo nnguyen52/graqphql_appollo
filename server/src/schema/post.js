@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 export default gql`
   scalar Date
   scalar File
@@ -70,6 +70,9 @@ export default gql`
   type UnsavePost {
     network: MutationResponse
   }
+  type UnhidePost {
+    network: MutationResponse
+  }
   type DeletePost {
     network: MutationResponse
   }
@@ -78,6 +81,7 @@ export default gql`
     getPostByID(id: String): GetPostByIDResponse
     checkPostVotedFromUser(postId: String): checkPostVotedFromUserResponse
     getSavePosts(cursor: String, limit: Int): getPostsResponse
+    getHidePosts(cursor: String, limit: Int): getPostsResponse
   }
   type Mutation {
     createPost(
@@ -96,6 +100,7 @@ export default gql`
     savePost(id: String): SavePost
     unsavePost(id: String): UnsavePost
     hidePost(id: String): HidePost
+    unhidePost(id: String): UnhidePost
     deletePost(id: String): DeletePost
     vote(postId: String, voteValue: Int): UpdatePost
     searchPosts(cursor: String, limit: Int, input: String): getPostsResponse

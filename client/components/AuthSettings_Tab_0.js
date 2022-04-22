@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import { useMutation, useQuery } from '@apollo/client';
-import { Avatar, Box, Alert } from '@mui/material';
+import { Avatar, Box } from '@mui/material';
 import { dateFormat } from '../src/utils/dateFormat';
 import noPictureImg from '../assets/noPicture.png';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
@@ -11,6 +11,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Mutation_savePost } from '../graphql-client/mutations/savePost';
@@ -19,11 +20,42 @@ import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
 import { LoadingButton } from '@mui/lab';
 import { Mutation_unsavePost } from '../graphql-client/mutations/unsavePost';
 import { handleSavePost, handleUnsavePost } from '../src/utils/savePost_unsavePost';
+import { Mutation_unhidePost } from '../graphql-client/mutations/unhidePost';
+import { Query_getPosts } from '../graphql-client/queries/posts';
+import { Query_getPostsUserVoted } from '../graphql-client/queries/getPostsUserVoted';
+import { Query_getHideposts } from '../graphql-client/queries/getHidePosts';
+import { Query_getCommentsFromUser } from '../graphql-client/queries/getCommentsFromUser';
+import { useRouter } from 'next/router';
+import { Query_getPostsFromUser } from '../graphql-client/queries/getPostsFromUser';
+import { Mutation_hidePost } from '../graphql-client/mutations/hidePost';
+import Nextlink from 'next/link';
 
 const AuthSettings_Tab_0 = ({ data, pageInfo, value }) => {
+  const router = useRouter();
   const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
   const [savePost, { loading: loadingSavePost }] = useMutation(Mutation_savePost);
   const [unsavePost, { loading: loadingUnsavePost }] = useMutation(Mutation_unsavePost);
+  const { refetch: refetchGetposts } = useQuery(Query_getPosts, { variables: { cursor: '' } });
+  const { refetch: refetchGetSaveposts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
+  const { refetch: refetchGetHidePosts } = useQuery(Query_getHideposts, {
+    variables: { cursor: '' },
+  });
+  const { refetch: refetchGetPostsUserDownVoted } = useQuery(Query_getPostsUserVoted);
+  const { refetch: refetchGetPostsUserUpVoted } = useQuery(Query_getPostsUserVoted, {
+    variables: { type: 'upvote' },
+  });
+  const { refetch: refetchGetCommentsFromUser } = useQuery(Query_getCommentsFromUser, {
+    variables: {
+      userId: router?.query?.id.toString(),
+    },
+  });
+  const { refetch: refetchGetPostsFromUser } = useQuery(Query_getPostsFromUser, {
+    variables: { userId: router?.query?.id?.toString() },
+  });
+  const [unhidePost] = useMutation(Mutation_unhidePost);
+  const [hidePost] = useMutation(Mutation_hidePost);
   return (
     <Box className='tab_0'>
       {data.map((each, index) => {
@@ -39,6 +71,16 @@ const AuthSettings_Tab_0 = ({ data, pageInfo, value }) => {
             data={data}
             index={index}
             each={each}
+            value={value}
+            refetchGetposts={refetchGetposts}
+            refetchGetSaveposts={refetchGetSaveposts}
+            hidePost={hidePost}
+            unhidePost={unhidePost}
+            refetchGetHidePosts={refetchGetHidePosts}
+            refetchGetPostsUserDownVoted={refetchGetPostsUserDownVoted}
+            refetchGetPostsUserUpVoted={refetchGetPostsUserUpVoted}
+            refetchGetCommentsFromUser={refetchGetCommentsFromUser}
+            refetchGetPostsFromUser={refetchGetPostsFromUser}
           />
         );
       })}
@@ -57,12 +99,66 @@ const AuthSettings_Tab_0_Detail = ({
   dataMe,
   loadingMe,
   refetchMe,
+  value,
+  refetchGetposts,
+  refetchGetSaveposts,
+  hidePost,
+  unhidePost,
+  refetchGetHidePosts,
+  refetchGetPostsUserUpVoted,
+  refetchGetPostsUserDownVoted,
+  refetchGetCommentsFromUser,
+  refetchGetPostsFromUser,
 }) => {
   const [isExpanding, setIsExpanding] = useState(false);
   const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(Query_getSaveposts);
-  const [savePostResult, setSavePostResult] = useState({ success: null, message: null });
-  const [unsavePostResult, setUnsavePostResult] = useState({ success: null, message: null });
 
+  const handleHidePost = async (id) => {
+    setTimeout(() => {}, 0);
+    await hidePost({
+      variables: {
+        id: id.toString(),
+      },
+      update(cache, { data }) {
+        if (!data?.hidePost?.network?.success) {
+          refetchMe();
+          // toastify later
+          return;
+        }
+        refetchGetposts();
+        refetchGetHidePosts();
+        // no need get savePosts
+        refetchGetPostsUserUpVoted();
+        refetchGetPostsUserDownVoted();
+        refetchGetCommentsFromUser();
+        refetchGetPostsFromUser();
+      },
+    });
+  };
+  const handleUnhidePost = async () => {
+    setTimeout(() => {}, 0);
+    await unhidePost({
+      variables: {
+        id: each._id.toString(),
+      },
+      update(cache, { data }) {
+        if (!data?.unhidePost?.network?.success) {
+          // toastify later
+          refetchMe();
+          return;
+        }
+        // hide post affect all other tabs (exclude comment tab)
+        refetchGetposts();
+        refetchGetSaveposts();
+        refetchGetHidePosts();
+        refetchGetPostsUserUpVoted();
+        refetchGetPostsUserDownVoted();
+        refetchGetCommentsFromUser();
+        refetchGetPostsFromUser();
+        refetchGetCommentsFromUser();
+      },
+    });
+  };
   return (
     <Box
       sx={{
@@ -168,7 +264,7 @@ const AuthSettings_Tab_0_Detail = ({
                     refetchMe,
                     savePost,
                     dataSaveposts,
-                    setSavePostResult,
+                    // setSavePostResult,
                     each,
                   })
                 }
@@ -190,7 +286,7 @@ const AuthSettings_Tab_0_Detail = ({
                     refetchMe,
                     unsavePost,
                     dataSaveposts,
-                    setUnsavePostResult,
+                    // setUnsavePostResult,
                     each,
                   })
                 }
@@ -200,15 +296,25 @@ const AuthSettings_Tab_0_Detail = ({
               </LoadingButton>
             )}
             {/* hide */}
-            <Box>
-              <VisibilityOffIcon />
-              <b> Hide</b>
-            </Box>
+            {value !== 3 && (
+              <Box onClick={async () => await handleHidePost(each._id.toString())}>
+                <VisibilityOffIcon />
+                <b> Hide</b>
+              </Box>
+            )}
+            {value == 3 && (
+              <Box onClick={handleUnhidePost}>
+                <VisibilityIcon />
+                <b> Unhide</b>
+              </Box>
+            )}
             {/* edit */}
-            <Box>
-              <EditIcon />
-              <b> Edit Post</b>
-            </Box>
+            <Nextlink href={`editPost/${each._id.toString()}`}>
+              <Box>
+                <EditIcon />
+                <b> Edit</b>
+              </Box>
+            </Nextlink>
             {/* extras */}
             <Box>
               <MoreHorizIcon />
@@ -216,16 +322,6 @@ const AuthSettings_Tab_0_Detail = ({
           </Box>
         </Box>
       </Box>
-      {/* {savePostResult?.message && (
-        <Alert severity={savePostResult.code != 200 ? 'error' : 'success'}>
-          {savePostResult.message}
-        </Alert>
-      )}
-      {unsavePostResult?.message && (
-        <Alert severity={unsavePostResult.code != 200 ? 'error' : 'success'}>
-          {unsavePostResult.message}
-        </Alert>
-      )} */}
       {isExpanding && (
         <Box>
           <Box

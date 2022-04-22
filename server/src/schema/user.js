@@ -24,7 +24,7 @@ export default gql`
     getUserByID(id: String): UserMutationResponse
     getPostsFromUser(userId: String, cursor: String, limit: Int): getPostsResponse
     getCommentsFromUser(userId: String, cursor: String, limit: Int): getCommentsResponse
-    getPostsUserVoted(userId: String, type: String, cursor: String, limit: Int): getPostsResponse
+    getPostsUserVoted(type: String, cursor: String, limit: Int): getPostsResponse
   }
   type Mutation {
     verifyPassword(password: String, email: String): UserMutationResponse

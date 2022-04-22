@@ -1,23 +1,32 @@
-import { validateRegisterInput } from "../customMiddleware/validateRegisterInputs";
-import argon2 from "argon2";
-import { v4 as uuidv4 } from "uuid";
-import { sendMail } from "../utils/sendMails";
-import { checkAuth } from "../customMiddleware/checkAuth";
-import Post from "../models/Post";
-import User from "../models/user";
-import Comment from "../models/comment";
-import Token from "../models/token";
-import VoteComment from "../models/voteComment";
-import Vote from "../models/votes";
-
-import { logout } from "../utils/logout";
-import { deletePost } from "../utils/deletePost";
+import { validateRegisterInput } from '../customMiddleware/validateRegisterInputs';
+import argon2 from 'argon2';
+import { v4 as uuidv4 } from 'uuid';
+import { sendMail } from '../utils/sendMails';
+import { checkAuth } from '../customMiddleware/checkAuth';
+import Post from '../models/Post';
+import Hidepost from '../models/hidePost';
+import User from '../models/user';
+import Comment from '../models/comment';
+import Token from '../models/token';
+import Vote from '../models/votes';
+import { logout } from '../utils/logout';
+import { deletePost } from '../utils/deletePost';
+// import _ from 'lodash';
+import _ from 'lodash';
 
 //src: https://github.com/the-road-to-graphql/fullstack-apollo-express-mongodb-boilerplate/blob/master/src/resolvers/message.js#L6
-const toCursorHash = (string) => Buffer.from(string).toString("base64");
-const fromCursorHash = (string) =>
-  Buffer.from(string, "base64").toString("ascii");
+const toCursorHash = (string) => Buffer.from(string).toString('base64');
+const fromCursorHash = (string) => Buffer.from(string, 'base64').toString('ascii');
 export default {
+  Post: {
+    user: async (parent) => {
+      return await User.findById(parent.userId);
+    },
+    comments: async (parent) => {
+      const comments = await Comment.find({ postId: parent._id.toString() });
+      return comments;
+    },
+  },
   Query: {
     me: async (parent, args, { req }) => {
       if (!req.session.userId)
@@ -25,7 +34,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: "Not logged in",
+            message: 'Not logged in',
           },
           data: null,
         };
@@ -35,7 +44,7 @@ export default {
           network: {
             code: 400,
             success: false,
-            message: "Not logged in",
+            message: 'Not logged in',
           },
           data: null,
         };
@@ -43,7 +52,7 @@ export default {
         network: {
           code: 200,
           success: true,
-          message: "Logged in",
+          message: 'Logged in',
         },
         data: user,
       };
@@ -54,6 +63,7 @@ export default {
     user: async (parent, { id }, { req }) => {
       return await User.findById(id);
     },
+
     getUserByID: async (parent, { id }) => {
       try {
         const user = await User.findOne({ _id: id.toString() });
@@ -62,7 +72,7 @@ export default {
             network: {
               code: 200,
               success: true,
-              message: "User not found",
+              message: 'User not found',
             },
             data: null,
           };
@@ -85,15 +95,16 @@ export default {
         };
       }
     },
-    getPostsFromUser: async (_, { userId, cursor, limit = 10 }, { req }) => {
+    getPostsFromUser: async (parent, { userId, cursor, limit = 10 }, { req }) => {
+      // exclude hidePosts from this user
       try {
         if (!userId) {
           return {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [{ field: "user", message: "Malformed action." }],
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
             },
           };
         }
@@ -110,9 +121,7 @@ export default {
           sort: { createdAt: -1 },
           limit: realLimit + 1,
         });
-        posts = posts.filter(
-          (eachPost) => eachPost.userId.toString() == userId.toString()
-        );
+        posts = posts.filter((eachPost) => eachPost.userId.toString() == userId.toString());
         if (posts.length == 0) {
           return {
             network: {
@@ -127,8 +136,23 @@ export default {
             },
           };
         }
-        const hasNextPage = posts.length > realLimit;
-        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        let hasNextPage = posts.length > realLimit;
+        let edges = hasNextPage ? posts.slice(0, -1) : posts;
+
+        const hidePostsIds = await Hidepost.find({
+          userId: userId.toString(),
+        }).then((res) => res.map((each) => each.postId.toString()));
+        let hiddenPosts = [];
+        await Promise.all(
+          hidePostsIds.map(async (each) => {
+            const p = await Post.findById(each);
+            hiddenPosts.push(p);
+          })
+        );
+        // because objectId not the same
+        _.pullAllBy(edges, hiddenPosts, `title`);
+        hasNextPage = edges.length > realLimit;
+
         return {
           network: {
             code: 200,
@@ -155,19 +179,16 @@ export default {
         };
       }
     },
-    getCommentsFromUser: async (
-      parent,
-      { userId, cursor, limit = 10 },
-      { req }
-    ) => {
+    getCommentsFromUser: async (parent, { userId, cursor, limit = 10 }, { req }) => {
+      // excludes all comments in hidePosts
       try {
         if (!userId) {
           return {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [{ field: "user", message: "Malformed action." }],
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
             },
           };
         }
@@ -184,9 +205,7 @@ export default {
           sort: { createdAt: -1 },
           limit: realLimit + 1,
         });
-        comments = comments.filter(
-          (each) => each.user.toString() == userId.toString()
-        );
+        comments = comments.filter((each) => each.user.toString() == userId.toString());
         if (comments.length == 0) {
           return {
             network: {
@@ -201,8 +220,30 @@ export default {
             },
           };
         }
-        const hasNextPage = comments.length > realLimit;
-        const edges = hasNextPage ? comments.slice(0, -1) : comments;
+        let hasNextPage = comments.length > realLimit;
+        let edges = hasNextPage ? comments.slice(0, -1) : comments;
+
+        // excludes all comments from hiddenPosts
+        let commentsFromHidePosts = [];
+        const hidePostsIds = await Hidepost.find({
+          userId: userId.toString(),
+        }).then((res) => res.map((each) => each.postId.toString()));
+        await Promise.all(
+          hidePostsIds.map(async (each) => {
+            const post = await Post.findOne({ _id: each.toString() });
+            if (post?.comments.length > 0) {
+              await Promise.all(
+                post.comments.map(async (each) => {
+                  const comment = await Comment.findOne({ _id: each.toString() });
+                  commentsFromHidePosts.push(comment);
+                })
+              );
+            }
+          })
+        );
+        _.pullAllBy(edges, commentsFromHidePosts, 'content');
+        hasNextPage = edges.length > realLimit;
+
         return {
           network: {
             code: 200,
@@ -229,52 +270,47 @@ export default {
         };
       }
     },
-    getPostsUserVoted: async (parent, { userId, type, cursor, limit = 10 }) => {
+    getPostsUserVoted: async (parent, { type, cursor, limit = 10 }, { req }) => {
+      // since hidePosts are implemented => posts returned must not includes hidePosts
       try {
-        if (!userId) {
+        const allowed = await checkAuth(req);
+        if (!allowed) {
           return {
             network: {
               code: 400,
               success: false,
-              message: "Access Denied",
-              errors: [{ field: "user", message: "Malformed action." }],
+              message: 'Access Denied',
+              errors: [{ field: 'user', message: 'Malformed action.' }],
             },
           };
         }
         let realLimit = limit > 10 ? 10 : limit;
         const options = cursor
           ? {
-              userId: userId.toString(),
-              value: type == "upvote" ? 1 : -1,
+              userId: req.session.userId.toString(),
+              value: type == 'upvote' ? 1 : -1,
               createdAt: {
                 $lt: fromCursorHash(cursor),
               },
             }
           : {
-              userId: userId.toString(),
-              value: type == "upvote" ? 1 : -1,
+              userId: req.session.userId.toString(),
+              value: type == 'upvote' ? 1 : -1,
             };
         // find votes from this user
         let votes = await Vote.find(options, null, {
           sort: { createdAt: -1 },
           limit: realLimit + 1,
         });
-        // find voteComments from this user
-        // let voteComments = await VoteComment.find(options, null, {
-        //   sort: { createdAt: -1 },
-        //   limit: realLimit + 1,
-        // });
-
         let posts = [];
-        let postsIds = [
-          ...new Set(votes.map((each) => each.postId.toString())),
-        ];
+        let postsIds = [...new Set(votes.map((each) => each.postId.toString()))];
         await Promise.all(
           postsIds.map(async (e) => {
-            const post = await Post.findOne({ _id: e });
+            const post = await Post.findOne({ _id: e.toString() });
             posts = [...posts, post];
           })
         );
+
         if (posts.length == 0)
           return {
             network: {
@@ -288,8 +324,23 @@ export default {
               },
             },
           };
-        const hasNextPage = posts.length > realLimit;
-        const edges = hasNextPage ? posts.slice(0, -1) : posts;
+        let hasNextPage = posts.length > realLimit;
+        let edges = hasNextPage ? posts.slice(0, -1) : posts;
+
+        // find hidePosts from this user
+        const hidePostsIds = await Hidepost.find({
+          userId: req.session.userId.toString(),
+        }).then((res) => res.map((each) => each.postId.toString()));
+        let hiddenPosts = [];
+        await Promise.all(
+          hidePostsIds.map(async (each) => {
+            const p = await Post.findById(each);
+            hiddenPosts.push(p);
+          })
+        );
+        // because objectId not the same
+        _.pullAllBy(edges, hiddenPosts, `title`);
+        hasNextPage = edges.length > realLimit;
         return {
           network: {
             code: 200,
@@ -326,11 +377,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -344,7 +395,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid data",
+              message: 'Invalid data',
               errors: [
                 {
                   field: `user`,
@@ -361,10 +412,10 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid password",
+              message: 'Invalid password',
               errors: [
                 {
-                  field: "user",
+                  field: 'user',
                   message: `Invalid data. Please check your password or email again.`,
                 },
               ],
@@ -398,10 +449,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
-              errors: [
-                { field: `userName`, message: `${userName} is already taken.` },
-              ],
+              message: 'Invalid registration',
+              errors: [{ field: `userName`, message: `${userName} is already taken.` }],
             },
           };
         }
@@ -412,10 +461,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
-              errors: [
-                { field: `email`, message: `${email} is already taken.` },
-              ],
+              message: 'Invalid registration',
+              errors: [{ field: `email`, message: `${email} is already taken.` }],
             },
           };
         }
@@ -430,7 +477,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid registration",
+              message: 'Invalid registration',
               errors: validateInputResponse,
             },
           };
@@ -444,7 +491,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "register sucessfully",
+            message: 'register sucessfully',
           },
           data: newUser,
         };
@@ -462,9 +509,7 @@ export default {
     login: async (_, { userNameOrEmail, password }, { req }) => {
       try {
         const existingUser = await User.findOne(
-          userNameOrEmail.includes("@")
-            ? { email: userNameOrEmail }
-            : { userName: userNameOrEmail }
+          userNameOrEmail.includes('@') ? { email: userNameOrEmail } : { userName: userNameOrEmail }
         );
         // if account not exist
         if (!existingUser)
@@ -472,29 +517,24 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Account not found",
+              message: 'Account not found',
               errors: [
                 {
-                  field: "userNameOrEmail",
-                  message: "Username or email incorrect",
+                  field: 'userNameOrEmail',
+                  message: 'Username or email incorrect',
                 },
               ],
             },
           };
         // check password hash
-        const checkingPassword = await argon2.verify(
-          existingUser.password,
-          password
-        );
+        const checkingPassword = await argon2.verify(existingUser.password, password);
         if (!checkingPassword)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid password",
-              errors: [
-                { field: "password", message: "Password is incorrect!" },
-              ],
+              message: 'Invalid password',
+              errors: [{ field: 'password', message: 'Password is incorrect!' }],
             },
           };
         // all good -> add cookie userId
@@ -503,7 +543,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "Logged in",
+            message: 'Logged in',
           },
           data: existingUser,
         };
@@ -523,7 +563,7 @@ export default {
         res.clearCookie(process.env.COOKIE_NAME);
         req.session.destroy((error) => {
           if (error) {
-            console.log("Destroying cookie error: ", error);
+            console.log('Destroying cookie error: ', error);
             resolve(false);
           }
           resolve(true);
@@ -538,7 +578,7 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Email not found",
+              message: 'Email not found',
             },
           };
         // delete previous token if user dont use
@@ -555,20 +595,19 @@ export default {
         await new Token({
           userId: `${user._id}`,
           token: hashedResetToken,
-          type: "forgotPassword",
+          type: 'forgotPassword',
         }).save();
         // send reset password link to user via email
         await sendMail(
           email,
           `<a style="color : white; background: green;" href="http://localhost:3000/account/password?type=forgotPassword&token=${resetToken}&id=${user._id}">Reset your password</a>`,
-          "Reset your password"
+          'Reset your password'
         );
         return {
           network: {
             code: 200,
             success: true,
-            message:
-              "Please check your e-mailbox! You will find a link to reset password.",
+            message: 'Please check your e-mailbox! You will find a link to reset password.',
           },
         };
       } catch (e) {
@@ -582,32 +621,25 @@ export default {
         };
       }
     },
-    changePassword: async (
-      parent,
-      { token, userId, newPassword, type },
-      { req }
-    ) => {
+    changePassword: async (parent, { token, userId, newPassword, type }, { req }) => {
       try {
         if (!type)
           return {
             code: 400,
             succcess: false,
             message: `Invalid data`,
-            errors: [{ field: "password", message: "Action denied." }],
+            errors: [{ field: 'password', message: 'Action denied.' }],
           };
         if (newPassword.length < 2)
           return {
             network: {
               code: 400,
               success: false,
-              message: `Invalid ${
-                type == "forgotPassword" ? "reseting" : "updating"
-              } password`,
+              message: `Invalid ${type == 'forgotPassword' ? 'reseting' : 'updating'} password`,
               errors: [
                 {
-                  field: "password",
-                  message:
-                    "New password length must have at least 3 characters!",
+                  field: 'password',
+                  message: 'New password length must have at least 3 characters!',
                 },
               ],
             },
@@ -619,33 +651,30 @@ export default {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "forgotPassword" ? "reseting" : "updating"
+                type == 'forgotPassword' ? 'reseting' : 'updating'
               } token`,
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
           };
         }
-        const resetPasswordTokenValid = argon2.verify(
-          resetPasswordTokenRecord.token,
-          token
-        );
+        const resetPasswordTokenValid = argon2.verify(resetPasswordTokenRecord.token, token);
         if (!resetPasswordTokenValid) {
           return {
             network: {
               code: 400,
               success: false,
               message: `Invalid or expired password ${
-                type == "forgotPassword" ? "reseting" : "updating"
+                type == 'forgotPassword' ? 'reseting' : 'updating'
               } token`,
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
@@ -657,26 +686,21 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "User no longer exists",
-              errors: [{ field: "token", message: "User no longer exists" }],
+              message: 'User no longer exists',
+              errors: [{ field: 'token', message: 'User no longer exists' }],
             },
           };
         }
         // all good
         const updatedPassword = await argon2.hash(newPassword);
-        await User.findOneAndUpdate(
-          { _id: userId },
-          { password: updatedPassword }
-        );
+        await User.findOneAndUpdate({ _id: userId }, { password: updatedPassword });
         await resetPasswordTokenRecord.deleteOne();
         req.session.userId = user._id.toString();
         return {
           network: {
             code: 200,
             success: true,
-            message: `Password ${
-              type == "forgotPassword" ? "reseted" : "updated"
-            }!`,
+            message: `Password ${type == 'forgotPassword' ? 'reseted' : 'updated'}!`,
           },
           data: user,
         };
@@ -698,11 +722,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -719,18 +743,18 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data.",
+              message: 'Invalid Data.',
               errors: [
                 {
-                  field: "user",
-                  message: "Your session has expired. Please login again!",
+                  field: 'user',
+                  message: 'Your session has expired. Please login again!',
                 },
               ],
             },
           };
         }
         // delete user's current avatar
-        const cloudinary = await import("cloudinary").then(async (cloud) => {
+        const cloudinary = await import('cloudinary').then(async (cloud) => {
           cloud.config({
             cloud_name: process.env.CLOUDINARY_NAME,
             api_key: process.env.CLOUDINARY_APIKEY,
@@ -741,10 +765,10 @@ export default {
         await cloudinary.uploader.destroy(
           `${
             (
-              user.avatar.split("/")[user.avatar.split("/").length - 2] +
-              "/" +
-              user.avatar.split("/")[user.avatar.split("/").length - 1]
-            ).split(".")[0]
+              user.avatar.split('/')[user.avatar.split('/').length - 2] +
+              '/' +
+              user.avatar.split('/')[user.avatar.split('/').length - 1]
+            ).split('.')[0]
           }`
         );
         let updatedUser = user;
@@ -756,7 +780,7 @@ export default {
             network: {
               success: true,
               code: 200,
-              message: "Profile updated!",
+              message: 'Profile updated!',
             },
             data: {
               id: req.session.userId.toString(),
@@ -771,26 +795,23 @@ export default {
         // if updating password -> send mail to confirm
         await Token.findOneAndDelete({ userId: req.session.userId.toString() });
         const updatePasswordToken = uuidv4();
-        const hashedUpdatePasswordToken = await argon2.hash(
-          updatePasswordToken
-        );
+        const hashedUpdatePasswordToken = await argon2.hash(updatePasswordToken);
         // save token to db
         await new Token({
           userId: req.session.userId.toString(),
           token: hashedUpdatePasswordToken,
-          type: "updatePassword",
+          type: 'updatePassword',
         }).save();
         await sendMail(
           email,
           `<a style="color : white; background: green;"   href="http://localhost:3000/account/password?type=updatePassword&token=${updatePasswordToken}&id=${req.session.userId.toString()}">Update your password</a>`,
-          "Update your password"
+          'Update your password'
         );
         return {
           network: {
             code: 200,
             success: true,
-            message:
-              "Please check your e-mailbox! You will find a link to update password.",
+            message: 'Please check your e-mailbox! You will find a link to update password.',
           },
           data: null,
         };
@@ -813,11 +834,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -832,10 +853,8 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
-              errors: [
-                { field: "user", message: "This account does not exist" },
-              ],
+              message: 'Invalid Data',
+              errors: [{ field: 'user', message: 'This account does not exist' }],
             },
           };
 
@@ -851,19 +870,19 @@ export default {
         await new Token({
           userId: req.session.userId.toString(),
           token: hashedDeleteToken,
-          type: "deleteAccount",
+          type: 'deleteAccount',
         }).save();
         await sendMail(
           email,
           `<a style="color:white; background:red;"href="http://localhost:3000/account/delete?token=${deleteToken}&id=${req.session.userId.toString()}">Delete your account.</a>`,
-          "Delete your Account"
+          'Delete your Account'
         );
         return {
           network: {
             code: 200,
             success: true,
             message:
-              "Please check your e-mailbox! You will find a link/confirmation to delete your account.",
+              'Please check your e-mailbox! You will find a link/confirmation to delete your account.',
           },
           data: null,
         };
@@ -886,11 +905,11 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Action denied.",
+              message: 'Action denied.',
               errors: [
                 {
-                  field: "user",
-                  message: "Please login to edit your profile!",
+                  field: 'user',
+                  message: 'Please login to edit your profile!',
                 },
               ],
             },
@@ -901,7 +920,7 @@ export default {
               code: 400,
               success: false,
               message: `Invalid Data`,
-              errors: [{ field: "user", message: "Action denied." }],
+              errors: [{ field: 'user', message: 'Action denied.' }],
             },
           };
         const deleteAccountTokenRecord = await Token.findOne({
@@ -913,29 +932,26 @@ export default {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
+              message: 'Invalid Data',
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please request again.",
+                  field: 'token',
+                  message: 'Your request may be expired. Please request again.',
                 },
               ],
             },
           };
-        const resetDeleteAccountTokenValid = argon2.verify(
-          deleteAccountTokenRecord.token,
-          token
-        );
+        const resetDeleteAccountTokenValid = argon2.verify(deleteAccountTokenRecord.token, token);
         if (!resetDeleteAccountTokenValid)
           return {
             network: {
               code: 400,
               success: false,
-              message: "Invalid Data",
+              message: 'Invalid Data',
               errors: [
                 {
-                  field: "token",
-                  message: "Your request may be expired. Please try again. ",
+                  field: 'token',
+                  message: 'Your request may be expired. Please try again. ',
                 },
               ],
             },
@@ -946,8 +962,7 @@ export default {
         const posts = await Post.find({
           userId: req.session.userId.toString(),
         });
-        for (const post of posts)
-          await deletePost(post, req.session.userId.toString());
+        for (const post of posts) await deletePost(post, req.session.userId.toString());
         await deleteAccountTokenRecord.deleteOne();
         await User.findOneAndDelete({ _id: req.session.userId.toString() });
         // logout user
@@ -957,7 +972,7 @@ export default {
           network: {
             code: 200,
             success: true,
-            message: "We are sad to see you leave. You account is deleted.",
+            message: 'We are sad to see you leave. You account is deleted.',
           },
           data: null,
         };
@@ -979,16 +994,10 @@ export default {
               createdAt: {
                 $lt: fromCursorHash(cursor),
               },
-              $or: [
-                { userName: { $regex: `^${input}*` } },
-                { email: { $regex: `^${input}*` } },
-              ],
+              $or: [{ userName: { $regex: `^${input}*` } }, { email: { $regex: `^${input}*` } }],
             }
           : {
-              $or: [
-                { userName: { $regex: `^${input}*` } },
-                { email: { $regex: `^${input}*` } },
-              ],
+              $or: [{ userName: { $regex: `^${input}*` } }, { email: { $regex: `^${input}*` } }],
             };
         let users = await User.find(cursorOptions, null, {
           sort: { createdAt: -1 },
@@ -999,8 +1008,7 @@ export default {
             network: {
               code: 200,
               success: true,
-              message:
-                "Opps, we can not find any users you requested. Please try again!",
+              message: 'Opps, we can not find any users you requested. Please try again!',
             },
             data: {
               users: [],
@@ -1010,7 +1018,7 @@ export default {
             },
           };
         const hasNextPage = users.length > realLimit;
-        const edges = hasNextPage ? users.slice(0, -1) : users;
+        let edges = hasNextPage ? users.slice(0, -1) : users;
         return {
           network: {
             code: 200,

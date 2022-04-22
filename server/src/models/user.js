@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 import { randomEmote } from '../utils/randomEmote';
 export const userSchema = new mongoose.Schema(
   {
+    // _id: {
+    //   type: String,
+    // },
     userName: {
       type: String,
       unique: true,

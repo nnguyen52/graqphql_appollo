@@ -23,5 +23,8 @@ html::-webkit-scrollbar,
 *::-webkit-scrollbar {
   display: none;
 }
-
+.centerItemsVertical {
+  display: flex;
+  align-items: center;
+}
 @import url('./searchResults.css');

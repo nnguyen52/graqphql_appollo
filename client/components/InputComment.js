@@ -6,22 +6,43 @@ import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_createComment } from '../graphql-client/mutations/createComment';
 import { Query_getPosts } from '../graphql-client/queries/posts';
 import { Query_me } from '../graphql-client/queries/user';
+import { Query_getCommentsFromUser } from '../graphql-client/queries/getCommentsFromUser';
+import { Query_getPostsFromUser } from '../graphql-client/queries/getPostsFromUser';
+import { Query_getPostsUserVoted } from '../graphql-client/queries/getPostsUserVoted';
+import { Query_getHideposts } from '../graphql-client/queries/getHidePosts';
+import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
 
-const InputComment = ({
-  post,
-  comment,
-  loadingMe,
-  dataMe,
-  setReplyMode,
-  loadingDataGetPosts,
-  dataGetPosts,
-}) => {
-  const { refetch: refetchMe } = useQuery(Query_me);
+const InputComment = ({ post, comment, setReplyMode, loadingDataGetPosts }) => {
+  const { data: dataMe, loading: loadingMe, refetch: refetchMe } = useQuery(Query_me);
   const [createComment, { loading: loadingCreateComment }] = useMutation(Mutation_createComment);
+  const { refetch: refetchGetCommentsFromUser } = useQuery(Query_getCommentsFromUser, {
+    variables: {
+      userId: dataMe?.me?.data?._id.toString(),
+    },
+  });
+  const { data: dataGetPosts, refetch: refetchDataGetPosts } = useQuery(Query_getPosts, {
+    variables: { cursor: '' },
+  });
+  const { refetch: refetchDataGetPostsFromUser } = useQuery(Query_getPostsFromUser, {
+    variables: {
+      userId: dataMe?.me?.data?._id.toString(),
+    },
+  });
   const [exceptionErr, setexceptionErr] = useState(null);
   const initialValues = {
     commentContent: '',
   };
+  const { refetch: refetchPostsUserUpvoted } = useQuery(Query_getPostsUserVoted, {
+    variables: { type: 'upvote' },
+  });
+  const { refetch: refetchPostsUserDownvoted } = useQuery(Query_getPostsUserVoted);
+  const { refetch: refetchGetHidePosts } = useQuery(Query_getHideposts, {
+    variables: { cursor: '' },
+  });
+  const { refetch: refetchGetSavePosts } = useQuery(Query_getSaveposts, {
+    variables: { cursor: '' },
+  });
+
   const handleSubmit = async (values, { setErrors }) => {
     if (loadingCreateComment || values.commentContent == '' || loadingDataGetPosts) return;
     await createComment({
@@ -47,27 +68,35 @@ const InputComment = ({
           setexceptionErr(data.createComment.network.errors[0].message);
         } else {
           if (setReplyMode) setReplyMode(false);
-          const newComment = data.createComment.data;
-          let updatedPosts = dataGetPosts.getPosts.data.posts.map((post) => {
-            if (post._id.toString() == newComment.postId.toString()) {
-              return {
-                ...post,
-                comments: [...post.comments, newComment],
-              };
-            } else return post;
-          });
-          cache.writeQuery({
-            query: Query_getPosts,
-            data: {
-              getPosts: {
-                ...dataGetPosts.getPosts,
-                data: {
-                  ...dataGetPosts.getPosts.data,
-                  posts: updatedPosts,
-                },
-              },
-            },
-          });
+
+          // const newComment = data.createComment.data;
+          // let updatedPosts = dataGetPosts.getPosts.data.posts.map((post) => {
+          //   if (post._id.toString() == newComment.postId.toString()) {
+          //     return {
+          //       ...post,
+          //       comments: [...post.comments, newComment],
+          //     };
+          //   } else return post;
+          // });
+          // cache.writeQuery({
+          //   query: Query_getPosts,
+          //   data: {
+          //     getPosts: {
+          //       ...dataGetPosts.getPosts,
+          //       data: {
+          //         ...dataGetPosts.getPosts.data,
+          //         posts: updatedPosts,
+          //       },
+          //     },
+          //   },
+          // });
+          refetchDataGetPosts();
+          refetchGetCommentsFromUser();
+          refetchDataGetPostsFromUser();
+          refetchPostsUserUpvoted();
+          refetchPostsUserDownvoted();
+          refetchGetHidePosts();
+          refetchGetSavePosts();
         }
       },
     });

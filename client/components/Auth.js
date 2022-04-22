@@ -109,7 +109,6 @@ const Auth = () => {
               </Tooltip>
             </NextLink>
           )}
-
           <Button
             className='logout'
             variant='contained'

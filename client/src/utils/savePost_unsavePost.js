@@ -6,7 +6,7 @@ export const handleSavePost = async ({
   refetchMe,
   savePost,
   //setSavePostResult is optional: use toastify later
-  setSavePostResult,
+  // setSavePostResult,
   dataSaveposts,
   each,
 }) => {

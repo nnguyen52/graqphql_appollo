@@ -6,8 +6,10 @@ import { useRouter } from 'next/router';
 import { dateFormat } from '../src/utils/dateFormat';
 import NextLink from 'next/link';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ShareIcon from '@mui/icons-material/Share';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import PersonIcon from '@mui/icons-material/Person';
+import ShareButtons from './ShareButtons';
 import { styled } from '@mui/material/styles';
 
 const ResponsiveModal = styled('div')(({ theme }) => ({
@@ -151,63 +153,12 @@ const SearchResults = ({
                 <>
                   {postsResult.map((each, index) => {
                     return (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          width: '100%',
-                          padding: '.5em',
-                          borderBottom: '1px solid grey',
-                          '&:hover': {
-                            background: '#f4f4f4',
-                            cursor: 'pointer',
-                          },
-                        }}
-                        key={each._id + index}
-                        onClick={() => {
-                          closeSearchResult();
-                          setOpenSearchResult(false);
-                          router.push(`/post/${each._id.toString()}/detail `);
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
-                          Posted by&nbsp;
-                          <NextLink href={`/post/${each._id.toString()}/detail`}>
-                            <Box
-                              sx={{
-                                fontWeight: 'bold',
-                                '&:hover': {
-                                  textDecoration: 'underline  ',
-                                },
-                              }}
-                            >
-                              {each?.user?.userName}
-                            </Box>
-                          </NextLink>
-                          <Avatar
-                            src={each?.user?.avatar}
-                            alt={each?.user?.userName.toUpperCase()}
-                          />
-                          ({dateFormat(each.createdAt.toString())})
-                        </Box>
-                        {`${each.title.slice(0, 50)}...`}
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', padding: '.5em' }}>
-                            <ChatBubbleOutlineIcon sx={{ marginRight: '.2em' }} />
-                            <b>
-                              {each?.comments.length}{' '}
-                              {each?.comments.length > 0 ? `Comments` : `Comment`}
-                            </b>
-                          </Box>
-                          <h4>Share feature...</h4>
-                        </Box>
-                      </Box>
+                      <PostResult_detail
+                        each={each}
+                        index={index}
+                        setOpenSearchResult={setOpenSearchResult}
+                        closeSearchResult={closeSearchResult}
+                      />
                     );
                   })}
                   {searchPostsPagination.hasNextPage && (
@@ -293,5 +244,79 @@ const SearchResults = ({
     </>
   );
 };
-
+const PostResult_detail = ({ each, index, closeSearchResult, setOpenSearchResult }) => {
+  const router = useRouter();
+  const [openShareButtons, setOpenShareButtons] = useState(false);
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        padding: '.5em',
+        borderBottom: '1px solid grey',
+        '&:hover': {
+          background: '#f4f4f4',
+          cursor: 'pointer',
+        },
+      }}
+      key={each._id + index}
+    >
+      <Box
+        onClick={() => {
+          closeSearchResult();
+          setOpenSearchResult(false);
+          router.push(`/post/${each._id.toString()}/detail `);
+        }}
+      >
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+          Posted by&nbsp;
+          <NextLink href={`/post/${each._id.toString()}/detail`}>
+            <Box
+              sx={{
+                fontWeight: 'bold',
+                '&:hover': {
+                  textDecoration: 'underline  ',
+                },
+              }}
+            >
+              {each?.user?.userName}
+            </Box>
+          </NextLink>
+          <Avatar src={each?.user?.avatar} alt={each?.user?.userName.toUpperCase()} />(
+          {dateFormat(each.createdAt.toString())})
+        </Box>
+        {`${each.title.slice(0, 50)}...`}
+      </Box>
+      {/* menu */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          '&:hover': {
+            borderTop: '1px solid lightgrey',
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', padding: '.5em' }}>
+          <ChatBubbleOutlineIcon sx={{ marginRight: '.2em' }} />
+          <b>
+            {each?.comments.length} {each?.comments.length > 0 ? `Comments` : `Comment`}
+          </b>
+        </Box>
+        <Box className='centerItemsVertical' onClick={() => setOpenShareButtons((prev) => !prev)}>
+          <ShareIcon />
+          <b>Share</b>
+        </Box>
+      </Box>
+      {/* share buttons */}
+      {openShareButtons && (
+        <Box>
+          <ShareButtons />
+        </Box>
+      )}
+    </Box>
+  );
+};
 export default SearchResults;
