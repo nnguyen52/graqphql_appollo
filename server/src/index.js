@@ -17,13 +17,8 @@ import { graphqlUploadExpress } from 'graphql-upload';
 
 async function startApolloServer() {
   const app = express();
-  app.use(
-    cors({
-      origin:
-        process.env.NODE_ENV === 'production' ? 'frotn end address' : process.env.CORS_ORIGIN_DEV,
-      credentials: true,
-    })
-  );
+
+  app.use(cors());
   const httpServer = http.createServer(app);
 
   // mongo
