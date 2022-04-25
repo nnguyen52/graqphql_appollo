@@ -17,10 +17,8 @@ import { graphqlUploadExpress } from 'graphql-upload';
 
 async function startApolloServer() {
   const app = express();
-
   app.use(cors());
   const httpServer = http.createServer(app);
-
   // mongo
   const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
   const connectMongo = async () => {
@@ -71,11 +69,8 @@ async function startApolloServer() {
   console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 }
 
-try {
-  await startApolloServer();
-} catch (e) {
-  console.log('SERVER_ERRORS:', e);
-}
+await startApolloServer();
+
 // await Post.deleteMany();
 // await Comment.deleteMany();
 // await Vote.deleteMany();
