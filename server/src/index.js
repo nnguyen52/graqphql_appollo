@@ -73,7 +73,7 @@ async function startApolloServer() {
   console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 }
 
-await startApolloServer();
+startApolloServer();
 
 // await Post.deleteMany();
 // await Comment.deleteMany();
