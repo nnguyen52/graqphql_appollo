@@ -11,8 +11,8 @@ import express from 'express';
 import http from 'http';
 
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
-import schema from './schema/index';
-import resolvers from './resolvers/index';
+import schema from './src/schema/index';
+import resolvers from './src/resolvers/index';
 import { graphqlUploadExpress } from 'graphql-upload';
 
 // async function startApolloServer() {
