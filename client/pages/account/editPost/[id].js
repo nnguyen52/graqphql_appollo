@@ -7,7 +7,7 @@ import { Mutation_editPost } from '../../../graphql-client/mutations/editPost';
 import { mapFieldErrors } from '../../../../server/src/utils/mapFieldErrors';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
-import { Formik, Form,  } from 'formik';
+import { Formik, Form } from 'formik';
 import InputField from '../../../components/InputField';
 import { LoadingButton } from '@mui/lab';
 import { Alert, Box, LinearProgress, Tooltip } from '@mui/material';
@@ -196,8 +196,8 @@ const EditPost = () => {
               title: '',
             },
           });
-          imgCoverFileRef?.current?.value = '';
-          titleRef?.current?.value = '';
+          // imgCoverFileRef?.current?.value = '';
+          // titleRef?.current?.value = '';
           setContent(null);
           setImgPublicIDs([]);
           setImgCoverFile(null);
@@ -313,32 +313,33 @@ const EditPost = () => {
                   placeholder='Text (optional)'
                 />
                 {imgMsg && <Alert severity='error'>{imgMsg}</Alert>}
-                {!loadingEditPost && !isSubmitting && !loadingDeleteImages &&  <LoadingButton
-                  type='submit'
-                  sx={{
-                    marginTop: '.5em',
-                    alignSelf: 'end',
-                    color: 'white',
-                    background: 'green',
-                    '&:hover': {
+                {!loadingEditPost && !isSubmitting && !loadingDeleteImages && (
+                  <LoadingButton
+                    type='submit'
+                    sx={{
+                      marginTop: '.5em',
+                      alignSelf: 'end',
                       color: 'white',
-                      background: '#24d645',
-                    },
-                  }}
-                >
-                  Edit Post
-                </LoadingButton>}
+                      background: 'green',
+                      '&:hover': {
+                        color: 'white',
+                        background: '#24d645',
+                      },
+                    }}
+                  >
+                    Edit Post
+                  </LoadingButton>
+                )}
                 {submitMsg.message && (
                   <Alert severity={submitMsg.code == 200 ? 'success' : 'error'}>
                     {submitMsg.message}
                   </Alert>
                 )}
-                   
               </Box>
             </Form>
           )}
         </Formik>
-        {(loadingEditPost || loadingDeleteImages )&& <LinearProgress />}
+        {(loadingEditPost || loadingDeleteImages) && <LinearProgress />}
       </Box>
     </CreatePostResponsive>
   );
