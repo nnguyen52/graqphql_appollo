@@ -65,7 +65,11 @@ async function startApolloServer() {
 
   await server.start();
   server.applyMiddleware({ app, cors: false });
+
   await new Promise((resolve) => httpServer.listen({ port: process.env.PORT || 4000 }, resolve));
+  app.get('/', (req, res) => {
+    res.json({ message: 'server is on' });
+  });
   console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 }
 
