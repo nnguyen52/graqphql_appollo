@@ -92,7 +92,7 @@ const AuthSettings_Tab_0 = ({ data, pageInfo, value }) => {
     <Box className='tab_0'>
       {data.map((each, index) => {
         return (
-          <AuthSettings_Tab_0_Detail_Responsive>
+          <AuthSettings_Tab_0_Detail_Responsive key={each}>
             <AuthSettings_Tab_0_Detail
               dataMe={dataMe}
               loadingMe={loadingMe}

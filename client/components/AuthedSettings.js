@@ -107,12 +107,12 @@ const AuthedSettings = () => {
     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
       <Tabs value={value} onChange={handleChange}>
         {tabs.map((each, index) => {
-          return <Tab label={each.name.toUpperCase()} {...a11yProps(index)} />;
+          return <Tab key={each} label={each.name.toUpperCase()} {...a11yProps(index)} />;
         })}
       </Tabs>
       {tabs.map((each, index) => {
         return (
-          <TabPanel index={index} value={value}>
+          <TabPanel key={each} index={index} value={value}>
             <AuthSettings_Tab
               dataRaw={
                 value == 0

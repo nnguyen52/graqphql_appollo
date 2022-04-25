@@ -154,6 +154,7 @@ const SearchResults = ({
                   {postsResult.map((each, index) => {
                     return (
                       <PostResult_detail
+                        kep={each}
                         each={each}
                         index={index}
                         setOpenSearchResult={setOpenSearchResult}
@@ -188,6 +189,7 @@ const SearchResults = ({
                   {usersResult.map((each, index) => {
                     return (
                       <Box
+                        key={each}
                         sx={{
                           width: '100%',
                           borderBottom: '1px solid grey',
