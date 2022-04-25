@@ -5,7 +5,28 @@ import AuthSettings_Tab_1 from './AuthSettings_Tab_1';
 
 const ResponsiveAuthSettings_Tab = styled('div')(({ theme }) => ({
   // mobile
-  [theme.breakpoints.down('md')]: {},
+  [theme.breakpoints.down('md')]: {
+    '.tab_1 .tab_1_detail': {
+      border: '1px solid lightgrey',
+      margin: '.2em 0 .2em 0',
+    },
+    '.tab_1 .tab_1_detail >*:first-child': {
+      alignItems: 'center',
+      '&:hover': {
+        border: '1px solid grey',
+      },
+      padding: '.5em',
+    },
+    '.tab_1 .tab_1_detail >*:first-child >*': {
+      margin: '0 .2em 0 .2em',
+    },
+    '.tab_1 .tab_1_detail >*:nth-child(2)': {
+      padding: '0 .5em .5em 2.5em',
+      '&:hover': {
+        border: '1px solid grey',
+      },
+    },
+  },
   // tablet
   [theme.breakpoints.up('md')]: {
     '.tab_0 .tab_0_settings > *': {

@@ -21,6 +21,7 @@ import char7 from '../assets/redditChars7.jpg';
 import char8 from '../assets/redditChars8.jpg';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 
 // responsive
 import { styled } from '@mui/material/styles';
@@ -101,6 +102,7 @@ const Login = () => {
               ? data.login.network.errors[0].message
               : data.login.network.message
           );
+          toast.error(data.login.network.errors[0].message);
           return setErrors(mapFieldErrors(data.login.network.errors));
         } else {
           cache.writeQuery({
@@ -110,6 +112,7 @@ const Login = () => {
           const apolloClient = initializeApollo();
           apolloClient.resetStore();
           refetchSaveposts();
+          toast.success(data.login.network.message);
           router.push('/');
         }
       },

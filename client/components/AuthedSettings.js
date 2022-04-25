@@ -68,7 +68,7 @@ const AuthedSettings = () => {
     if (!dataUserByID || !dataMe) return;
     if (
       dataMe?.me?.data &&
-      dataUserByID?.getUserByID?.data._id.toString() == dataMe?.me?.data._id.toString()
+      dataUserByID?.getUserByID?.data?._id.toString() == dataMe?.me?.data?._id.toString()
     ) {
       setTabs((prev) => [
         { name: 'Posts', value: 0 },

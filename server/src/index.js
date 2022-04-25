@@ -13,18 +13,14 @@ import http from 'http';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import schema from './schema/index';
 import resolvers from './resolvers/index';
-import { compileFunction } from 'vm';
-import Comment from './models/comment';
-import Post from './models/Post';
-import VoteComment from './models/voteComment';
-import Vote from './models/votes';
 import { graphqlUploadExpress } from 'graphql-upload';
 
 async function startApolloServer() {
   const app = express();
   app.use(
     cors({
-      origin: process.env.CORS_ORIGIN_DEV,
+      origin:
+        process.env.NODE_ENV === 'production' ? 'frotn end address' : process.env.CORS_ORIGIN_DEV,
       credentials: true,
     })
   );
@@ -53,7 +49,7 @@ async function startApolloServer() {
       cookie: {
         maxAge: 1000 * 60 * 60, // one hour
         httpOnly: true, // JS front end cannot access the cookie
-        secure: false, // cookie only works in https
+        secure: process.env.NODE_ENV === 'production', // cookie only works in https
         sameSite: 'lax',
       },
       secret: process.env.SESSION_SECRET_DEV_PROD,

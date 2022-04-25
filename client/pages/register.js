@@ -1,6 +1,5 @@
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from '@apollo/client';
 import { Mutation_register } from '../graphql-client/mutations/register';
 import { useRouter } from 'next/router';
 import { Query_me } from '../graphql-client/queries/user';
@@ -25,6 +24,7 @@ import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
 import { Query_getSaveposts } from '../graphql-client/queries/getSavePosts';
+import { toast } from 'react-toastify';
 
 const RegisterResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -49,14 +49,10 @@ const Register = () => {
 
   const [register, { loading: registerLoading, error }] = useMutation(Mutation_register);
   const meData = client.readQuery({ query: Query_me });
-  const { refetch: refetchSaveposts } = useQuery(Query_getSaveposts, {
-    variables: { cursor: '' },
-  });
+
   const [exceptionErr, setExceptionError] = useState(null);
 
   useEffect(() => {
-    console.log('run6');
-
     if (!exceptionErr) return;
     setTimeout(() => {
       setExceptionError(null);
@@ -74,7 +70,8 @@ const Register = () => {
         update(cache, { data }) {
           if (!data.register.network.success) {
             if (data.register.network.errors.length == 1)
-              setExceptionError(data.register.network.errors[0].message);
+              toast.error(data.register.network.errors[0].message);
+            setExceptionError(data.register.network.errors[0].message);
             return setErrors(mapFieldErrors(data.register.network.errors));
           } else {
             cache.writeQuery({
@@ -83,6 +80,7 @@ const Register = () => {
             });
             const apolloClient = initializeApollo();
             apolloClient.resetStore();
+            toast.success(data.register.network.message);
             router.push('/');
           }
         },

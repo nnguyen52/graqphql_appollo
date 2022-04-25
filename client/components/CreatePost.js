@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 import InputField from './InputField';
 import { Formik, Form, useFormik } from 'formik';
 import { Alert, Box, Tooltip, Input, LinearProgress } from '@mui/material';
@@ -14,6 +15,7 @@ import { styled } from '@mui/material/styles';
 import { checkImageUpload, imageUpload } from '../src/utils/uploadImage';
 import { Mutation_deleteImages } from '../graphql-client/mutations/deleteImages';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { toast } from 'react-toastify';
 
 export const ReactQuill = dynamic(
   async () => {
@@ -42,6 +44,8 @@ const CreatePostResponsive = styled('div')(({ theme }) => ({
 }));
 
 const CreatePost = () => {
+  const router = useRouter();
+
   const [createPost, { loading: loadingCreatePost }] = useMutation(Mutation_createPost);
   const { data: meData, loading: meLoading, refetch: refetchMe } = useQuery(Query_me);
   // CreatePost info
@@ -53,7 +57,6 @@ const CreatePost = () => {
 
   const [content, setContent] = useState(null);
   const [imgPublicIDs, setImgPublicIDs] = useState([]);
-  const [imgMsg, setImgMsg] = useState(null);
   const [deleteImages, { loading: loadingDeleteImages }] = useMutation(Mutation_deleteImages);
   const [imgCoverFile, setImgCoverFile] = useState(null);
   const imgCoverFileRef = useRef(null);
@@ -65,7 +68,7 @@ const CreatePost = () => {
     const err = checkImageUpload(file);
     if (err) {
       imgCoverFileRef.current.value = '';
-      return setImgMsg(err);
+      return toast.error(err);
     }
     setImgCoverFile(file);
     return;
@@ -132,10 +135,6 @@ const CreatePost = () => {
     setContent(e);
   };
   // form submit
-  const [submitMsg, setSubmitMsg] = useState({
-    code: null,
-    message: null,
-  });
   const handleSubmit = async (values, { setErrors }) => {
     // loop thru public_ids
     // check if content.include(each publicid)
@@ -173,18 +172,10 @@ const CreatePost = () => {
       update(cache, { data }) {
         if (!data.createPost.network.success) {
           refetchMe();
-          setSubmitMsg({
-            code: data.createPost.network.code,
-            message: data.createPost.network.errors[0].message,
-          });
-          setTimeout(() => setSubmitMsg(null), 3000);
+          toast.error(data.createPost.network.errors[0].message);
           return;
         }
         if (data.createPost.network.success) {
-          setSubmitMsg({
-            code: data.createPost.network.code,
-            message: data.createPost.network.message,
-          });
           refetchMe();
           // formik.resetForm({
           //   initialValues: {
@@ -196,7 +187,6 @@ const CreatePost = () => {
           setContent(null);
           setImgPublicIDs([]);
           setImgCoverFile(null);
-          setImgMsg(null);
           const { getPosts } = cache.readQuery({ query: Query_getPosts });
           // incoming data -> will get checked by typePolicies for merging
           const cacheAfterCreatePost = {
@@ -210,7 +200,8 @@ const CreatePost = () => {
             query: Query_getPosts,
             data: { getPosts: cacheAfterCreatePost },
           });
-          return;
+          toast.success(data.createPost.network.message);
+          return router.push('/');
         }
       },
     });
@@ -304,7 +295,6 @@ const CreatePost = () => {
                   forwardedRef={quillRef}
                   placeholder='Text (optional)'
                 />
-                {imgMsg && <Alert severity='error'>{imgMsg}</Alert>}
                 <LoadingButton
                   type='submit'
                   loading={loadingCreatePost && loadingDeleteImages && isSubmitting}
@@ -321,11 +311,6 @@ const CreatePost = () => {
                 >
                   Create Post
                 </LoadingButton>
-                {submitMsg.message && (
-                  <Alert severity={submitMsg.code == 200 ? 'success' : 'error'}>
-                    {submitMsg.message}
-                  </Alert>
-                )}
               </Box>
             </Form>
           )}

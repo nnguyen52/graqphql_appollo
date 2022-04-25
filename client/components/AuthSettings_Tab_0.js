@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import { useMutation, useQuery } from '@apollo/client';
@@ -29,6 +29,38 @@ import { useRouter } from 'next/router';
 import { Query_getPostsFromUser } from '../graphql-client/queries/getPostsFromUser';
 import { Mutation_hidePost } from '../graphql-client/mutations/hidePost';
 import Nextlink from 'next/link';
+import { styled } from '@mui/material/styles';
+import ShareButtons from './ShareButtons';
+
+const AuthSettings_Tab_0_Detail_Responsive = styled('div')(({ theme }) => ({
+  [theme.breakpoints.down('md')]: {
+    '.AuthSettings_Tab_0_container .AuthSettings_Tab_0 .AuthSettings_Tab_0_main .menu': {
+      width: '100%',
+      flexWrap: 'wrap',
+      gap: '.5em',
+      padding: '.2em',
+    },
+  },
+  [theme.breakpoints.up('md')]: {
+    '.AuthSettings_Tab_0_container .AuthSettings_Tab_0 .AuthSettings_Tab_0_main .menu': {
+      width: '100%',
+      flexWrap: 'wrap',
+      gap: '.5em',
+      padding: '.2em',
+    },
+
+    '.AuthSettings_Tab_0_container .AuthSettings_Tab_0 .AuthSettings_Tab_0_main .menu > *': {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '.5em',
+
+      '&:hover': {
+        backgroundColor: 'lightgrey',
+        cursor: 'pointer',
+      },
+    },
+  },
+}));
 
 const AuthSettings_Tab_0 = ({ data, pageInfo, value }) => {
   const router = useRouter();
@@ -60,28 +92,30 @@ const AuthSettings_Tab_0 = ({ data, pageInfo, value }) => {
     <Box className='tab_0'>
       {data.map((each, index) => {
         return (
-          <AuthSettings_Tab_0_Detail
-            dataMe={dataMe}
-            loadingMe={loadingMe}
-            savePost={savePost}
-            loadingSavePost={loadingSavePost}
-            unsavePost={unsavePost}
-            loadingUnsavePost={loadingUnsavePost}
-            refetchMe={refetchMe}
-            data={data}
-            index={index}
-            each={each}
-            value={value}
-            refetchGetposts={refetchGetposts}
-            refetchGetSaveposts={refetchGetSaveposts}
-            hidePost={hidePost}
-            unhidePost={unhidePost}
-            refetchGetHidePosts={refetchGetHidePosts}
-            refetchGetPostsUserDownVoted={refetchGetPostsUserDownVoted}
-            refetchGetPostsUserUpVoted={refetchGetPostsUserUpVoted}
-            refetchGetCommentsFromUser={refetchGetCommentsFromUser}
-            refetchGetPostsFromUser={refetchGetPostsFromUser}
-          />
+          <AuthSettings_Tab_0_Detail_Responsive>
+            <AuthSettings_Tab_0_Detail
+              dataMe={dataMe}
+              loadingMe={loadingMe}
+              savePost={savePost}
+              loadingSavePost={loadingSavePost}
+              unsavePost={unsavePost}
+              loadingUnsavePost={loadingUnsavePost}
+              refetchMe={refetchMe}
+              data={data}
+              index={index}
+              each={each}
+              value={value}
+              refetchGetposts={refetchGetposts}
+              refetchGetSaveposts={refetchGetSaveposts}
+              hidePost={hidePost}
+              unhidePost={unhidePost}
+              refetchGetHidePosts={refetchGetHidePosts}
+              refetchGetPostsUserDownVoted={refetchGetPostsUserDownVoted}
+              refetchGetPostsUserUpVoted={refetchGetPostsUserUpVoted}
+              refetchGetCommentsFromUser={refetchGetCommentsFromUser}
+              refetchGetPostsFromUser={refetchGetPostsFromUser}
+            />
+          </AuthSettings_Tab_0_Detail_Responsive>
         );
       })}
     </Box>
@@ -112,6 +146,7 @@ const AuthSettings_Tab_0_Detail = ({
 }) => {
   const [isExpanding, setIsExpanding] = useState(false);
   const { data: dataSaveposts, loading: loadingDataSaveposts } = useQuery(Query_getSaveposts);
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleHidePost = async (id) => {
     setTimeout(() => {}, 0);
@@ -161,17 +196,20 @@ const AuthSettings_Tab_0_Detail = ({
   };
   return (
     <Box
+      className='AuthSettings_Tab_0_container'
       sx={{
         border: '1px solid grey',
         borderBottom: index !== data.length - 1 ? 'none' : '1px solid grey',
       }}
     >
       <Box
+        className='AuthSettings_Tab_0'
         sx={{
           display: 'flex',
           padding: '10px 0 10px 0',
         }}
       >
+        {/* imageCover */}
         <Box
           sx={{
             minWidth: '15%',
@@ -190,7 +228,9 @@ const AuthSettings_Tab_0_Detail = ({
             height='100px'
           />
         </Box>
+        {/* main */}
         <Box
+          className='AuthSettings_Tab_0_main'
           sx={{
             display: 'flex',
             flex: 1,
@@ -198,8 +238,6 @@ const AuthSettings_Tab_0_Detail = ({
             flexDirection: 'column',
           }}
         >
-          {/* title */}
-          {each.title}
           {/* author */}
           <Box
             sx={{
@@ -211,28 +249,41 @@ const AuthSettings_Tab_0_Detail = ({
             }}
           >
             Posted by&nbsp;
-            <NextLink href={`/post/${each._id.toString()}/detail`}>
-              <Box
-                sx={{
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    textDecoration: 'underline  ',
-                  },
-                }}
-              >
-                {each?.user?.userName}
-              </Box>
+            <NextLink href={`/account/${each.userId.toString()}`}>
+              <>
+                <Box
+                  sx={{
+                    fontWeight: 'bold',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                    },
+                  }}
+                >
+                  {each?.user?.userName}
+                </Box>
+                <Avatar src={each?.user?.avatar} alt={each?.user?.userName.toUpperCase()} />(
+                {dateFormat(each.createdAt.toString())})
+              </>
             </NextLink>
-            <Avatar src={each?.user?.avatar} alt={each?.user?.userName.toUpperCase()} />(
-            {dateFormat(each.createdAt.toString())})
           </Box>
-          {/*  settings: expand-comments-share-bookmark-hide-extras */}
+          <NextLink href={`/post/${each._id.toString()}/detail`}>
+            <Box
+              sx={{
+                padding: '.5em',
+              }}
+            >
+              {/* title */}
+              {each.title}
+            </Box>
+          </NextLink>
+          {/*  menu: expand-comments-share-bookmark-hide-extras */}
           <Box
+            className='menu'
             sx={{
               display: 'flex',
               alignItems: 'center',
             }}
-            className='tab_0_settings'
           >
             {/* expand */}
             <Box>
@@ -246,7 +297,7 @@ const AuthSettings_Tab_0_Detail = ({
               </b>
             </Box>
             {/* share */}
-            <Box>
+            <Box onClick={() => setIsSharing((prev) => !prev)}>
               <ShareIcon />
               <b> Share</b>
             </Box>
@@ -320,17 +371,20 @@ const AuthSettings_Tab_0_Detail = ({
               <MoreHorizIcon />
             </Box>
           </Box>
+          {isSharing && <ShareButtons />}
         </Box>
       </Box>
       {isExpanding && (
-        <Box>
-          <Box
-            dangerouslySetInnerHTML={{ __html: each.content }}
-            sx={{
-              padding: '1em 20% 1em 1em',
-            }}
-          />
-        </Box>
+        <NextLink href={`/post/${each._id.toString()}/detail`}>
+          <Box>
+            <Box
+              dangerouslySetInnerHTML={{ __html: each.content }}
+              sx={{
+                padding: '1em 20% 1em 1em',
+              }}
+            />
+          </Box>
+        </NextLink>
       )}
     </Box>
   );

@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import 'react-toastify/dist/ReactToastify.css';
 import Head from 'next/head';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,6 +12,7 @@ import { initializeApollo } from '../lib/apolloClient';
 import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
 import { styled } from '@mui/material/styles';
+import { ToastContainer } from 'react-toastify';
 
 const MainBodyResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -62,6 +64,17 @@ function MyApp({ Component, emotionCache = clientSideEmotionCache, pageProps }) 
               </Box>
             </MainBodyResponsive>
           </Box>
+          <ToastContainer
+            position='top-right'
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </ThemeProvider>
       </CacheProvider>
     </ApolloProvider>

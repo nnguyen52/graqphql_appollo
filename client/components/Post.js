@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useMutation, useQuery } from '@apollo/client';
 import { Mutation_vote } from '../graphql-client/mutations/votePost';
 import { Query_me } from '../graphql-client/queries/user';
@@ -32,6 +33,7 @@ import { Mutation_unsavePost } from '../graphql-client/mutations/unsavePost';
 import { Mutation_hidePost } from '../graphql-client/mutations/hidePost';
 import { Query_getHideposts } from '../graphql-client/queries/getHidePosts';
 import { dateFormat } from '../src/utils/dateFormat';
+import { toast } from 'react-toastify';
 
 const PostResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -97,6 +99,10 @@ const PostResponsive = styled('div')(({ theme }) => ({
       width: '100%',
       paddingLeft: '1em',
     },
+    '.postContainer .postMainContainer .menu': {
+      borderTop: '1px solid lightgrey',
+      gap: '1em',
+    },
   },
   [theme.breakpoints.up('md')]: {
     '.postContainerFullHeight': {
@@ -154,6 +160,7 @@ const Post = ({
   refetchGetCommentsFromUser,
   refetchGetPostsFromUser,
 }) => {
+  const router = useRouter();
   const [vote, { loading }] = useMutation(Mutation_vote);
   const [voteComment, { loading: loadingVoteComment }] = useMutation(Mutation_voteComment);
   const handleVote = async (value) => {
@@ -194,7 +201,7 @@ const Post = ({
         update(cache, response) {
           if (!response.data.deletePost.network.success) {
             refetchMe();
-            return alert(response.data.deletePost.network.errors[0].message);
+            return toast.error(response.data.deletePost.network.errors[0].message);
           }
           // remove from cache
           if (response.data.deletePost.network.success) {
@@ -205,6 +212,7 @@ const Post = ({
             refetchGetPostsUserDownVoted();
             refetchHidePosts();
             refetchSavePosts();
+            toast.success(response.data.deletePost.network.message);
             // cache.writeQuery({
             //   query: Query_getPosts,
             //   data: {
@@ -250,6 +258,7 @@ const Post = ({
         if (!data?.hidePost?.network?.success) {
           refetchMe();
           // toastify later
+          toast.error(data.hidePost.network.errors[0].message);
           return;
         }
         refetchGetPosts();
@@ -259,6 +268,7 @@ const Post = ({
         refetchGetPostsUserDownVoted();
         refetchGetCommentsFromUser();
         refetchGetPostsFromUser();
+        toast.success(data?.hidePost?.network?.message);
       },
     });
   };
@@ -300,6 +310,7 @@ const Post = ({
                 height: '100%',
               }}
             >
+              {/* voting */}
               {dataMe?.me?.data && dataMe?.me?.data?._id.toString() !== data?.userId.toString() ? (
                 <Box
                   sx={{
@@ -410,21 +421,24 @@ const Post = ({
                   sx={{ padding: '.5em', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
                 >
                   Posted by
-                  <Box
-                    sx={{
-                      fontWeight: 'bold',
-                      '&:hover': {
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                      },
-                      padding: '0 .2em 0 .2em',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {data.user.userName}
-                  </Box>
-                  <Avatar src={data.user.avatar} />
+                  <>
+                    <Box
+                      onClick={() => router.push(`/account/${data.user._id.toString()}`)}
+                      sx={{
+                        fontWeight: 'bold',
+                        '&:hover': {
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                        },
+                        padding: '0 .2em 0 .2em',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {data.user.userName}
+                    </Box>
+                    <Avatar src={data.user.avatar} />
+                  </>
                   &nbsp; - {dateFormat(data.createdAt.toString())}
                 </Box>
                 <NextLink href={`/post/${data?._id}/detail`}>
@@ -500,12 +514,14 @@ const Post = ({
                     </b>
                   </Box>
                   {/* comments info only */}
-                  <Box className='centerItemsVertical'>
-                    <ChatBubbleOutlineIcon />
-                    <b>
-                      {data.comments.length} {data.comments.length > 1 ? `Comments` : `Comment`}
-                    </b>
-                  </Box>
+                  <NextLink href={`/post/${data._id.toString()}/detail`}>
+                    <Box className='centerItemsVertical'>
+                      <ChatBubbleOutlineIcon />
+                      <b>
+                        {data.comments.length} {data.comments.length > 1 ? `Comments` : `Comment`}
+                      </b>
+                    </Box>
+                  </NextLink>
                   {/* share */}
                   <Box
                     className='centerItemsVertical'

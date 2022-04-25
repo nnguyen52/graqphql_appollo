@@ -87,7 +87,6 @@ const Account = () => {
     },
   });
   const [isEditing, setIsEditing] = useState(false);
-
   // if loading
   if (loadingMe || loadingDataUserByID) return <LinearProgress />;
   // if user not found
@@ -106,7 +105,8 @@ const Account = () => {
           <UserInfo
             isEditing={isEditing}
             data={
-              dataMe?.me?.data && router.query.id.toString() == dataMe?.me?.data?._id.toString()
+              dataMe?.me?.data != undefined &&
+              router?.query?.id.toString() == dataMe?.me?.data?._id.toString()
                 ? dataMe?.me?.data
                 : dataUserByID?.getUserByID?.data
             }

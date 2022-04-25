@@ -11,6 +11,7 @@ import { Query_me } from '../graphql-client/queries/user';
 import theme from '../src/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { styled } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 
 const AuthEditResponsive = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
@@ -38,24 +39,22 @@ const AuthEditResponsive = styled('div')(({ theme }) => ({
     },
   },
 }));
-const AuthEdit = ({ me, setIsEditing }) => {
-  const { refetch: refetchMe } = useQuery(Query_me);
+const AuthEdit = ({ setIsEditing }) => {
+  const { data: dataMe, refetch: refetchMe } = useQuery(Query_me);
   const initPasswordValue = {
     password: '',
     email: '',
   };
   const [verifyPassword, { loading: loadingVerifyPasword }] = useMutation(Mutation_verifyPassword);
   const initialValues = {
-    userName: me.data.userName,
+    userName: dataMe.me.data.userName,
     password: '',
-    email: me.data.email,
+    email: dataMe.me.data.email,
   };
 
   const [checkPassword, setCheckPassword] = useState(false);
-  const [errorCheckPassword, setErrorCheckPassword] = useState(null);
 
   const [editMe, { loading: loadingEditMe }] = useMutation(Mutation_editMe);
-  const [messageEditMe, setMessageEditMe] = useState(null);
 
   const handleSubmitCheckPass = async (values, { setErrors }) => {
     await verifyPassword({
@@ -65,19 +64,17 @@ const AuthEdit = ({ me, setIsEditing }) => {
       },
       update(cache, { data }) {
         if (!data.verifyPassword.network.success) {
+          toast.error(data.verifyPassword.network.errors[0].message);
           refetchMe();
-          setErrorCheckPassword(data.verifyPassword.network.errors[0].message);
           return;
         }
         if (data.verifyPassword.network.success) {
-          setErrorCheckPassword(null);
           setCheckPassword(true);
         }
       },
     });
   };
   const handleEditMe = async (values, { setErrors }) => {
-    if (messageEditMe) return;
     if (!values.userName && !values.password) return;
     await editMe({
       variables: {
@@ -89,9 +86,9 @@ const AuthEdit = ({ me, setIsEditing }) => {
       },
       update(cache, { data }) {
         if (!data.editMe.network.success) {
-          refetchMe();
-          messageEditMe(data.editMe.network.errors[0].message);
           setIsEditing(false);
+          toast.error(data.editMe.network.errors[0].message);
+
           return;
         }
         // update cache Query_me
@@ -99,13 +96,12 @@ const AuthEdit = ({ me, setIsEditing }) => {
           query: Query_me,
           data: {
             me: {
-              network: { ...me.network },
-              data: { ...data.editMe.data },
+              network: { ...dataMe.me.network },
             },
           },
         });
-        setMessageEditMe(data.editMe.network.message);
         setIsEditing(false);
+        toast.success(data.editMe.network.message);
       },
     });
   };
@@ -172,7 +168,6 @@ const AuthEdit = ({ me, setIsEditing }) => {
               </Box>
             </Alert>
           )}
-          {errorCheckPassword && <Alert severity='error'>{errorCheckPassword}</Alert>}
           {checkPassword && (
             <>
               <Alert severity='success' sx={{ display: 'flex', gap: '.5em', alignItems: 'center' }}>
@@ -207,7 +202,6 @@ const AuthEdit = ({ me, setIsEditing }) => {
                             helperText='leave blank you dont want to update password.'
                           />
                           <LoadingButton
-                            disabled={messageEditMe}
                             style={{ height: 'fit-content' }}
                             loading={isSubmittingCheckPass && loadingEditMe}
                             type='submit'
@@ -223,7 +217,6 @@ const AuthEdit = ({ me, setIsEditing }) => {
               </Alert>
             </>
           )}
-          {messageEditMe && <Alert severity='success'>{messageEditMe}</Alert>}
         </ThemeProvider>
       </AuthEditResponsive>
     </>

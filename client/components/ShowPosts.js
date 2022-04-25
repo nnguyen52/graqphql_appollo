@@ -79,7 +79,7 @@ const ShowPosts = () => {
   };
   if (error) return <Alert severity='error'>Server error... {error}</Alert>;
 
-  if (loadingPosts)
+  if (!dataGetPosts)
     return (
       <Box
         sx={{
