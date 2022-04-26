@@ -29,7 +29,7 @@ export const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default:
-        'https://res.cloudinary.com/cloudinarystore/image/upload/v1648827117/Reddis/redditChar_ohsrow.jpg',
+        'https://res.cloudinary.com/cloudinarystore/image/upload/v1649302927/Reddis/w1nalwdha9cv8jlj6yjg.jpg',
     },
     about: {
       type: String,
