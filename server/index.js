@@ -21,6 +21,22 @@ async function startApolloServer() {
     origin:
       process.env.NODE_ENV === 'production' ? 'https://reddis.vercel.app' : 'http://localhost:3000',
     credentials: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'X-Forwarded-Proto',
+      'Cookie',
+      'Set-Cookie',
+    ],
+    exposedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'X-Forwarded-Proto',
+      'Cookie',
+      'Set-Cookie',
+    ],
   };
   app.use(cors(corsOptions));
   console.log('___pass cors');
@@ -52,7 +68,7 @@ async function startApolloServer() {
         maxAge: 1000 * 60 * 60, // one hour
         httpOnly: true, // JS front end cannot access the cookie
         secure: process.env.NODE_ENV === 'production', // cookie only works in https
-        sameSite: 'lax',
+        sameSite: 'none',
       },
       secret: process.env.SESSION_SECRET_DEV_PROD,
       saveUninitialized: false, // don't save empty sessions, right from the start
