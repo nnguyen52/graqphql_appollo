@@ -34,6 +34,7 @@ const connectMongo = async () => {
     process.exit(1);
   }
 };
+
 await connectMongo();
 app.set('trust proxy', 1);
 app.use(
