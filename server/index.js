@@ -73,8 +73,8 @@ async function startApolloServer() {
 
   await server.start();
   server.applyMiddleware({ app, cors: false });
-
-  await new Promise((resolve) => httpServer.listen({ port: process.env.PORT || 4000 }, resolve));
+  const PORT = process.env.PORT || 4000;
+  await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
   app.get('/', (req, res) => {
     res.json({ message: 'server is running' });
   });
