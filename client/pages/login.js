@@ -109,8 +109,8 @@ const Login = () => {
             query: Query_me,
             data: { me: { ...data.login, data: data.login.data } },
           });
-          const apolloClient = initializeApollo();
-          apolloClient.resetStore();
+          // const apolloClient = initializeApollo();
+          // apolloClient.resetStore();
           refetchSaveposts();
           toast.success(data.login.network.message);
           router.push('/');

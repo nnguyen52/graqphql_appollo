@@ -18,7 +18,7 @@ import { graphqlUploadExpress } from 'graphql-upload';
 async function startApolloServer() {
   const app = express();
   const corsOptions = {
-    origin: true,
+    origin: 'https://reddis.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     optionSuccessStatus: 200,
@@ -56,7 +56,7 @@ async function startApolloServer() {
       },
       secret: process.env.SESSION_SECRET_DEV_PROD,
       saveUninitialized: false, // don't save empty sessions, right from the start
-      resave: false,
+      resave: true,
     })
   );
   console.log('___pass session');

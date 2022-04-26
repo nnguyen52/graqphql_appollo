@@ -45,6 +45,7 @@ const AuthResponsive = styled('div')(({ theme }) => ({
 const Auth = () => {
   const router = useRouter();
   const { data, loading: loadingMe } = useQuery(Query_me);
+
   const [logout] = useMutation(Mutation_logout);
   if (router.route == '/login' && !loadingMe) return <div></div>;
   if (data?.me?.data)

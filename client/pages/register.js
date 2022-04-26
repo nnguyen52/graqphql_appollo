@@ -48,7 +48,7 @@ const Register = () => {
   };
 
   const [register, { loading: registerLoading, error }] = useMutation(Mutation_register);
-  const meData = client.readQuery({ query: Query_me });
+  const { data: meData, refetch: refetchMe } = useQuery(Query_me);
 
   const [exceptionErr, setExceptionError] = useState(null);
 
@@ -74,13 +74,14 @@ const Register = () => {
             setExceptionError(data.register.network.errors[0].message);
             return setErrors(mapFieldErrors(data.register.network.errors));
           } else {
+            // const apolloClient = initializeApollo();
+            // apolloClient.resetStore();
             cache.writeQuery({
               query: Query_me,
               data: { me: { ...data.register, data: data.register.data } },
             });
-            const apolloClient = initializeApollo();
-            apolloClient.resetStore();
             toast.success(data.register.network.message);
+            // refetchMe();
             router.push('/');
           }
         },
