@@ -19,9 +19,7 @@ async function startApolloServer() {
   const app = express();
   const corsOptions = {
     origin: 'https://reddis.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    optionSuccessStatus: 200,
   };
   app.use(cors(corsOptions));
   console.log('___pass cors');
