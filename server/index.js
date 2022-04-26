@@ -77,7 +77,7 @@ async function startApolloServer() {
   console.log('____pass server.start()');
   server.applyMiddleware({
     app,
-    cors: true,
+    cors: false,
   });
   console.log('____pass applyMiddleware');
   const PORT = process.env.PORT || 4000;
