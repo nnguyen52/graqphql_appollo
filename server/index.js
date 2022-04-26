@@ -18,7 +18,8 @@ import { graphqlUploadExpress } from 'graphql-upload';
 async function startApolloServer() {
   const app = express();
   const corsOptions = {
-    origin: 'https://reddis.vercel.app',
+    origin:
+      process.env.NODE_ENV === 'production' ? 'https://reddis.vercel.app' : 'http://localhost:3000',
     credentials: true,
   };
   app.use(cors(corsOptions));
@@ -44,6 +45,7 @@ async function startApolloServer() {
   app.set('trust proxy', 1);
   app.use(
     session({
+      proxy: process.env.NODE_ENV === 'production',
       name: process.env.COOKIE_NAME,
       store: MongoStore.create({ mongoUrl }),
       cookie: {
@@ -73,7 +75,10 @@ async function startApolloServer() {
 
   await server.start();
   console.log('____pass server.start()');
-  server.applyMiddleware({ app, cors: false });
+  server.applyMiddleware({
+    app,
+    // cors: false
+  });
   console.log('____pass applyMiddleware');
   const PORT = process.env.PORT || 4000;
   // httpServer.listen({ port: PORT }, resolve);
