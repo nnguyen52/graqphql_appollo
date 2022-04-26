@@ -1,18 +1,16 @@
-import Comment from "../models/comment";
-import Post from "../models/Post";
-import VoteComment from "../models/voteComment";
+import Comment from '../models/comment';
+import Post from '../models/post';
+import VoteComment from '../models/voteComment';
 
 export const deleteCommenReplyBase = async (_id, postId) => {
   let rootCommentId = null;
   let trackCommentToDelete = null;
   let commentsToDelete = [];
-  const commentToDelete = await Comment.findOne({ _id, postId }).populate(
-    "reply"
-  );
+  const commentToDelete = await Comment.findOne({ _id, postId }).populate('reply');
   commentsToDelete.push(commentToDelete._id.toString());
   trackCommentToDelete = commentToDelete;
   rootCommentId = commentToDelete._id;
-  const allComments = await Comment.find().populate("reply");
+  const allComments = await Comment.find().populate('reply');
   for (let i = 0; i < allComments.length; i++) {
     if (
       !allComments[i].reply &&
@@ -24,8 +22,7 @@ export const deleteCommenReplyBase = async (_id, postId) => {
     }
     if (
       allComments[i].reply &&
-      (allComments[i].reply._id.toString() ==
-        trackCommentToDelete._id.toString() ||
+      (allComments[i].reply._id.toString() == trackCommentToDelete._id.toString() ||
         allComments[i].reply._id.toString() == rootCommentId.toString()) &&
       allComments[i].postId.toString() == postId.toString()
     ) {

@@ -1,7 +1,7 @@
 import Comment from '../models/comment';
 import Vote from '../models/votes';
 import VoteComment from '../models/voteComment';
-import Post from '../models/Post';
+import Post from '../models/post';
 export const deletePost = async (postToDelete, userId) => {
   try {
     // delete all votes that have this postId

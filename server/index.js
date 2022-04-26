@@ -24,6 +24,7 @@ async function startApolloServer() {
     optionSuccessStatus: 200,
   };
   app.use(cors(corsOptions));
+  console.log('___pass cors');
   const httpServer = http.createServer(app);
   // mongo
   const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0.bkuzt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -41,6 +42,7 @@ async function startApolloServer() {
   };
 
   await connectMongo();
+  console.log('___pass mongo');
   app.set('trust proxy', 1);
   app.use(
     session({
@@ -57,7 +59,7 @@ async function startApolloServer() {
       resave: false,
     })
   );
-
+  console.log('___pass session');
   const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
@@ -68,17 +70,26 @@ async function startApolloServer() {
     ],
     uploads: false,
   });
-
+  console.log('____pass apollo server');
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
 
   await server.start();
+  console.log('____pass server.start()');
   server.applyMiddleware({ app, cors: false });
+  console.log('____pass applyMiddleware');
   const PORT = process.env.PORT || 4000;
+  // httpServer.listen({ port: PORT }, resolve);
+
   await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+  console.log('____pass promise listen port');
   app.get('/', (req, res) => {
     res.json({ message: 'server is running' });
   });
   console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 }
 
-startApolloServer().catch((e) => console.log('___________ERROR:', e));
+try {
+  startApolloServer();
+} catch (e) {
+  console.log('___________ERROR:', e);
+}

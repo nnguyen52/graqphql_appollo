@@ -3,7 +3,7 @@ import argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 import { sendMail } from '../utils/sendMails';
 import { checkAuth } from '../customMiddleware/checkAuth';
-import Post from '../models/Post';
+import Post from '../models/post';
 import Hidepost from '../models/hidePost';
 import User from '../models/user';
 import Comment from '../models/comment';

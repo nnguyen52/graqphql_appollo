@@ -1,6 +1,6 @@
 import { checkAuth } from '../customMiddleware/checkAuth';
 import Comment from '../models/comment';
-import Post from '../models/Post';
+import Post from '../models/post';
 import User from '../models/user';
 import Vote from '../models/votes';
 import Savepost from '../models/savedPost';
