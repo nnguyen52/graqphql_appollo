@@ -17,7 +17,7 @@ import { graphqlUploadExpress } from 'graphql-upload';
 
 // async function startApolloServer() {
 const app = express();
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
 const httpServer = http.createServer(app);
 // mongo
@@ -71,7 +71,7 @@ server.applyMiddleware({ app, cors: false });
 
 await new Promise((resolve) => httpServer.listen({ port: process.env.PORT || 4000 }, resolve));
 app.get('/', (req, res) => {
-  res.json({ message: 'server is on' });
+  res.json({ message: 'server is running' });
 });
 console.log(`Server running at http://localhost:4000${server.graphqlPath}`);
 // }
