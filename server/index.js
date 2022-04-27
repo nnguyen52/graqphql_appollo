@@ -68,7 +68,7 @@ async function startApolloServer() {
         maxAge: 1000 * 60 * 60, // one hour
         httpOnly: true, // JS front end cannot access the cookie
         secure: process.env.NODE_ENV === 'production', // cookie only works in https
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'none',
       },
       secret: process.env.SESSION_SECRET_DEV_PROD,
       saveUninitialized: false, // don't save empty sessions, right from the start

@@ -14,7 +14,6 @@ function createApolloClient() {
     link: createUploadLink({
       // uri: 'http://localhost:4000/graphql',
       uri: 'https://be-reddis.herokuapp.com/graphql',
-      // : 'https://reddisgql.herokuapp.com/graphql', // Server URL (must be absolute)
       credentials: 'include', // Additional fetch() options like `credentials` or `headers`
     }),
     cache: new InMemoryCache({
