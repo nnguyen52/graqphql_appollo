@@ -333,14 +333,12 @@ const Post = ({
                         fontSize: '2.5em',
                         borderRadius: '50%',
                         background:
-                          !loadingUserVoted &&
                           dataUserVoted?.checkPostVotedFromUser?.data &&
                           dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
                             ? theme.palette.upvoteButton.main
                             : null,
                         '&:hover': {
                           color:
-                            !loadingUserVoted &&
                             dataUserVoted?.checkPostVotedFromUser?.data &&
                             dataUserVoted?.checkPostVotedFromUser?.data.voteValue == 1
                               ? null
@@ -365,14 +363,12 @@ const Post = ({
                         fontSize: '2.5em',
                         borderRadius: '50%',
                         background:
-                          !loadingUserVoted &&
                           dataUserVoted?.checkPostVotedFromUser?.data &&
                           dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
                             ? theme.palette.downvoteButton.main
                             : null,
                         '&:hover': {
                           color:
-                            !loadingUserVoted &&
                             dataUserVoted?.checkPostVotedFromUser?.data &&
                             dataUserVoted?.checkPostVotedFromUser?.data.voteValue == -1
                               ? null
