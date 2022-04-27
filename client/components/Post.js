@@ -290,9 +290,7 @@ const Post = ({
       <PostResponsive>
         <ThemeProvider theme={theme}>
           <Box
-            className={`postContainer ${detail ? 'postContainerFullHeight' : null} ${
-              !detail ? 'postContainerMargin' : null
-            }`}
+            className={`postContainer  ${!detail ? 'postContainerMargin' : null}`}
             sx={{
               position: 'relative',
               display: 'flex',
@@ -418,7 +416,12 @@ const Post = ({
                 }}
               >
                 <Box
-                  sx={{ padding: '.5em', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+                  sx={{
+                    padding: '.5em',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                  }}
                 >
                   Posted by
                   <>
@@ -504,9 +507,11 @@ const Post = ({
                   }}
                 >
                   {/* expanding */}
-                  <Box onClick={() => setIsExpanding((prev) => !prev)}>
-                    <OpenInFullIcon />
-                  </Box>
+                  {!detail && (
+                    <Box onClick={() => setIsExpanding((prev) => !prev)}>
+                      <OpenInFullIcon />
+                    </Box>
+                  )}
                   {/* upvotes info only */}
                   <Box>
                     <b>
@@ -615,9 +620,6 @@ const Post = ({
                     className={`commentsContainer ${
                       !detail || data?.comments.length <= 0 ? 'hideComments' : null
                     }`}
-                    sx={{
-                      flex: 2,
-                    }}
                   >
                     <Comments
                       post={data}

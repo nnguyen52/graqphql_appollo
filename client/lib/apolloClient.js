@@ -12,8 +12,8 @@ function createApolloClient() {
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: createUploadLink({
-      // uri: 'http://localhost:4000/graphql',
-      uri: 'https://be-reddis.herokuapp.com/graphql',
+      uri: 'http://localhost:4000/graphql',
+      // uri: 'https://be-reddis.herokuapp.com/graphql',
       credentials: 'include', // Additional fetch() options like `credentials` or `headers`
     }),
     cache: new InMemoryCache({

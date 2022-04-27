@@ -18,8 +18,9 @@ import { graphqlUploadExpress } from 'graphql-upload';
 async function startApolloServer() {
   const app = express();
   const corsOptions = {
-    origin:
-      process.env.NODE_ENV === 'production' ? 'https://reddis.vercel.app' : 'http://localhost:3000',
+    // origin:
+    //   process.env.NODE_ENV === 'production' ? 'https://reddis.vercel.app' : 'http://localhost:3000',
+    origin: 'http://localhost:3000',
     credentials: true,
     allowedHeaders: [
       'Content-Type',

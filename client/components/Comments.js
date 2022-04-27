@@ -20,14 +20,12 @@ const Comments = ({
   const [showComments, setShowComments] = useState([]);
 
   useEffect(() => {
-    console.log('run2');
     if (!post) return;
     setComments(post.comments.filter((each) => each.postId == post._id && !each.reply));
     setReplies(post.comments.filter((each) => each.postId == post._id && each.reply));
   }, [post]);
 
   useEffect(() => {
-    console.log('run2');
     if (!replies || !comments) return;
     let formattedCmts = [];
     for (let i = 0; i < comments.length; i++) formattedCmts.push(comments[i]);
@@ -38,8 +36,6 @@ const Comments = ({
 
   // control slice more comments
   useEffect(() => {
-    console.log('run2');
-
     if (!formattedComments) return;
     setShowComments(formattedComments.slice(0, next));
   }, [post.comments, formattedComments, next]);
