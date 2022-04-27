@@ -82,10 +82,10 @@ const AuthSettings_Tab = ({ dataRaw, loading, value }) => {
           value={1}
         />
       )}
-      {value == 2 && !loading && (dataRaw?.data || dataRaw.network) && (
+      {value == 2 && !loading && (dataRaw?.data || dataRaw?.network) && (
         <AuthSettings_Tab_0 data={dataRaw.data.posts} pageInfo={dataRaw.data.pageInfo} value={2} />
       )}
-      {value == 3 && !loading && (dataRaw?.data || dataRaw.network) && (
+      {value == 3 && !loading && (dataRaw?.data || dataRaw?.network) && (
         <AuthSettings_Tab_0 data={dataRaw.data.posts} pageInfo={dataRaw.data.pageInfo} value={3} />
       )}
       {(value == 4 || value == 5) && !loading && dataRaw.data && (
